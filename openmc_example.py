@@ -48,18 +48,42 @@ for i in range(len(my_plasma.strengths)):
     my_sources.append(my_source)
 
 
-neutronics_model = openmc_dagmc_wrapper.NeutronicsModel(
-    h5m_filename='stage_2_output/dagmc.h5m',
-    source=my_sources,  # openmc.Settings().source can accept a list of sources
-    materials={"mat1": "eurofer"},
-    cell_tallies=["flux"]
+# Create a single material
+iron = openmc.Material()
+iron.set_density("g/cm3", 5.0)
+iron.add_element("Fe", 1.0)
+mats = openmc.Materials([iron])
+
+# Create a 5 cm x 5 cm box filled with iron
+cells = []
+inner_box1 = openmc.ZCylinder(r=600.0)
+inner_box2 = openmc.ZCylinder(r=1400.0)
+outer_box = openmc.model.rectangular_prism(4000.0, 4000.0, boundary_type="vacuum")
+cells += [openmc.Cell(fill=iron, region=-inner_box1)]
+cells += [openmc.Cell(fill=None, region=+inner_box1 & -inner_box2)]
+cells += [openmc.Cell(fill=iron, region=+inner_box2 & outer_box)]
+geometry = openmc.Geometry(cells)
+
+# Tell OpenMC we're going to use our custom source
+settings = openmc.Settings()
+settings.run_mode = "fixed source"
+settings.batches = 10
+settings.particles = 1000
+settings.source = my_sources
+
+# Finally, define a mesh tally so that we can see the resulting flux
+mesh = openmc.RegularMesh()
+mesh.lower_left = (-2000.0, -2000.0)
+mesh.upper_right = (2000.0, 2000.0)
+mesh.dimension = (50, 50)
+
+tally = openmc.Tally()
+tally.filters = [openmc.MeshFilter(mesh)]
+tally.scores = ["flux"]
+tallies = openmc.Tallies([tally])
+
+model = openmc.model.Model(
+    materials=mats, geometry=geometry, settings=settings, tallies=tallies
 )
 
-neutronics_model.simulate(
-    simulation_batches=5,
-    simulation_particles_per_batch=1e4,
-)
-
-neutronics_model.process_results(
-    cell_tally_results_filename='results.json'
-)
+model.run()
