@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy.lib.function_base import iterable
 
 
 class Plasma():
@@ -50,16 +51,20 @@ class Plasma():
             density = self.ion_density_centre * \
                 (1 - (r/self.major_radius)**2)**self.ion_density_peaking_factor
         elif self.mode in ["H", "A"]:
-            if 0 < r < self.pedestal_radius:
-                prod = self.ion_density_centre - self.ion_density_pedestal
-                prod *= (1 - (r/self.pedestal_radius)**2)**self.ion_density_peaking_factor
+            if isinstance(r, np.ndarray):
+                density = []
+                for radius in r:
+                    if 0 < radius < self.pedestal_radius:
+                        prod = self.ion_density_centre - self.ion_density_pedestal
+                        prod *= (1 - (radius/self.pedestal_radius)**2)**self.ion_density_peaking_factor
 
-                density = self.ion_density_pedestal + prod
-            else:
-                prod = self.ion_density_pedestal - self.ion_density_separatrix
-                prod *= (self.major_radius - r)/(self.major_radius - self.pedestal_radius)
-                density = self.ion_density_separatrix + prod
-
+                        density_loc = self.ion_density_pedestal + prod
+                    else:
+                        prod = self.ion_density_pedestal - self.ion_density_separatrix
+                        prod *= (self.major_radius - radius)/(self.major_radius - self.pedestal_radius)
+                        density_loc = self.ion_density_separatrix + prod
+                    density.append(density_loc)
+                density = np.array(density)
         return density
 
     def ion_temperature(self, r):
@@ -67,16 +72,20 @@ class Plasma():
             temperature = self.ion_temperature_centre * \
                 (1 - (r/self.major_radius)**2)**self.ion_temperature_peaking_factor
         elif self.mode in ["H", "A"]:
-            if 0 < r < self.pedestal_radius:
-                prod = self.ion_temperature_centre - self.ion_temperature_pedestal
-                prod *= (1 - (r/self.pedestal_radius)**self.ion_temperature_beta)**self.ion_temperature_peaking_factor
+            if isinstance(r, np.ndarray):
+                temperature = []
+                for radius in r:
+                    if 0 < radius < self.pedestal_radius:
+                        prod = self.ion_temperature_centre - self.ion_temperature_pedestal
+                        prod *= (1 - (radius/self.pedestal_radius)**self.ion_temperature_beta)**self.ion_temperature_peaking_factor
 
-                temperature = self.ion_temperature_pedestal + prod
-            else:
-                prod = self.ion_temperature_pedestal - self.ion_temperature_separatrix
-                prod *= (self.major_radius - r)/(self.major_radius - self.pedestal_radius)
-                temperature = self.ion_temperature_separatrix + prod
-
+                        temperature_loc = self.ion_temperature_pedestal + prod
+                    else:
+                        prod = self.ion_temperature_pedestal - self.ion_temperature_separatrix
+                        prod *= (self.major_radius - radius)/(self.major_radius - self.pedestal_radius)
+                        temperature_loc = self.ion_temperature_separatrix + prod
+                    temperature.append(temperature_loc)
+                temperature = np.array(temperature)
         return temperature
 
     def convert_a_alpha_to_R_Z(self, a, alpha):
@@ -135,7 +144,7 @@ if __name__ == "__main__":
         major_radius=9.06,
         minor_radius=2.92258,
         pedestal_radius=0.8 * 2.92258,
-        mode="L",
+        mode="H",
         shafranov_factor=0.44789,
         triangularity=0.270,
         ion_temperature_beta=6
