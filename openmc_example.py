@@ -1,5 +1,4 @@
 import openmc
-import openmc_dagmc_wrapper
 from main import Plasma
 
 
@@ -39,7 +38,7 @@ for i in range(len(my_plasma.strengths)):
     my_source.space = openmc.stats.CylindricalIndependent(r=radius, phi=angle, z=z_values, origin=(0.0, 0.0, 0.0))
 
     my_source.angle = openmc.stats.Isotropic()
-    my_source.energy = openmc.stats.Muir(e0=14080000.0, m_rat=5.0, kt=20000.0)
+    my_source.energy = openmc.stats.Muir(e0=14080000.0, m_rat=5.0, kt=my_plasma.temperatures[i])
 
     # the strength of the source (its probability) is given by my_plasma.strengths
     my_source.strength = my_plasma.strengths[i]
