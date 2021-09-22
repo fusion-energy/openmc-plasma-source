@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  pull_request:    
+    branches:
+    - develop
+    - main
+  push:
+    branches:
+    - develop
+    - main
+ 
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    container:
+      image: openmc/openmc
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: run example
+        run: python openmc_example.py
+        
