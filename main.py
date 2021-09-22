@@ -51,6 +51,7 @@ class Plasma():
             density = self.ion_density_centre * \
                 (1 - (r/self.major_radius)**2)**self.ion_density_peaking_factor
         elif self.mode in ["H", "A"]:
+            # TODO: find an alternative to iterating through the array
             if isinstance(r, np.ndarray):
                 density = []
                 for radius in r:
@@ -72,6 +73,7 @@ class Plasma():
             temperature = self.ion_temperature_centre * \
                 (1 - (r/self.major_radius)**2)**self.ion_temperature_peaking_factor
         elif self.mode in ["H", "A"]:
+            # TODO: find an alternative to iterating through the array
             if isinstance(r, np.ndarray):
                 temperature = []
                 for radius in r:
