@@ -5,6 +5,47 @@ from numpy.lib.function_base import iterable
 
 
 class Plasma():
+    """Plasma neutron source sampling.
+    This class greatly relies on models described in [1]
+
+    [1] : Fausser et al, 'Tokamak D-T neutron source models for different
+    plasma physics confinement modes', Fus. Eng. and Design,
+    https://doi.org/10.1016/j.fusengdes.2012.02.025
+
+    Usage:
+        my_plasma = Plasma(**plasma_prms)
+        my_plasma.sample_sources()
+        print(my_plasma.RZ)
+        print(my_plasma.temperatures)
+        openmc_sources = my_plasma.make_openmc_sources()
+
+    Args:
+        major_radius (float): Plasma major radius (m)
+        minor_radius (float): Plasma minor radius (m)
+        elongation (float): Plasma elongation
+        triangularity (float): Plasma triangularity
+        mode (str): Confinement mode ("L", "H", "A")
+        ion_density_centre (float): Ion density at the plasma centre (m-3)
+        ion_density_peaking_factor (float): Ion density peaking factor
+            (refered in [1] as ion density exponent)
+        ion_density_pedestal (float): Ion density at pedestal (m-3)
+        ion_density_separatrix (float): Ion density at separatrix (m-3)
+        ion_temperature_centre (float): Ion temperature at the plasma
+            centre (keV)
+        ion_temperature_peaking_factor (float): Ion temperature peaking
+            factor (refered in [1] as ion temperature exponent alpha_T)
+        ion_temperature_beta (float): Ion temperature beta exponent
+            (refered in [1] as ion temperature exponent beta_T)
+        ion_temperature_pedestal (float): Ion temperature at pedestal (keV)
+        ion_temperature_separatrix (float): Ion temperature at separatrix
+            (keV)
+        pedestal_radius (float): Minor radius at pedestal (m)
+        shafranov_factor (float): Shafranov factor (refered in [1] as esh)
+            also known as outward radial displacement of magnetic surfaces
+            (m)
+        sample_size (int, optional): number of neutron sources. Defaults
+            to 1000.
+    """
     def __init__(
         self,
         major_radius,
@@ -25,7 +66,6 @@ class Plasma():
         shafranov_factor,
         sample_size=1000
     ) -> None:
-
         self.major_radius = major_radius
         self.minor_radius = minor_radius
         self.elongation = elongation
@@ -48,6 +88,15 @@ class Plasma():
         self.sample_size = sample_size
 
     def ion_density(self, r):
+        """Computes the ion density at a given position. The ion density is
+        only dependent on the minor radius.
+
+        Args:
+            r (float, ndarray): the minor radius (m)
+
+        Returns:
+            float, ndarray: ion density in m-3
+        """
         if self.mode == "L":
             density = self.ion_density_centre * \
                 (1 - (r/self.major_radius)**2)**self.ion_density_peaking_factor
@@ -70,6 +119,15 @@ class Plasma():
         return density
 
     def ion_temperature(self, r):
+        """Computes the ion temperature at a given position. The ion
+        temperature is only dependent on the minor radius.
+
+        Args:
+            r (float, ndarray): minor radius (m)
+
+        Returns:
+            float, ndarray: ion temperature (keV)
+        """
         if self.mode == "L":
             temperature = self.ion_temperature_centre * \
                 (1 - (r/self.major_radius)**2)**self.ion_temperature_peaking_factor
@@ -92,6 +150,16 @@ class Plasma():
         return temperature
 
     def convert_a_alpha_to_R_Z(self, a, alpha):
+        """Converts (r, alpha) cylindrical coordinates to (R, Z) cartesian
+        coordinates.
+
+        Args:
+            a (float, ndarray): minor radius (m)
+            alpha (float, ndarray): angle (rad)
+
+        Returns:
+            ((float, ndarray), (float, ndarray)): (R, Z) coordinates
+        """
         shafranov_shift = self.shafranov_factor*(1.0-(a/self.minor_radius)**2)
         R = self.major_radius + \
             a*np.cos(alpha + (self.triangularity*np.sin(alpha))) + \
@@ -100,14 +168,35 @@ class Plasma():
         return (R, Z)
 
     def sample_sources(self):
+        """Samples self.sample_size neutrons and creates attributes .densities
+            (ion density), .temperatures (ion temperature), .strengths
+            (neutron source density) and .RZ (coordinates)
+        """
+        # create a sample of (a, alpha) coordinates
         a = np.random.random(self.sample_size)*self.minor_radius
         alpha = np.random.random(self.sample_size)*2*np.pi
+
+        # compute densities, temperatures, neutron source densities and
+        # convert coordinates
         self.densities = self.ion_density(a)
         self.temperatures = self.ion_temperature(a)
         self.strengths = strength(self.densities, self.temperatures)
         self.RZ = self.convert_a_alpha_to_R_Z(a, alpha)
 
-    def make_openmc_sources(self, angle1=0, angle2=2*np.pi):
+    def make_openmc_sources(self, angles=(0., 2*np.pi)):
+        """Creates a list of OpenMC Sources() objects. The created sources are
+        ring sources based on the .RZ coordinates between two angles. The
+        energy of the sources are Muir energy spectra with ion temperatures
+        based on .temperatures. The strength of the sources (their probability)
+        is based on .strengths.
+
+        Args:
+            angles ((float, float), optional): rotation of the ring source.
+            Defaults to (0, 2*np.pi).
+
+        Returns:
+            list: list of openmc.Source()
+        """
         import openmc
 
         sources = []
@@ -118,7 +207,7 @@ class Plasma():
             # extract the RZ values accordingly
             radius = openmc.stats.Discrete([self.RZ[0][i]], [1])
             z_values = openmc.stats.Discrete([self.RZ[1][i]], [1])
-            angle = openmc.stats.Uniform(a=angle1, b=angle2)
+            angle = openmc.stats.Uniform(a=angles[0], b=angles[1])
 
             # create a ring source
             my_source.space = openmc.stats.CylindricalIndependent(
@@ -138,11 +227,22 @@ class Plasma():
 
 
 def strength(ion_density, ion_temperature):
+    """Computes the neutron source density given ion density and ion
+    temperature.
+
+    Args:
+        ion_density (float, ndarray): Ion density (m-3)
+        ion_temperature (float, ndarray): Ion temperature (keV)
+
+    Returns:
+        float, ndarray: Neutron source density (neutron/s/m3)
+    """
     return ion_density**2*DT_xs(ion_temperature)
 
 
 def DT_xs(ion_temperature):
     """Sadler–Van Belle formula
+    Ref : https://doi.org/10.1016/j.fusengdes.2012.02.025
 
     Args:
         ion_temperature (float, ndarray): ion temperature in keV

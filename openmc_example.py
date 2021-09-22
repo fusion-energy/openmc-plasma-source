@@ -1,5 +1,5 @@
 import openmc
-from main import Plasma
+from openmc_plasma_source import Plasma
 
 
 # create a plasma source
