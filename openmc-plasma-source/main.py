@@ -197,6 +197,8 @@ class Plasma():
         Returns:
             list: list of openmc.Source()
         """
+        import openmc
+
         sources = []
         # create a ring source for each sample in the plasma source
         for i in range(len(self.strengths)):
