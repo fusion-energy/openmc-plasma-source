@@ -207,7 +207,7 @@ class Plasma():
             # extract the RZ values accordingly
             radius = openmc.stats.Discrete([self.RZ[0][i]], [1])
             z_values = openmc.stats.Discrete([self.RZ[1][i]], [1])
-            angle = openmc.stats.Uniform(a=angle1, b=angle2)
+            angle = openmc.stats.Uniform(a=angles[0], b=angles[1])
 
             # create a ring source
             my_source.space = openmc.stats.CylindricalIndependent(
