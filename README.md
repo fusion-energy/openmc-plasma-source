@@ -5,10 +5,11 @@ The OpenMC sources are ring sources which reduces the computational cost and the
 
 ![image](https://user-images.githubusercontent.com/40028739/134315320-2188e335-666b-4495-aa88-6b1b049b2df0.png)
 
+The equations implemented here are taken from [this paper](https://doi.org/10.1016/j.fusengdes.2012.02.025).
 
 ## Installation
 
-To instann openmc-plasma-source, simply run:
+To install openmc-plasma-source, simply run:
 ```
 pip install openmc-plasma-source
 ```
