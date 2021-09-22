@@ -1,4 +1,4 @@
-name: CI with install
+name: CI
 
 on:
   pull_request:    
