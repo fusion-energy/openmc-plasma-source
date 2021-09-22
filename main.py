@@ -108,6 +108,8 @@ class Plasma():
         self.RZ = self.convert_a_alpha_to_R_Z(a, alpha)
 
     def make_openmc_sources(self, angle1=0, angle2=2*np.pi):
+        import openmc
+
         sources = []
         # create a ring source for each sample in the plasma source
         for i in range(len(self.strengths)):
