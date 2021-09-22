@@ -23,28 +23,7 @@ my_plasma = Plasma(
     )
 my_plasma.sample_sources()
 
-my_sources = []
-# create a ring source for each sample in the plasma source
-for i in range(len(my_plasma.strengths)):
-    my_source = openmc.Source()
-
-    # extract the RZ values accordingly
-    radius = openmc.stats.Discrete([my_plasma.RZ[0][i]], [1])
-    z_values = openmc.stats.Discrete([my_plasma.RZ[1][i]], [1])
-
-    # full rotation
-    angle = openmc.stats.Uniform(a=0., b=2*3.14159265359)
-    # create a ring source
-    my_source.space = openmc.stats.CylindricalIndependent(r=radius, phi=angle, z=z_values, origin=(0.0, 0.0, 0.0))
-
-    my_source.angle = openmc.stats.Isotropic()
-    my_source.energy = openmc.stats.Muir(e0=14080000.0, m_rat=5.0, kt=my_plasma.temperatures[i])
-
-    # the strength of the source (its probability) is given by my_plasma.strengths
-    my_source.strength = my_plasma.strengths[i]
-
-    # append to the list of sources
-    my_sources.append(my_source)
+my_sources = my_plasma.make_openmc_sources()
 
 
 # Create a single material

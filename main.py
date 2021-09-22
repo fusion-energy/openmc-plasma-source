@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from numpy.lib.function_base import iterable
 
 
@@ -106,6 +107,33 @@ class Plasma():
         self.strengths = strength(self.densities, self.temperatures)
         self.RZ = self.convert_a_alpha_to_R_Z(a, alpha)
 
+    def make_openmc_sources(self, angle1=0, angle2=2*np.pi):
+        sources = []
+        # create a ring source for each sample in the plasma source
+        for i in range(len(self.strengths)):
+            my_source = openmc.Source()
+
+            # extract the RZ values accordingly
+            radius = openmc.stats.Discrete([self.RZ[0][i]], [1])
+            z_values = openmc.stats.Discrete([self.RZ[1][i]], [1])
+            angle = openmc.stats.Uniform(a=angle1, b=angle2)
+
+            # create a ring source
+            my_source.space = openmc.stats.CylindricalIndependent(
+                r=radius, phi=angle, z=z_values, origin=(0.0, 0.0, 0.0))
+
+            my_source.angle = openmc.stats.Isotropic()
+            my_source.energy = openmc.stats.Muir(
+                e0=14080000.0, m_rat=5.0, kt=self.temperatures[i])
+
+            # the strength of the source (its probability) is given by
+            # self.strengths
+            my_source.strength = self.strengths[i]
+
+            # append to the list of sources
+            sources.append(my_source)
+        return sources
+
 
 def strength(ion_density, ion_temperature):
     return ion_density**2*DT_xs(ion_temperature)
@@ -113,6 +141,12 @@ def strength(ion_density, ion_temperature):
 
 def DT_xs(ion_temperature):
     """Sadler–Van Belle formula
+
+    Args:
+        ion_temperature (float, ndarray): ion temperature in keV
+
+    Returns:
+        float, ndarray: the DT cross section at the given temperature
     """
     c = [
         2.5663271e-18,
@@ -152,7 +186,14 @@ if __name__ == "__main__":
         ion_temperature_beta=6
         )
     my_plasma.sample_sources()
+    fig, axs = plt.subplots(1, 2)
+    plt.sca(axs[0])
     plt.scatter(my_plasma.RZ[0], my_plasma.RZ[1], c=my_plasma.strengths)
-    plt.gca().set_aspect("equal")
     plt.colorbar(label="Neutron source density (neutron/s/m3)")
+    plt.sca(axs[1])
+    plt.scatter(my_plasma.RZ[0], my_plasma.RZ[1], c=my_plasma.temperatures, cmap=cm.plasma)
+    plt.colorbar(label="Ion temperature (keV)")
+
+    for ax in axs:
+        ax.set_aspect("equal")
     plt.show()
