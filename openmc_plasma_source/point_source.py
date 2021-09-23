@@ -1,4 +1,6 @@
 
+from typing import Tuple
+
 import openmc
 
 
@@ -10,9 +12,9 @@ class FusionPointSource(openmc.Source):
     """
     def __init__(
         self,
-        coordinate = (0,0,0),
+        coordinate: Tuple[float, float, float] = (0,0,0),
         temperature: float = 20000.,
-        fuel='DT'
+        fuel: str = 'DT'
     ):
  
         super().__init__()
