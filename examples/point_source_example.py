@@ -1,7 +1,8 @@
 
+import openmc
 from openmc_plasma_source import FusionPointSource
 
-FusionPointSource(
+my_source = FusionPointSource(
         coordinate = (0,0,0),
         temperature = 20000.,
         fuel='DT'
@@ -28,7 +29,7 @@ settings = openmc.Settings()
 settings.run_mode = "fixed source"
 settings.batches = 10
 settings.particles = 1000
-settings.source = my_sources
+settings.source = my_source
 
 # Finally, define a mesh tally so that we can see the resulting flux
 mesh = openmc.RegularMesh()

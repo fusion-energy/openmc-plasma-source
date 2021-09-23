@@ -1,7 +1,8 @@
 
+import openmc
 from openmc_plasma_source import FusionRingSource
 
-FusionRingSource(
+my_source = FusionRingSource(
     radius = 700,
     start_angle =0.,
     stop_angle = 6.28318530718,
@@ -29,7 +30,7 @@ settings = openmc.Settings()
 settings.run_mode = "fixed source"
 settings.batches = 10
 settings.particles = 1000
-settings.source = my_sources
+settings.source = my_source
 
 # Finally, define a mesh tally so that we can see the resulting flux
 mesh = openmc.RegularMesh()
