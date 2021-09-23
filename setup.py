@@ -28,4 +28,7 @@ setuptools.setup(
         "pytest",
     ],
     python_requires='>=3.6',
+    install_requires=[
+        'numpy==1.21.2',
+    ],
 )
