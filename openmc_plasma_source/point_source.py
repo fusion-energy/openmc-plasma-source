@@ -23,8 +23,11 @@ class FusionPointSource(openmc.Source):
         self.space = openmc.stats.Point(coordinate)
         self.angle = openmc.stats.Isotropic()
         if fuel == 'DT':
-            self.energy = openmc.stats.Muir(e0=14080000., m_rat=5., kt=temperature)
+            mean_energy = 14080000.  # mean energy in eV
+            mass_of_reactants = 5  # mass of the reactants (D + T) AMU
         elif fuel == 'DT':
-            self.energy = openmc.stats.Muir(e0=2450000., m_rat=4., kt=temperature)
+            mean_energy = 2450000.  # mean energy in eV
+            mass_of_reactants = 4  # mass of the reactants (D + D) AMU
         else:
             raise ValueError(f'fuel must be either "DT" or "DD", not {fuel}')
+        self.energy = openmc.stats.Muir(e0=mean_energy , m_rat=mass_of_reactants , kt=temperature)

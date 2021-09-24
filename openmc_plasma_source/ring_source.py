@@ -42,7 +42,6 @@ class FusionRingSource(openmc.Source):
         elif fuel == 'DT':
             mean_energy = 2450000.  # mean energy in eV
             mass_of_reactants = 4  # mass of the reactants (D + D) AMU
-        self.energy = openmc.stats.Muir(e0=mean_energy , m_rat=mass_of_reactants , kt=temperature)
         else:
             raise ValueError(f'fuel must be either "DT" or "DD", not {fuel}')
-
+        self.energy = openmc.stats.Muir(e0=mean_energy , m_rat=mass_of_reactants , kt=temperature)
