@@ -13,7 +13,7 @@ jobs:
       - run:
           name: run tests
           command: 
-            pytest python openmc_example.py -v --cov=openmc_dagmc_wrapper --cov-append --cov-report term --cov-report xml
+            python openmc_example.py -v --cov=openmc_dagmc_wrapper --cov-append --cov-report term --cov-report xml
 
       - store_test_results:
           path: test-reports
