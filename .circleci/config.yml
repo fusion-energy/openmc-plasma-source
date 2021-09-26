@@ -10,6 +10,7 @@ jobs:
           name: install
           command: |
             python setup.py install
+            apt-get install curl
       - run:
           name: run tests
           command: 
