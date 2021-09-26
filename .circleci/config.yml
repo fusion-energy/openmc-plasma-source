@@ -1,0 +1,21 @@
+version: 2
+jobs:
+  # test:
+  build:
+    docker:
+      - image: openmc/openmc
+    steps:
+      - checkout
+      - run:
+          name: install
+          command: |
+            python setup.py install
+      - run:
+          name: run tests
+          command: 
+            python openmc_example.py -v --cov=openmc_dagmc_wrapper --cov-append --cov-report term --cov-report xml
+
+      - store_test_results:
+          path: test-reports
+
+      - run: bash <(curl -s https://codecov.io/bash)
