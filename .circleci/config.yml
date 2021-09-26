@@ -13,7 +13,7 @@ jobs:
       - run:
           name: run tests
           command: 
-            python tokamak_source_example.py -v --cov=openmc_plasma_source --cov-append --cov-report term --cov-report xml
+            python examples/tokamak_source_example.py -v --cov=openmc_plasma_source --cov-append --cov-report term --cov-report xml
 
       - store_test_results:
           path: test-reports
