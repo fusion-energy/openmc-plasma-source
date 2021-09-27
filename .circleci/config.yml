@@ -10,10 +10,13 @@ jobs:
           name: install
           command: |
             python setup.py install
+            apt-get update -y && apt-get install -y curl
       - run:
           name: run tests
-          command: 
-            python openmc_example.py -v --cov=openmc_dagmc_wrapper --cov-append --cov-report term --cov-report xml
+          command: |
+            pytest tests/test_point_source.py -v --cov=openmc_plasma_source --cov-append --cov-report term --cov-report xml
+            pytest tests/test_ring_source.py -v --cov=openmc_plasma_source --cov-append --cov-report term --cov-report xml
+            pytest tests/test_tokamak_source.py -v --cov=openmc_plasma_source --cov-append --cov-report term --cov-report xml
 
       - store_test_results:
           path: test-reports

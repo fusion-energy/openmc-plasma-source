@@ -15,14 +15,16 @@ pip install openmc-plasma-source
 ```
 
 
-## Basic usage
+## Usage
+
+### Tokamak Source
+
+Create a source with a spatial and temperature distribution of a tokamak plasma.
 
 ```python
-from openmc_plasma_source import Plasma
+from openmc_plasma_source import TokamakSource
 
-
-# create a plasma source
-my_plasma = Plasma(
+my_plasma = TokamakSource(
     elongation=1.557,
     ion_density_centre=1.09e20,
     ion_density_peaking_factor=1,
@@ -46,3 +48,29 @@ my_sources = my_plasma.make_openmc_sources()
 ```
 
 For a more complete example check out the example script.
+
+### Ring Source
+
+
+Create a ring source with temperature distribution of a 2000eV plasma.
+
+```python
+my_plasma = FusionRingSource(
+    start_angle = 0.,
+    stop_angle = 6.28318530718,  # input is in radians
+    temperature = 20000.,
+    fuel='DT'
+)
+```
+### Point Source
+
+Create a point source with temperature distribution of a 2000eV plasma.
+
+
+```python
+my_plasma = FusionPointSource(
+    coordinate = (0, 0, 0),
+    temperature = 20000.,
+    fuel = 'DT'
+)
+```
