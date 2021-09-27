@@ -1,0 +1,24 @@
+version: 2
+jobs:
+  # test:
+  build:
+    docker:
+      - image: openmc/openmc
+    steps:
+      - checkout
+      - run:
+          name: install
+          command: |
+            python setup.py install
+            apt-get update -y && apt-get install -y curl
+      - run:
+          name: run tests
+          command: |
+            pytest tests/test_point_source.py -v --cov=openmc_plasma_source --cov-append --cov-report term --cov-report xml
+            pytest tests/test_ring_source.py -v --cov=openmc_plasma_source --cov-append --cov-report term --cov-report xml
+            pytest tests/test_tokamak_source.py -v --cov=openmc_plasma_source --cov-append --cov-report term --cov-report xml
+
+      - store_test_results:
+          path: test-reports
+
+      - run: bash <(curl -s https://codecov.io/bash)
