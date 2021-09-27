@@ -4,7 +4,7 @@ from matplotlib import cm
 from numpy.lib.function_base import iterable
 
 
-class Plasma():
+class TokamakSource():
     """Plasma neutron source sampling.
     This class greatly relies on models described in [1]
 
@@ -27,20 +27,20 @@ class Plasma():
         mode (str): Confinement mode ("L", "H", "A")
         ion_density_centre (float): Ion density at the plasma centre (m-3)
         ion_density_peaking_factor (float): Ion density peaking factor
-            (refered in [1] as ion density exponent)
+            (referred in [1] as ion density exponent)
         ion_density_pedestal (float): Ion density at pedestal (m-3)
         ion_density_separatrix (float): Ion density at separatrix (m-3)
         ion_temperature_centre (float): Ion temperature at the plasma
             centre (keV)
         ion_temperature_peaking_factor (float): Ion temperature peaking
-            factor (refered in [1] as ion temperature exponent alpha_T)
+            factor (referred in [1] as ion temperature exponent alpha_T)
         ion_temperature_beta (float): Ion temperature beta exponent
-            (refered in [1] as ion temperature exponent beta_T)
+            (referred in [1] as ion temperature exponent beta_T)
         ion_temperature_pedestal (float): Ion temperature at pedestal (keV)
         ion_temperature_separatrix (float): Ion temperature at separatrix
             (keV)
         pedestal_radius (float): Minor radius at pedestal (m)
-        shafranov_factor (float): Shafranov factor (refered in [1] as esh)
+        shafranov_factor (float): Shafranov factor (referred in [1] as esh)
             also known as outward radial displacement of magnetic surfaces
             (m)
         sample_size (int, optional): number of neutron sources. Defaults
