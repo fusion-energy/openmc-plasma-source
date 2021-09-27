@@ -1,9 +1,9 @@
-from openmc_plasma_source import Plasma
+from openmc_plasma_source import TokamkaSource
 
 from openmc import Source
 
 
 def test_creation():
-    my_source = Plasma()
+    my_source = TokamkaSource()
     for source in my_source:
         assert isinstance(source, Source)
