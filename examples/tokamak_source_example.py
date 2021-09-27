@@ -1,9 +1,9 @@
 import openmc
-from openmc_plasma_source import Plasma
+from openmc_plasma_source import TokamakSource
 
 
 # create a plasma source
-my_plasma = Plasma(
+my_plasma = TokamakSource(
     elongation=1.557,
     ion_density_centre=1.09e20,
     ion_density_peaking_factor=1,
