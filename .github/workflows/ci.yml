@@ -20,6 +20,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: run example
-        run: python examples/point_source_example.py
-        run: python examples/ring_source_example.py
-        run: python examples/tokamak_source_example.py
+        run: |
+          python examples/point_source_example.py
+          python examples/ring_source_example.py
+          python examples/tokamak_source_example.py
