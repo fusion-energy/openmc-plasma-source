@@ -268,7 +268,3 @@ def DT_xs(ion_temperature):
     return val
 
 
-def PlasmaSource(**plasma_prms):
-    my_plasma = Plasma(**plasma_prms)
-    my_plasma.sample_sources()
-    return my_plasma.make_openmc_sources()
