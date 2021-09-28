@@ -22,5 +22,7 @@ def test_creation():
         triangularity=0.270,
         ion_temperature_beta=6
     )
-    for source in my_source:
+    my_source.sample_sources()
+    my_source.make_openmc_sources()
+    for source in my_source.make_openmc_sources():
         assert isinstance(source, Source)
