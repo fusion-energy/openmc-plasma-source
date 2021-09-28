@@ -8,7 +8,7 @@ class FusionPointSource(openmc.Source):
     """An openmc.Source object with some presets to make it more convenient
     for fusion simulations using a point source. All attributes can be changed
     after initialization if required. Default isotropic point source at the
-    origin with a Muir energy distribution. 
+    origin with a Muir energy distribution.
     """
     def __init__(
         self,
@@ -16,7 +16,7 @@ class FusionPointSource(openmc.Source):
         temperature: float = 20000.,
         fuel: str = 'DT'
     ):
- 
+
         super().__init__()
 
         # performed after the super init as these are Source attributes
@@ -25,7 +25,7 @@ class FusionPointSource(openmc.Source):
         if fuel == 'DT':
             mean_energy = 14080000.  # mean energy in eV
             mass_of_reactants = 5  # mass of the reactants (D + T) AMU
-        elif fuel == 'DT':
+        elif fuel == 'DD':
             mean_energy = 2450000.  # mean energy in eV
             mass_of_reactants = 4  # mass of the reactants (D + D) AMU
         else:
