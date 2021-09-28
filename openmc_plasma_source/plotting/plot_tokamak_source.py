@@ -4,7 +4,9 @@ import numpy as np
 
 
 def scatter_tokamak_source(source, quantity=None, **kwargs):
-    """Create a 2D scatter plot of the tokamak source
+    """Create a 2D scatter plot of the tokamak source.
+    See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html
+    for more arguments.
 
     Args:
         source (ops.TokamakSource): the plasma source
@@ -31,7 +33,9 @@ def scatter_tokamak_source(source, quantity=None, **kwargs):
 
 
 def plot_tokamak_source_3D(source, quantity=None, angles=[0, 1/2*np.pi], colorbar="viridis", **kwargs):
-    """Creates a 3D plot of the tokamak source
+    """Creates a 3D plot of the tokamak source.
+    See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot
+    for more arguments.
 
     Args:
         source (ops.TokamakSource): the plasma source
