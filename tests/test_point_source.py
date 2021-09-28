@@ -8,4 +8,4 @@ def test_creation():
     assert isinstance(my_source, Source)
 
 with pytest.raises(ValueError):
-    FusionRingSource(radius=1, fuel='топливо')
+    FusionPointSource(fuel='топливо')
