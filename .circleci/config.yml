@@ -17,6 +17,7 @@ jobs:
             pytest tests/test_point_source.py -v --cov=openmc_plasma_source --cov-append --cov-report term --cov-report xml
             pytest tests/test_ring_source.py -v --cov=openmc_plasma_source --cov-append --cov-report term --cov-report xml
             pytest tests/test_tokamak_source.py -v --cov=openmc_plasma_source --cov-append --cov-report term --cov-report xml
+            pytest tests/test_plotting.py -v --cov=openmc_plasma_source --cov-append --cov-report term --cov-report xml
 
       - store_test_results:
           path: test-reports
