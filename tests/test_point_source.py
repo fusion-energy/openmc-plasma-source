@@ -7,5 +7,6 @@ def test_creation():
     my_source = FusionPointSource()
     assert isinstance(my_source, Source)
 
-with pytest.raises(ValueError):
-    FusionPointSource(fuel='топливо')
+def test_wrong_fuel():
+    with pytest.raises(ValueError):
+        FusionPointSource(fuel='топливо')

@@ -12,7 +12,7 @@ class FusionRingSource(openmc.Source):
         radius: the inner radius of the ring source
         start_angle: the start angle of the ring in radians,
         stop_angle: the end angle of the ring in radians,
-        z_placement: Location of the ring source. Defaults to 0.
+        z_placement: Location of the ring source (m). Defaults to 0.
         temperature: the temperature to use in the Muir distribution in eV,
     """
     def __init__(
