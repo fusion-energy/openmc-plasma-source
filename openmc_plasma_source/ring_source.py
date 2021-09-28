@@ -12,6 +12,7 @@ class FusionRingSource(openmc.Source):
         radius: the inner radius of the ring source
         start_angle: the start angle of the ring in radians,
         stop_angle: the end angle of the ring in radians,
+        z_placement: Location of the ring source. Defaults to 0.
         temperature: the temperature to use in the Muir distribution in eV,
     """
     def __init__(
@@ -19,6 +20,7 @@ class FusionRingSource(openmc.Source):
         radius,
         start_angle: float =0.,
         stop_angle: float = 6.28318530718,
+        z_placement=0,
         temperature: float = 20000.,
         fuel='DT'
     ):
@@ -27,7 +29,7 @@ class FusionRingSource(openmc.Source):
 
         # performed after the super init as these are Source attributes
         radius = openmc.stats.Discrete([radius], [1])
-        z_values = openmc.stats.Discrete([0], [1])
+        z_values = openmc.stats.Discrete([z_placement], [1])
         angle = openmc.stats.Uniform(a=start_angle, b=stop_angle)
         self.space = openmc.stats.CylindricalIndependent(
             r=radius,
@@ -39,7 +41,7 @@ class FusionRingSource(openmc.Source):
         if fuel == 'DT':
             mean_energy = 14080000.  # mean energy in eV
             mass_of_reactants = 5  # mass of the reactants (D + T) AMU
-        elif fuel == 'DT':
+        elif fuel == 'DD':
             mean_energy = 2450000.  # mean energy in eV
             mass_of_reactants = 4  # mass of the reactants (D + D) AMU
         else:
