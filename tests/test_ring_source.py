@@ -10,4 +10,4 @@ def test_creation():
 
 def test_wrong_fuel():
     with pytest.raises(ValueError):
-        FusionRingSource(fuel='топливо')
+        FusionRingSource(radius=1, fuel='топливо')
