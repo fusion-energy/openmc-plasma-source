@@ -4,5 +4,5 @@ from openmc import Source
 
 
 def test_creation():
-    my_source = FusionRingSource()
+    my_source = FusionRingSource(radius=1)
     assert isinstance(my_source, Source)
