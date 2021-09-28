@@ -21,9 +21,7 @@ my_plasma = TokamakSource(
     triangularity=0.270,
     ion_temperature_beta=6
     )
-my_plasma.sample_sources()
 
-my_sources = my_plasma.make_openmc_sources()
 
 
 # Create a single material
@@ -47,7 +45,7 @@ settings = openmc.Settings()
 settings.run_mode = "fixed source"
 settings.batches = 10
 settings.particles = 1000
-settings.source = my_sources
+settings.source = my_plasma.sources
 
 # Finally, define a mesh tally so that we can see the resulting flux
 mesh = openmc.RegularMesh()
