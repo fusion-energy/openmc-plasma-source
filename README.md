@@ -23,7 +23,7 @@ The equations implemented here are taken from [this paper](https://doi.org/10.10
 ```python
 from openmc_plasma_source import TokamakSource
 
-my_plasma = TokamakSource(
+my_source = TokamakSource(
     elongation=1.557,
     ion_density_centre=1.09e20,
     ion_density_peaking_factor=1,
@@ -41,14 +41,12 @@ my_plasma = TokamakSource(
     triangularity=0.270,
     ion_temperature_beta=6
   )
-
-my_plasma.sample_sources()
-my_sources = my_plasma.make_openmc_sources()
 ```
 
-For a more complete example check out the example script.
+For a more complete example check out the [example script](https://github.com/fusion-energy/openmc-plasma-source/blob/better_readme/examples/tokamak_source_example.py).
 
-![out](https://user-images.githubusercontent.com/40028739/135098826-3b38c8a8-16c0-4ae2-aa85-6cc5c064e2cb.png) ![out](https://user-images.githubusercontent.com/40028739/135098576-a94709ef-96b4-4b8d-8fa0-76a201b6c5d2.png)
+![out](https://user-images.githubusercontent.com/40028739/135100022-330aa51c-e2a2-401c-9738-90f3e99c84d4.png)
+ ![out](https://user-images.githubusercontent.com/40028739/135098576-a94709ef-96b4-4b8d-8fa0-76a201b6c5d2.png)
 
 ### Ring Source
 
