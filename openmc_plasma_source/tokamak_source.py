@@ -87,6 +87,9 @@ class TokamakSource():
 
         self.sample_size = sample_size
 
+        self.sample_sources()
+        self.sources = self.make_openmc_sources()
+
     def ion_density(self, r):
         """Computes the ion density at a given position. The ion density is
         only dependent on the minor radius.
