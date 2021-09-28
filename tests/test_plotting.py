@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from openmc_plasma_source import plotting, TokamakSource
+import pytest
 
 my_plasma = TokamakSource(
     elongation=1.557,
@@ -29,9 +30,21 @@ def test_scatter_tokamak_source():
     plotting.scatter_tokamak_source(my_plasma, alpha=0.2)
 
 
+def test_scatter_tokamak_wrong_quantity():
+    plt.figure()
+    with pytest.raises(ValueError):
+        plotting.scatter_tokamak_source(my_plasma, quantity="coucou")
+
+
 def test_plot_tokamak_source():
     plt.figure()
     plotting.plot_tokamak_source_3D(my_plasma)
     plotting.plot_tokamak_source_3D(my_plasma, quantity="ion_temperature")
     plotting.plot_tokamak_source_3D(my_plasma, alpha=0.2)
     plotting.plot_tokamak_source_3D(my_plasma, angles=[0, 3.14])
+
+
+def test_plot_tokamak_wrong_quantity():
+    plt.figure()
+    with pytest.raises(ValueError):
+        plotting.plot_tokamak_source_3D(my_plasma, quantity="coucou")
