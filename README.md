@@ -54,26 +54,26 @@ For a more complete example check out the [example script](https://github.com/fu
 ### Ring Source
 
 
-Create a ring source with temperature distribution of a 2000eV plasma.
+Create a ring source with temperature distribution of a 2000 eV plasma.
 
 ```python
 my_plasma = FusionRingSource(
     start_angle = 0.,
     stop_angle = 6.28318530718,  # input is in radians
     temperature = 20000.,  # ion temperature in eV
-    fuel='DT'
+    fuel='DT'  # or 'DD'
 )
 ```
 ### Point Source
 
-Create a point source with temperature distribution of a 2000eV plasma.
+Create a point source with temperature distribution of a 2000 eV plasma.
 
 
 ```python
 my_plasma = FusionPointSource(
     coordinate = (0, 0, 0),
     temperature = 20000.,  # ion temperature in eV
-    fuel = 'DT'
+    fuel = 'DT'  # or 'DD'
 )
 ```
 
