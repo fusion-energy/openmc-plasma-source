@@ -1,4 +1,6 @@
-# openmc-plasma-source
+[![CircleCI](https://circleci.com/gh/fusion-energy/openmc-plasma-source/tree/main.svg?style=svg)](https://circleci.com/gh/fusion-energy/openmc-plasma-source/tree/main) [![codecov](https://codecov.io/gh/fusion-energy/openmc-plasma-source/branch/main/graph/badge.svg?token=kDvWo6NGue)](https://codecov.io/gh/fusion-energy/openmc-plasma-source) [![PyPI version](https://badge.fury.io/py/openmc-plasma-source.svg)](https://badge.fury.io/py/openmc-plasma-source)
+
+# OpenMC-plasma-source
 
 This python-based package offers a collection of pre-built [OpenMC](https://github.com/openmc-dev/openmc) neutron sources for fusion applications.
 
@@ -17,6 +19,7 @@ pip install openmc-plasma-source
 
 Create a source with a spatial and temperature distribution of a tokamak plasma.
 The OpenMC sources are ring sources which reduces the computational cost and the settings.xml file size.
+Each source has its own strength (or probability that a neutron spawns in this location).
 
 The equations implemented here are taken from [this paper](https://doi.org/10.1016/j.fusengdes.2012.02.025).
 
@@ -72,4 +75,12 @@ my_plasma = FusionPointSource(
     temperature = 20000.,  # ion temperature in eV
     fuel = 'DT'
 )
+```
+
+## Testing
+
+To run the tests, simply run
+
+```
+pytest tests/
 ```
