@@ -11,7 +11,7 @@ class FusionRingSource(openmc.Source):
 
     Args:
         radius: the inner radius of the ring source
-        angles: the start and stop angles of the ring in radians,
+        angles (iterable of floats): the start and stop angles of the ring in radians,
         z_placement: Location of the ring source (m). Defaults to 0.
         temperature: the temperature to use in the Muir distribution in eV,
     """
