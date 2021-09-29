@@ -180,7 +180,9 @@ class TokamakSource():
         # convert coordinates
         self.densities = self.ion_density(a)
         self.temperatures = self.ion_temperature(a)
-        self.strengths = strength(self.densities, self.temperatures)
+        self.neutron_source_density = neutron_source_density(
+            self.densities, self.temperatures)
+        self.strengths = self.neutron_source_density/sum(self.neutron_source_density)
         self.RZ = self.convert_a_alpha_to_R_Z(a, alpha)
 
     def make_openmc_sources(self, angles=(0., 2*np.pi)):
@@ -226,7 +228,7 @@ class TokamakSource():
         return sources
 
 
-def strength(ion_density, ion_temperature):
+def neutron_source_density(ion_density, ion_temperature):
     """Computes the neutron source density given ion density and ion
     temperature.
 
@@ -266,5 +268,3 @@ def DT_xs(ion_temperature):
     val = c[0]/(U**(5/6)*ion_temperature**(2/3))
     val *= np.exp(-c[1]*(U/ion_temperature)**(1/3))
     return val
-
-
