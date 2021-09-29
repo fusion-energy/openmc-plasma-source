@@ -40,6 +40,8 @@ class TokamakSource():
         shafranov_factor (float): Shafranov factor (referred in [1] as esh)
             also known as outward radial displacement of magnetic surfaces
             (m)
+        angles (iterable of floats): the start and stop angles of the ring in
+            radians
         sample_size (int, optional): number of neutron sources. Defaults
             to 1000.
     """
@@ -61,6 +63,7 @@ class TokamakSource():
         ion_temperature_separatrix,
         pedestal_radius,
         shafranov_factor,
+        angles=(0, 2*np.pi),
         sample_size=1000
     ) -> None:
         self.major_radius = major_radius
@@ -83,6 +86,8 @@ class TokamakSource():
         self.shafranov_factor = shafranov_factor
 
         self.sample_size = sample_size
+
+        self.angles = angles
 
         self.sample_sources()
         self.sources = self.make_openmc_sources()
@@ -185,7 +190,7 @@ class TokamakSource():
         self.strengths = self.neutron_source_density/sum(self.neutron_source_density)
         self.RZ = self.convert_a_alpha_to_R_Z(a, alpha)
 
-    def make_openmc_sources(self, angles=(0., 2*np.pi)):
+    def make_openmc_sources(self):
         """Creates a list of OpenMC Sources() objects. The created sources are
         ring sources based on the .RZ coordinates between two angles. The
         energy of the sources are Muir energy spectra with ion temperatures
@@ -209,7 +214,7 @@ class TokamakSource():
             # extract the RZ values accordingly
             radius = openmc.stats.Discrete([self.RZ[0][i]], [1])
             z_values = openmc.stats.Discrete([self.RZ[1][i]], [1])
-            angle = openmc.stats.Uniform(a=angles[0], b=angles[1])
+            angle = openmc.stats.Uniform(a=self.angles[0], b=self.angles[1])
 
             # create a ring source
             my_source.space = openmc.stats.CylindricalIndependent(
