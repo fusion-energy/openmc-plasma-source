@@ -19,7 +19,8 @@ def scatter_tokamak_source(source, quantity=None, **kwargs):
 
     quantity_to_attribute = {
         "ion_temperature": source.temperatures,
-        "neutron_source_density": source.strengths
+        "neutron_source_density": source.neutron_source_density,
+        "strength": source.strengths,
     }
     if quantity in quantity_to_attribute:
         colours = quantity_to_attribute[quantity]
@@ -52,7 +53,8 @@ def plot_tokamak_source_3D(source, quantity=None, angles=[0, 1/2*np.pi], colorba
 
     quantity_to_attribute = {
         "ion_temperature": source.temperatures,
-        "neutron_source_density": source.strengths
+        "neutron_source_density": source.neutron_source_density,
+        "strength": source.strengths,
     }
     if quantity in quantity_to_attribute:
         values = quantity_to_attribute[quantity]
