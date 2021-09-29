@@ -1,5 +1,6 @@
 
 import openmc
+import numpy as np
 
 
 class FusionRingSource(openmc.Source):
@@ -10,16 +11,14 @@ class FusionRingSource(openmc.Source):
 
     Args:
         radius: the inner radius of the ring source
-        start_angle: the start angle of the ring in radians,
-        stop_angle: the end angle of the ring in radians,
+        angles (iterable of floats): the start and stop angles of the ring in radians,
         z_placement: Location of the ring source (m). Defaults to 0.
         temperature: the temperature to use in the Muir distribution in eV,
     """
     def __init__(
         self,
         radius,
-        start_angle: float =0.,
-        stop_angle: float = 6.28318530718,
+        angles=(0, 2*np.pi),
         z_placement=0,
         temperature: float = 20000.,
         fuel='DT'
@@ -30,7 +29,7 @@ class FusionRingSource(openmc.Source):
         # performed after the super init as these are Source attributes
         radius = openmc.stats.Discrete([radius], [1])
         z_values = openmc.stats.Discrete([z_placement], [1])
-        angle = openmc.stats.Uniform(a=start_angle, b=stop_angle)
+        angle = openmc.stats.Uniform(a=angles[0], b=angles[1])
         self.space = openmc.stats.CylindricalIndependent(
             r=radius,
             phi=angle,
