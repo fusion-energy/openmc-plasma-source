@@ -61,6 +61,7 @@ from openmc_plasma_source import FusionRingSource
 
 my_plasma = FusionRingSource(
     angles = (0., 6.28318530718),  # input is in radians
+    radius = 400,  # units in cm
     temperature = 20000.,  # ion temperature in eV
     fuel='DT'  # or 'DD'
 )
