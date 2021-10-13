@@ -60,8 +60,7 @@ Create a ring source with temperature distribution of a 2000 eV plasma.
 from openmc_plasma_source import FusionRingSource
 
 my_plasma = FusionRingSource(
-    start_angle = 0.,
-    stop_angle = 6.28318530718,  # input is in radians
+    angles = (0., 6.28318530718),  # input is in radians
     temperature = 20000.,  # ion temperature in eV
     fuel='DT'  # or 'DD'
 )
