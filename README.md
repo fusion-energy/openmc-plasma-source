@@ -43,7 +43,7 @@ my_source = TokamakSource(
     shafranov_factor=0.44789,
     triangularity=0.270,
     ion_temperature_beta=6
-  )
+  ).make_openmc_sources()
 ```
 
 For a more complete example check out the [example script](https://github.com/fusion-energy/openmc-plasma-source/blob/better_readme/examples/tokamak_source_example.py).
