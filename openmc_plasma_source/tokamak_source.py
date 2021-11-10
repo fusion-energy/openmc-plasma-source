@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class TokamakSource():
+class TokamakSource:
     """Plasma neutron source sampling.
     This class greatly relies on models described in [1]
 
@@ -45,6 +45,7 @@ class TokamakSource():
         sample_size (int, optional): number of neutron sources. Defaults
             to 1000.
     """
+
     def __init__(
         self,
         major_radius,
@@ -63,8 +64,8 @@ class TokamakSource():
         ion_temperature_separatrix,
         pedestal_radius,
         shafranov_factor,
-        angles=(0, 2*np.pi),
-        sample_size=1000
+        angles=(0, 2 * np.pi),
+        sample_size=1000,
     ) -> None:
         self.major_radius = major_radius
         self.minor_radius = minor_radius
@@ -103,8 +104,10 @@ class TokamakSource():
             float, ndarray: ion density in m-3
         """
         if self.mode == "L":
-            density = self.ion_density_centre * \
-                (1 - (r/self.major_radius)**2)**self.ion_density_peaking_factor
+            density = (
+                self.ion_density_centre
+                * (1 - (r / self.major_radius) ** 2) ** self.ion_density_peaking_factor
+            )
         elif self.mode in ["H", "A"]:
             # TODO: find an alternative to iterating through the array
             if isinstance(r, np.ndarray):
@@ -112,12 +115,16 @@ class TokamakSource():
                 for radius in r:
                     if 0 < radius < self.pedestal_radius:
                         prod = self.ion_density_centre - self.ion_density_pedestal
-                        prod *= (1 - (radius/self.pedestal_radius)**2)**self.ion_density_peaking_factor
+                        prod *= (
+                            1 - (radius / self.pedestal_radius) ** 2
+                        ) ** self.ion_density_peaking_factor
 
                         density_loc = self.ion_density_pedestal + prod
                     else:
                         prod = self.ion_density_pedestal - self.ion_density_separatrix
-                        prod *= (self.major_radius - radius)/(self.major_radius - self.pedestal_radius)
+                        prod *= (self.major_radius - radius) / (
+                            self.major_radius - self.pedestal_radius
+                        )
                         density_loc = self.ion_density_separatrix + prod
                     density.append(density_loc)
                 density = np.array(density)
@@ -134,21 +141,35 @@ class TokamakSource():
             float, ndarray: ion temperature (keV)
         """
         if self.mode == "L":
-            temperature = self.ion_temperature_centre * \
-                (1 - (r/self.major_radius)**2)**self.ion_temperature_peaking_factor
+            temperature = (
+                self.ion_temperature_centre
+                * (1 - (r / self.major_radius) ** 2)
+                ** self.ion_temperature_peaking_factor
+            )
         elif self.mode in ["H", "A"]:
             # TODO: find an alternative to iterating through the array
             if isinstance(r, np.ndarray):
                 temperature = []
                 for radius in r:
                     if 0 < radius < self.pedestal_radius:
-                        prod = self.ion_temperature_centre - self.ion_temperature_pedestal
-                        prod *= (1 - (radius/self.pedestal_radius)**self.ion_temperature_beta)**self.ion_temperature_peaking_factor
+                        prod = (
+                            self.ion_temperature_centre - self.ion_temperature_pedestal
+                        )
+                        prod *= (
+                            1
+                            - (radius / self.pedestal_radius)
+                            ** self.ion_temperature_beta
+                        ) ** self.ion_temperature_peaking_factor
 
                         temperature_loc = self.ion_temperature_pedestal + prod
                     else:
-                        prod = self.ion_temperature_pedestal - self.ion_temperature_separatrix
-                        prod *= (self.major_radius - radius)/(self.major_radius - self.pedestal_radius)
+                        prod = (
+                            self.ion_temperature_pedestal
+                            - self.ion_temperature_separatrix
+                        )
+                        prod *= (self.major_radius - radius) / (
+                            self.major_radius - self.pedestal_radius
+                        )
                         temperature_loc = self.ion_temperature_separatrix + prod
                     temperature.append(temperature_loc)
                 temperature = np.array(temperature)
@@ -165,29 +186,32 @@ class TokamakSource():
         Returns:
             ((float, ndarray), (float, ndarray)): (R, Z) coordinates
         """
-        shafranov_shift = self.shafranov_factor*(1.0-(a/self.minor_radius)**2)
-        R = self.major_radius + \
-            a*np.cos(alpha + (self.triangularity*np.sin(alpha))) + \
-            shafranov_shift
-        Z = self.elongation*a*np.sin(alpha)
+        shafranov_shift = self.shafranov_factor * (1.0 - (a / self.minor_radius) ** 2)
+        R = (
+            self.major_radius
+            + a * np.cos(alpha + (self.triangularity * np.sin(alpha)))
+            + shafranov_shift
+        )
+        Z = self.elongation * a * np.sin(alpha)
         return (R, Z)
 
     def sample_sources(self):
         """Samples self.sample_size neutrons and creates attributes .densities
-            (ion density), .temperatures (ion temperature), .strengths
-            (neutron source density) and .RZ (coordinates)
+        (ion density), .temperatures (ion temperature), .strengths
+        (neutron source density) and .RZ (coordinates)
         """
         # create a sample of (a, alpha) coordinates
-        a = np.random.random(self.sample_size)*self.minor_radius
-        alpha = np.random.random(self.sample_size)*2*np.pi
+        a = np.random.random(self.sample_size) * self.minor_radius
+        alpha = np.random.random(self.sample_size) * 2 * np.pi
 
         # compute densities, temperatures, neutron source densities and
         # convert coordinates
         self.densities = self.ion_density(a)
         self.temperatures = self.ion_temperature(a)
         self.neutron_source_density = neutron_source_density(
-            self.densities, self.temperatures)
-        self.strengths = self.neutron_source_density/sum(self.neutron_source_density)
+            self.densities, self.temperatures
+        )
+        self.strengths = self.neutron_source_density / sum(self.neutron_source_density)
         self.RZ = self.convert_a_alpha_to_R_Z(a, alpha)
 
     def make_openmc_sources(self):
@@ -218,11 +242,13 @@ class TokamakSource():
 
             # create a ring source
             my_source.space = openmc.stats.CylindricalIndependent(
-                r=radius, phi=angle, z=z_values, origin=(0.0, 0.0, 0.0))
+                r=radius, phi=angle, z=z_values, origin=(0.0, 0.0, 0.0)
+            )
 
             my_source.angle = openmc.stats.Isotropic()
             my_source.energy = openmc.stats.Muir(
-                e0=14080000.0, m_rat=5.0, kt=self.temperatures[i])
+                e0=14080000.0, m_rat=5.0, kt=self.temperatures[i]
+            )
 
             # the strength of the source (its probability) is given by
             # self.strengths
@@ -244,7 +270,7 @@ def neutron_source_density(ion_density, ion_temperature):
     Returns:
         float, ndarray: Neutron source density (neutron/s/m3)
     """
-    return ion_density**2*DT_xs(ion_temperature)
+    return ion_density ** 2 * DT_xs(ion_temperature)
 
 
 def DT_xs(ion_temperature):
@@ -264,12 +290,12 @@ def DT_xs(ion_temperature):
         2.5773408e-3,
         6.1880463e-5,
         6.6024089e-2,
-        8.1215505e-3
-        ]
-    prod = ion_temperature*(c[2]+ion_temperature*(c[3]-c[4]*ion_temperature))
-    prod *= 1/(1.0+ion_temperature*(c[5]+c[6]*ion_temperature))
+        8.1215505e-3,
+    ]
+    prod = ion_temperature * (c[2] + ion_temperature * (c[3] - c[4] * ion_temperature))
+    prod *= 1 / (1.0 + ion_temperature * (c[5] + c[6] * ion_temperature))
     U = 1 - prod
 
-    val = c[0]/(U**(5/6)*ion_temperature**(2/3))
-    val *= np.exp(-c[1]*(U/ion_temperature)**(1/3))
+    val = c[0] / (U ** (5 / 6) * ion_temperature ** (2 / 3))
+    val *= np.exp(-c[1] * (U / ion_temperature) ** (1 / 3))
     return val

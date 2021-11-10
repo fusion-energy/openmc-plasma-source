@@ -8,6 +8,7 @@ def test_creation():
     my_source = FusionRingSource(radius=1, z_placement=1)
     assert isinstance(my_source, Source)
 
+
 def test_wrong_fuel():
     with pytest.raises(ValueError):
-        FusionRingSource(radius=1, fuel='топливо')
+        FusionRingSource(radius=1, fuel="топливо")

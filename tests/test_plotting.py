@@ -19,7 +19,7 @@ my_plasma = TokamakSource(
     shafranov_factor=0.44789,
     triangularity=0.270,
     ion_temperature_beta=6,
-    )
+)
 my_plasma.sample_sources()
 
 

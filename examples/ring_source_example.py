@@ -1,11 +1,10 @@
-
 import openmc
 from openmc_plasma_source import FusionRingSource
 
 my_source = FusionRingSource(
-    radius = 700,
-    angles =(0., 6.28318530718),  # 360deg source
-    temperature = 20000.,
+    radius=700,
+    angles=(0.0, 6.28318530718),  # 360deg source
+    temperature=20000.0,
 )
 
 # Create a single material
