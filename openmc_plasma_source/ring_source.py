@@ -1,4 +1,3 @@
-
 import openmc
 import numpy as np
 
@@ -15,13 +14,14 @@ class FusionRingSource(openmc.Source):
         z_placement: Location of the ring source (m). Defaults to 0.
         temperature: the temperature to use in the Muir distribution in eV,
     """
+
     def __init__(
         self,
         radius,
-        angles=(0, 2*np.pi),
+        angles=(0, 2 * np.pi),
         z_placement=0,
-        temperature: float = 20000.,
-        fuel='DT'
+        temperature: float = 20000.0,
+        fuel="DT",
     ):
 
         super().__init__()
@@ -31,18 +31,17 @@ class FusionRingSource(openmc.Source):
         z_values = openmc.stats.Discrete([z_placement], [1])
         angle = openmc.stats.Uniform(a=angles[0], b=angles[1])
         self.space = openmc.stats.CylindricalIndependent(
-            r=radius,
-            phi=angle,
-            z=z_values,
-            origin=(0.0, 0.0, 0.0)
+            r=radius, phi=angle, z=z_values, origin=(0.0, 0.0, 0.0)
         )
         self.angle = openmc.stats.Isotropic()
-        if fuel == 'DT':
-            mean_energy = 14080000.  # mean energy in eV
+        if fuel == "DT":
+            mean_energy = 14080000.0  # mean energy in eV
             mass_of_reactants = 5  # mass of the reactants (D + T) AMU
-        elif fuel == 'DD':
-            mean_energy = 2450000.  # mean energy in eV
+        elif fuel == "DD":
+            mean_energy = 2450000.0  # mean energy in eV
             mass_of_reactants = 4  # mass of the reactants (D + D) AMU
         else:
             raise ValueError(f'fuel must be either "DT" or "DD", not {fuel}')
-        self.energy = openmc.stats.Muir(e0=mean_energy , m_rat=mass_of_reactants , kt=temperature)
+        self.energy = openmc.stats.Muir(
+            e0=mean_energy, m_rat=mass_of_reactants, kt=temperature
+        )

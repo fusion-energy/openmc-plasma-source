@@ -1,12 +1,7 @@
-
 import openmc
 from openmc_plasma_source import FusionPointSource
 
-my_source = FusionPointSource(
-        coordinate = (0,0,0),
-        temperature = 20000.,
-        fuel='DT'
-)
+my_source = FusionPointSource(coordinate=(0, 0, 0), temperature=20000.0, fuel="DT")
 
 # Create a single material
 iron = openmc.Material()

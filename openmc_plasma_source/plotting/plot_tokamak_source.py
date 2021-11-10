@@ -33,7 +33,9 @@ def scatter_tokamak_source(source, quantity=None, **kwargs):
     return plt.scatter(source.RZ[0], source.RZ[1], c=colours, **kwargs)
 
 
-def plot_tokamak_source_3D(source, quantity=None, angles=[0, 1/2*np.pi], colorbar="viridis", **kwargs):
+def plot_tokamak_source_3D(
+    source, quantity=None, angles=[0, 1 / 2 * np.pi], colorbar="viridis", **kwargs
+):
     """Creates a 3D plot of the tokamak source.
     See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot
     for more arguments.
@@ -68,7 +70,7 @@ def plot_tokamak_source_3D(source, quantity=None, angles=[0, 1/2*np.pi], colorba
     theta = np.linspace(*angles, 100)
     for i in range(source.sample_size):
         if values is not None:
-            colour = colorbar(values[i]/max(values))
+            colour = colorbar(values[i] / max(values))
         else:
             colour = None
         x = source.RZ[0][i] * np.sin(theta)
