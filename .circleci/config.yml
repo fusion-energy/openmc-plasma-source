@@ -9,7 +9,7 @@ jobs:
       - run:
           name: install
           command: |
-            python setup.py install
+            pip install -e .
             apt-get update -y && apt-get install -y curl
       - run:
           name: run tests
