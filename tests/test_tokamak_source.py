@@ -1,6 +1,6 @@
 from openmc_plasma_source import TokamakSource
 from openmc import Source
-import numpy as np
+import math
 
 import pytest
 
@@ -49,14 +49,29 @@ def test_source_locations_are_within_correct_range(tokamak_input, my_source):
     and upper-right point (R_max,Z_max), and does not account for the
     actual expected plasma geometry.
     """
-    r_min = tokamak_input["major_radius"] - tokamak_input["minor_radius"]
-    r_max = tokamak_input["major_radius"] + tokamak_input["minor_radius"]
-    z_max = tokamak_input["minor_radius"] * tokamak_input["elongation"]
+    R_0 = tokamak_input["major_radius"]
+    A = tokamak_input["minor_radius"]
+    El = tokamak_input["elongation"]
+    delta = tokamak_input["triangularity"]
+    def get_R(alpha):
+        return  R_0 + A * math.cos(alpha + delta * math.sin(alpha))
     for source in my_source.sources:
-        r, z = source.space.r.x[0], source.space.z.x[0]
-        assert r >= r_min
-        assert r <= r_max
-        assert abs(z) <= z_max
+        R, Z = source.space.r.x[0], source.space.z.x[0]
+        # First test that the point is contained with a simple box with
+        # lower left (r_min,-z_max) and upper right (r_max,z_max)
+        assert R >= R_0 - A
+        assert R <= R_0 + A
+        assert abs(Z) <= A * El
+        # For a given Z, we can determine the two values of alpha where
+        # where a = minor_radius, and from there determine the upper and
+        # lower bounds for R.
+        alpha_1 = math.asin(abs(Z) / (El * A))
+        alpha_2 = math.pi - alpha_1
+        R_max, R_min = get_R(alpha_1), get_R(alpha_2)
+        assert R_max <= R_0 + A
+        assert R_min >= R_0 - A
+        assert R <= R_max
+        assert R >= R_min
 
 
 def test_angles(tokamak_input):
