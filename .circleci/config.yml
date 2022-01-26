@@ -9,6 +9,8 @@ jobs:
       - run:
           name: install
           command: |
+            python -m pip install --upgrade pip
+            python -m pip install pytest hypothesis
             python setup.py install
             apt-get update -y && apt-get install -y curl
       - run:
