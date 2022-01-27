@@ -20,14 +20,14 @@ jobs:
         uses: actions/checkout@v2
       
       - name: Install
-        run: pip install -e .[tests]
+        run: python3 -m pip install -e .[tests]
 
       - name: Run tests
         run: |
-            pytest -v tests
+            python3 -m pytest -v tests
 
       - name: Run examples
         run: |
-          python examples/point_source_example.py
-          python examples/ring_source_example.py
-          python examples/tokamak_source_example.py
+          python3 examples/point_source_example.py
+          python3 examples/ring_source_example.py
+          python3 examples/tokamak_source_example.py
