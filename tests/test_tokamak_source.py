@@ -5,8 +5,9 @@ import numpy as np
 import pytest
 from hypothesis import given, settings, assume, strategies as st
 
+
 @st.composite
-def tokamak_source_strategy(draw,return_dict=False):
+def tokamak_source_strategy(draw, return_dict=False):
     """Defines a hypothesis strategy that automatically generates a TokamakSource.
     When passed `return_dict=True`, only a dict of the args is passed.
     Geometry attributes are varied, while plasma attributes are fixed.
@@ -28,22 +29,22 @@ def tokamak_source_strategy(draw,return_dict=False):
     assume(minor_radius > shafranov_factor)
 
     args_dict = {
-        "elongation" : elongation,
-        "triangularity" : triangularity,
-        "major_radius" : major_radius,
-        "minor_radius" : minor_radius,
-        "pedestal_radius" : pedestal_radius,
-        "shafranov_factor" : shafranov_factor,
-        "ion_density_centre" : 1.09e20,
-        "ion_density_peaking_factor" : 1,
-        "ion_density_pedestal" : 1.09e20,
-        "ion_density_separatrix" : 3e19,
-        "ion_temperature_centre" : 45.9,
-        "ion_temperature_peaking_factor" : 8.06,
-        "ion_temperature_pedestal" : 6.09,
-        "ion_temperature_separatrix" : 0.1,
-        "mode" : "H",
-        "ion_temperature_beta" : 6,
+        "elongation": elongation,
+        "triangularity": triangularity,
+        "major_radius": major_radius,
+        "minor_radius": minor_radius,
+        "pedestal_radius": pedestal_radius,
+        "shafranov_factor": shafranov_factor,
+        "ion_density_centre": 1.09e20,
+        "ion_density_peaking_factor": 1,
+        "ion_density_pedestal": 1.09e20,
+        "ion_density_separatrix": 3e19,
+        "ion_temperature_centre": 45.9,
+        "ion_temperature_peaking_factor": 8.06,
+        "ion_temperature_pedestal": 6.09,
+        "ion_temperature_separatrix": 0.1,
+        "mode": "H",
+        "ion_temperature_beta": 6,
     }
 
     return args_dict if return_dict else TokamakSource(**args_dict)
@@ -84,24 +85,24 @@ def test_source_locations_are_within_correct_range(tokamak_source):
         """Gets R on the last closed magnetic surface for a given alpha"""
         return R_0 + A * np.cos(alpha + delta * np.sin(alpha))
 
-    approx_lt = lambda x,y :  x < y or np.isclose(x,y)
-    approx_gt = lambda x,y :  x > y or np.isclose(x,y)
+    approx_lt = lambda x, y: x < y or np.isclose(x, y)
+    approx_gt = lambda x, y: x > y or np.isclose(x, y)
 
     for source in tokamak_source.sources:
         R, Z = source.space.r.x[0], source.space.z.x[0]
         # First test that the point is contained with a simple box with
         # lower left (r_min,-z_max) and upper right (r_max,z_max)
-        assert approx_gt(R,R_0 - A)
-        assert approx_lt(R,R_0 + A)
-        assert approx_lt(abs(Z), A*El)
+        assert approx_gt(R, R_0 - A)
+        assert approx_lt(R, R_0 + A)
+        assert approx_lt(abs(Z), A * El)
         # For a given Z, we can determine the two values of alpha where
         # where a = minor_radius, and from there determine the upper and
         # lower bounds for R.
         alpha_1 = np.arcsin(abs(Z) / (El * A))
         alpha_2 = np.pi - alpha_1
         R_max, R_min = get_R_on_LCMS(alpha_1), get_R_on_LCMS(alpha_2)
-        assert approx_lt(R_max,R_0+A)
-        assert approx_gt(R_min,R_0-A)
+        assert approx_lt(R_max, R_0 + A)
+        assert approx_gt(R_min, R_0 - A)
         assert approx_lt(R, R_max)
         assert approx_gt(R, R_min)
 
