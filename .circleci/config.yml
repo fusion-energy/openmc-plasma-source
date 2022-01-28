@@ -10,7 +10,7 @@ jobs:
           name: install
           command: |
             pip install --upgrade pip
-            pip install -e .[tests]
+            pip install .[tests]
             apt-get update -y && apt-get install -y curl
 
       - run:
