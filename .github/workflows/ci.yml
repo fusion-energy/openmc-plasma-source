@@ -22,7 +22,7 @@ jobs:
       - name: Install
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install -e .[tests]
+          python3 -m pip install .[tests]
 
       - name: Run tests
         run: |
