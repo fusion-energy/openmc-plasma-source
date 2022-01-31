@@ -7,11 +7,13 @@ authors:
 - family-names: "Shimwell"
   given-names: "Jonathan"
   orcid: "https://orcid.org/0000-0001-6909-0946"
+- family-names: "Pattinson"
+  given-names: "Liam"
 - family-names: "Pranto"
   given-names: "Ariful Islam"
 - family-names: "Faisal"
   given-names: "Mohammed"
 title: "OpenMC Plasma Source"
-version: 0.2.2
-date-released: 2021-09-29
+version: 0.2.4
+date-released: 2022-01-31
 url: "https://github.com/fusion-energy/openmc-plasma-source"
