@@ -1,5 +1,11 @@
 import numpy as np
 
+from openmc_plasma_source.properties import (
+    property_factory, 
+    positive_float, 
+    positive_int, 
+    in_range,
+)
 
 class TokamakSource:
     """Plasma neutron source sampling.
@@ -46,50 +52,79 @@ class TokamakSource:
             to 1000.
     """
 
+    major_radius = positive_float("major_radius")
+    minor_radius = positive_float("minor_radius")
+    elongation = positive_float("elongation")
+    triangularity = in_range("triangularity",(-1.0,1.0))
+    ion_density_centre = positive_float("ion_density_centre")
+    ion_density_pedestal = positive_float("ion_density_pedestal")
+    ion_density_separatrix = positive_float("ion_density_separatrix")
+    ion_temperature_centre = positive_float("ion_temperature_centre")
+    ion_temperature_pedestal = positive_float("ion_temperature_pedestal")
+    ion_temperature_separatrix = positive_float("ion_temperature_separatrix")
+    pedestal_radius = positive_float("pedestal_radius")
+    shafranov_factor = in_range("shafranov_factor",(0.0,1.0))
+    sample_size = positive_int("sample_size")
+    
+    mode = property_factory(
+        "mode",
+        condition = lambda x : x == "H" or x == "L" or x == "A",
+        condition_err_msg = 'Must be either "H", "L", or "A".',
+    )
+
     def __init__(
         self,
-        major_radius,
-        minor_radius,
-        elongation,
-        triangularity,
-        mode,
-        ion_density_centre,
-        ion_density_peaking_factor,
-        ion_density_pedestal,
-        ion_density_separatrix,
-        ion_temperature_centre,
+        major_radius: float,
+        minor_radius: float,
+        elongation: float,
+        triangularity: float,
+        mode: str,
+        ion_density_centre: float,
+        ion_density_peaking_factor: float,
+        ion_density_pedestal: float,
+        ion_density_separatrix: float,
+        ion_temperature_centre: float,
         ion_temperature_peaking_factor,
         ion_temperature_beta,
-        ion_temperature_pedestal,
-        ion_temperature_separatrix,
-        pedestal_radius,
-        shafranov_factor,
+        ion_temperature_pedestal: float,
+        ion_temperature_separatrix: float,
+        pedestal_radius: float,
+        shafranov_factor: float,
         angles=(0, 2 * np.pi),
-        sample_size=1000,
+        sample_size: int =1000,
     ) -> None:
+        # Assign attributes
         self.major_radius = major_radius
         self.minor_radius = minor_radius
         self.elongation = elongation
         self.triangularity = triangularity
         self.ion_density_centre = ion_density_centre
-        self.mode = mode
         self.ion_density_peaking_factor = ion_density_peaking_factor
+        self.mode = mode
         self.pedestal_radius = pedestal_radius
         self.ion_density_pedestal = ion_density_pedestal
         self.ion_density_separatrix = ion_density_separatrix
-
         self.ion_temperature_centre = ion_temperature_centre
         self.ion_temperature_peaking_factor = ion_temperature_peaking_factor
         self.ion_temperature_pedestal = ion_temperature_pedestal
         self.ion_temperature_separatrix = ion_temperature_separatrix
         self.ion_temperature_beta = ion_temperature_beta
-
         self.shafranov_factor = shafranov_factor
-
+        self.angles = angles
         self.sample_size = sample_size
 
-        self.angles = angles
+        # Perform sanity checks for inputs not caught by properties
+        if self.major_radius <= self.minor_radius:
+            raise ValueError("Major radius must be greater than minor radius")
 
+        if self.minor_radius <= self.pedestal_radius:
+            raise ValueError("Minor radius must be greater than pedestal radius")
+        
+        if len(self.angles) != 2:
+            raise ValueError("TokamakSource.angles must be set to a list/tuple of length 2.")
+        self.angles = tuple(sorted(self.angles))
+
+        # Create a list of souces
         self.sample_sources()
         self.sources = self.make_openmc_sources()
 

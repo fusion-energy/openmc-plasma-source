@@ -59,14 +59,14 @@ def test_creation(tokamak_source):
 
 
 @given(tokamak_source=tokamak_source_strategy())
-@settings(max_examples=100, deadline=None)
+@settings(max_examples=50, deadline=None)
 def test_strengths_are_normalised(tokamak_source):
     """Tests that the sum of the strengths attribute is equal to"""
     assert pytest.approx(sum(tokamak_source.strengths), 1)
 
 
 @given(tokamak_source=tokamak_source_strategy())
-@settings(max_examples=100, deadline=None)
+@settings(max_examples=50, deadline=None)
 def test_source_locations_are_within_correct_range(tokamak_source):
     """Tests that each source has RZ locations within the expected range.
     As the function converting (a,alpha) coordinates to (R,Z) is not bijective, we
@@ -85,8 +85,8 @@ def test_source_locations_are_within_correct_range(tokamak_source):
         """Gets R on the last closed magnetic surface for a given alpha"""
         return R_0 + A * np.cos(alpha + delta * np.sin(alpha))
 
-    approx_lt = lambda x, y: x < y or np.isclose(x, y)
-    approx_gt = lambda x, y: x > y or np.isclose(x, y)
+    approx_lt = lambda x, y: x < y or np.isclose(x, y, rtol=1e-4)
+    approx_gt = lambda x, y: x > y or np.isclose(x, y, rtol=1e-4)
 
     for source in tokamak_source.sources:
         R, Z = source.space.r.x[0], source.space.z.x[0]
