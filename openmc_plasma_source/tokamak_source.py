@@ -1,11 +1,12 @@
 import numpy as np
 
 from openmc_plasma_source.properties import (
-    property_factory, 
-    positive_float, 
-    positive_int, 
+    property_factory,
+    positive_float,
+    positive_int,
     in_range,
 )
+
 
 class TokamakSource:
     """Plasma neutron source sampling.
@@ -55,7 +56,7 @@ class TokamakSource:
     major_radius = positive_float("major_radius")
     minor_radius = positive_float("minor_radius")
     elongation = positive_float("elongation")
-    triangularity = in_range("triangularity",(-1.0,1.0))
+    triangularity = in_range("triangularity", (-1.0, 1.0))
     ion_density_centre = positive_float("ion_density_centre")
     ion_density_pedestal = positive_float("ion_density_pedestal")
     ion_density_separatrix = positive_float("ion_density_separatrix")
@@ -63,13 +64,13 @@ class TokamakSource:
     ion_temperature_pedestal = positive_float("ion_temperature_pedestal")
     ion_temperature_separatrix = positive_float("ion_temperature_separatrix")
     pedestal_radius = positive_float("pedestal_radius")
-    shafranov_factor = in_range("shafranov_factor",(0.0,1.0))
+    shafranov_factor = in_range("shafranov_factor", (0.0, 1.0))
     sample_size = positive_int("sample_size")
-    
+
     mode = property_factory(
         "mode",
-        condition = lambda x : x == "H" or x == "L" or x == "A",
-        condition_err_msg = 'Must be either "H", "L", or "A".',
+        condition=lambda x: x == "H" or x == "L" or x == "A",
+        condition_err_msg='Must be either "H", "L", or "A".',
     )
 
     def __init__(
@@ -91,7 +92,7 @@ class TokamakSource:
         pedestal_radius: float,
         shafranov_factor: float,
         angles=(0, 2 * np.pi),
-        sample_size: int =1000,
+        sample_size: int = 1000,
     ) -> None:
         # Assign attributes
         self.major_radius = major_radius
@@ -119,9 +120,11 @@ class TokamakSource:
 
         if self.minor_radius <= self.pedestal_radius:
             raise ValueError("Minor radius must be greater than pedestal radius")
-        
+
         if len(self.angles) != 2:
-            raise ValueError("TokamakSource.angles must be set to a list/tuple of length 2.")
+            raise ValueError(
+                "TokamakSource.angles must be set to a list/tuple of length 2."
+            )
         self.angles = tuple(sorted(self.angles))
 
         # Create a list of souces

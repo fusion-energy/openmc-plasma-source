@@ -9,6 +9,7 @@ from openmc_plasma_source.properties import (
 
 import pytest
 
+
 @pytest.fixture
 def property_class():
     class MyClass:
@@ -32,7 +33,7 @@ def property_class():
 
         pos_float = positive_float("pos_float")
         pos_int = positive_int("pos_int")
-        ranged = in_range("ranged",(-1.0,1.0))
+        ranged = in_range("ranged", (-1.0, 1.0))
 
         def __init__(self):
             self.ends_in_dot = "string"
@@ -43,6 +44,7 @@ def property_class():
             self.ranged = 0.0
 
     return MyClass()
+
 
 def test_property_factory_transform(property_class):
     # MyClass.ends_in_dot should always have '.' in the last place
@@ -59,6 +61,7 @@ def test_property_factory_transform(property_class):
         assert "raise" in str(e)
     # Ensure that a failed set doesn't modify
     assert property_class.ends_in_dot == "hello world.."
+
 
 def test_property_factory_condition(property_class):
     # MyClass.equal_to_5 should fail when given anything except 5
@@ -85,6 +88,7 @@ def test_property_factory_condition(property_class):
         property_class.less_than_5 = "hello world."
         assert "raise" in str(e)
 
+
 def test_positive_float(property_class):
     # Ensure that the user can assign to a positive_float
     property_class.pos_float = 7.2
@@ -104,6 +108,7 @@ def test_positive_float(property_class):
         assert "raise" in e
     # Ensure the value is unchanged by a failed assignment
     assert property_class.pos_float == 0.0
+
 
 def test_positive_int(property_class):
     # Ensure that the user can assign to a positive_int
@@ -128,6 +133,7 @@ def test_positive_int(property_class):
     # Ensure the value is unchanged by a failed assignment
     assert property_class.pos_int == 5
 
+
 def test_in_range(property_class):
     # Ensure that the user can assign to a in_range
     property_class.ranged = 0.5
@@ -140,7 +146,7 @@ def test_in_range(property_class):
     # No type restrictions, should be able to set to int
     property_class.ranged = 1
     assert property_class.ranged == 1
-    assert isinstance( property_class.ranged, int)
+    assert isinstance(property_class.ranged, int)
     # Ensure that the user cannot set to something larger than upper bound
     with pytest.raises(ValueError) as e:
         property_class.ranged = 1.5
