@@ -270,7 +270,7 @@ def neutron_source_density(ion_density, ion_temperature):
     Returns:
         float, ndarray: Neutron source density (neutron/s/m3)
     """
-    return ion_density ** 2 * DT_xs(ion_temperature)
+    return ion_density**2 * DT_xs(ion_temperature)
 
 
 def DT_xs(ion_temperature):
