@@ -52,10 +52,10 @@ class TokamakSource:
             to 1000.
     """
 
-    major_radius = positive_float("major_radius")
-    minor_radius = positive_float("minor_radius")
-    elongation = positive_float("elongation")
-    triangularity = in_range("triangularity",(-1.0,1.0))
+    major_radius = positive_float("major_radius", no_zero=True)
+    minor_radius = positive_float("minor_radius", no_zero=True)
+    elongation = positive_float("elongation", no_zero=True)
+    triangularity = in_range("triangularity", bounds = (-1.0,1.0))
     ion_density_centre = positive_float("ion_density_centre")
     ion_density_pedestal = positive_float("ion_density_pedestal")
     ion_density_separatrix = positive_float("ion_density_separatrix")
@@ -63,7 +63,6 @@ class TokamakSource:
     ion_temperature_pedestal = positive_float("ion_temperature_pedestal")
     ion_temperature_separatrix = positive_float("ion_temperature_separatrix")
     pedestal_radius = positive_float("pedestal_radius")
-    shafranov_factor = in_range("shafranov_factor",(0.0,1.0))
     sample_size = positive_int("sample_size")
     
     mode = property_factory(
@@ -119,6 +118,9 @@ class TokamakSource:
 
         if self.minor_radius <= self.pedestal_radius:
             raise ValueError("Minor radius must be greater than pedestal radius")
+
+        if abs(self.shafranov_factor) >= 0.5*minor_radius or np.isnan(self.shafranov_factor):
+            raise ValueError("Shafranov factor must be smaller than 0.5*minor radius")
         
         if len(self.angles) != 2:
             raise ValueError("TokamakSource.angles must be set to a list/tuple of length 2.")

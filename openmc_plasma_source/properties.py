@@ -87,22 +87,22 @@ def property_factory(
     return property(getter, setter)
 
 
-def positive_float(property_name: str):
+def positive_float(property_name: str, no_zero=False):
     """Creates property that must greater than or equal to 0"""
     return property_factory(
         property_name,
-        condition=lambda x: x >= 0,
+        condition=lambda x: x > 0 if no_zero else x >= 0,
         condition_err_msg="Must be greater than or equal to 0",
         transform=float,
         transform_err_msg="Must be convertable to float",
     )
 
 
-def positive_int(property_name: str):
+def positive_int(property_name: str, no_zero=False):
     """Creates property that must be integer and greater than or equal to 0"""
     return property_factory(
         property_name,
-        condition=lambda x: x >= 0,
+        condition=lambda x: x > 0 if no_zero else x >= 0,
         condition_err_msg="Must be greater than or equal to 0",
         transform=int,
         transform_err_msg="Must be convertable to int",
