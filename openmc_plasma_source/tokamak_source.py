@@ -1,11 +1,12 @@
 import numpy as np
 
 from openmc_plasma_source.properties import (
-    property_factory, 
-    positive_float, 
-    positive_int, 
+    property_factory,
+    positive_float,
+    positive_int,
     in_range,
 )
+
 
 class TokamakSource:
     """Plasma neutron source sampling.
@@ -64,11 +65,11 @@ class TokamakSource:
     ion_temperature_separatrix = positive_float("ion_temperature_separatrix")
     pedestal_radius = positive_float("pedestal_radius")
     sample_size = positive_int("sample_size")
-    
+
     mode = property_factory(
         "mode",
-        condition = lambda x : x == "H" or x == "L" or x == "A",
-        condition_err_msg = 'Must be either "H", "L", or "A".',
+        condition=lambda x: x == "H" or x == "L" or x == "A",
+        condition_err_msg='Must be either "H", "L", or "A".',
     )
 
     def __init__(
@@ -90,7 +91,7 @@ class TokamakSource:
         pedestal_radius: float,
         shafranov_factor: float,
         angles=(0, 2 * np.pi),
-        sample_size: int =1000,
+        sample_size: int = 1000,
     ) -> None:
         # Assign attributes
         self.major_radius = major_radius
@@ -123,7 +124,9 @@ class TokamakSource:
             raise ValueError("Shafranov factor must be smaller than 0.5*minor radius")
         
         if len(self.angles) != 2:
-            raise ValueError("TokamakSource.angles must be set to a list/tuple of length 2.")
+            raise ValueError(
+                "TokamakSource.angles must be set to a list/tuple of length 2."
+            )
         self.angles = tuple(sorted(self.angles))
 
         # Create a list of souces
