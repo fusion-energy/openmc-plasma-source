@@ -46,7 +46,7 @@ def property_factory(
 
     def getter(instance):
         """Retrieve the property from the given class instance."""
-        return getattr(instance,internal_name)
+        return getattr(instance, internal_name)
 
     def setter(instance, value):
         """Assign 'value' to the property within the given class instance."""
@@ -90,6 +90,7 @@ def property_factory(
         setattr(instance, internal_name, value)
 
     return property(getter, setter)
+
 
 def positive_float(no_zero=False):
     """Creates property that must greater than or equal to 0"""
