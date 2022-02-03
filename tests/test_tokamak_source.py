@@ -154,7 +154,6 @@ def test_major_radius(tokamak_args_dict):
         -5,
         0,
         "a string",
-        np.nan,
         minor_radius,
         np.nextafter(minor_radius, minor_radius - 1),
     ]
@@ -185,7 +184,6 @@ def test_minor_radius(tokamak_args_dict):
         -5,
         0,
         "a string",
-        np.nan,
         major_radius,
         np.nextafter(major_radius, major_radius + 1),
         tokamak_args_dict["pedestal_radius"],
@@ -212,7 +210,6 @@ def test_elongation(tokamak_args_dict):
         -5,
         0,
         "a string",
-        np.nan,
     ]
     for opt in failure_options:
         args_dict = tokamak_args_dict.copy()
@@ -236,7 +233,6 @@ def test_triangularity(tokamak_args_dict):
         -1.1,
         1.1,
         "a string",
-        np.nan,
     ]
     for opt in failure_options:
         args_dict = tokamak_args_dict.copy()
@@ -274,12 +270,11 @@ def test_shafranov_factor(tokamak_args_dict):
         0.5 * minor_radius,
         -0.5 * minor_radius,
         "a string",
-        np.nan,
     ]
     for opt in failure_options:
         args_dict = tokamak_args_dict.copy()
         args_dict["shafranov_factor"] = opt
-        with pytest.raises((ValueError, TypeError)) as e:
+        with pytest.raises(ValueError) as e:
             tokamak_source = TokamakSource(**args_dict)
 
 

@@ -1,11 +1,10 @@
 import numpy as np
 import openmc
 
-from openmc_plasma_source.properties import (
-    property_factory,
-    positive_float,
-    positive_int,
-    in_range,
+from .utils import (
+    ensure_positive_float,
+    ensure_positive_int,
+    ensure_in_range,
 )
 
 
@@ -54,25 +53,6 @@ class TokamakSource:
             to 1000.
     """
 
-    major_radius = positive_float("major_radius", no_zero=True)
-    minor_radius = positive_float("minor_radius", no_zero=True)
-    elongation = positive_float("elongation", no_zero=True)
-    triangularity = in_range("triangularity", bounds=(-1.0, 1.0))
-    ion_density_centre = positive_float("ion_density_centre")
-    ion_density_pedestal = positive_float("ion_density_pedestal")
-    ion_density_separatrix = positive_float("ion_density_separatrix")
-    ion_temperature_centre = positive_float("ion_temperature_centre")
-    ion_temperature_pedestal = positive_float("ion_temperature_pedestal")
-    ion_temperature_separatrix = positive_float("ion_temperature_separatrix")
-    pedestal_radius = positive_float("pedestal_radius", no_zero=True)
-    sample_size = positive_int("sample_size")
-
-    mode = property_factory(
-        "mode",
-        condition=lambda x: x in ["H", "L", "A"],
-        condition_err_msg='Must be either "H", "L", or "A".',
-    )
-
     def __init__(
         self,
         major_radius: float,
@@ -94,43 +74,119 @@ class TokamakSource:
         angles=(0, 2 * np.pi),
         sample_size: int = 1000,
     ) -> None:
+
         # Assign attributes
-        self.major_radius = major_radius
-        self.minor_radius = minor_radius
-        self.elongation = elongation
-        self.triangularity = triangularity
-        self.ion_density_centre = ion_density_centre
-        self.ion_density_peaking_factor = ion_density_peaking_factor
+        self.major_radius = ensure_positive_float(
+            major_radius,
+            var_name="TokamakSource.major_radius",
+            no_zero=True,
+        )
+
+        self.minor_radius = ensure_positive_float(
+            minor_radius, var_name="TokamakSource.minor_radius", no_zero=True
+        )
+        if self.minor_radius >= self.major_radius:
+            raise ValueError(
+                "TokamakSource.minor_radius must be smaller than major radius"
+            )
+
+        self.elongation = ensure_positive_float(
+            elongation,
+            var_name="TokamakSource.elongation",
+            no_zero=True,
+        )
+
+        self.triangularity = ensure_in_range(
+            triangularity,
+            var_name="TokamakSource.triangularity",
+            bounds=(-1, 1),
+        )
+
+        self.pedestal_radius = ensure_positive_float(
+            pedestal_radius,
+            var_name="TokamakSource.pedestal_radius",
+            no_zero=True,
+        )
+        if self.pedestal_radius >= self.minor_radius:
+            raise ValueError(
+                "TokamakSource.pedestal_radius must be smaller than minor_radius"
+            )
+
+        self.shafranov_factor = ensure_in_range(
+            shafranov_factor,
+            bounds=(-0.5 * minor_radius, 0.5 * minor_radius),
+            inclusive=(False, False),
+            err_msg = (
+                "TokamakSource.shafranov_factor should have a magnitude "
+                "less than 0.5 * minor_radius"
+            ),
+        )
+
+        self.ion_density_centre = ensure_positive_float(
+            ion_density_centre,
+            var_name="TokamakSource.ion_density_centre",
+            no_zero=True,
+        )
+
+        self.ion_density_pedestal = ensure_positive_float(
+            ion_density_pedestal,
+            var_name="TokamakSource.ion_density_pedestal",
+            no_zero=True,
+        )
+
+        self.ion_density_separatrix = ensure_positive_float(
+            ion_density_separatrix,
+            var_name="TokamakSource.ion_density_separatrix",
+            no_zero=True,
+        )
+
+        self.ion_density_peaking_factor = float(ion_density_peaking_factor)
+
+        self.ion_temperature_centre = ensure_positive_float(
+            ion_temperature_centre,
+            var_name="TokamakSource.ion_temperature_centre",
+            no_zero=True,
+        )
+
+        self.ion_temperature_pedestal = ensure_positive_float(
+            ion_temperature_pedestal,
+            var_name="TokamakSource.ion_temperature_pedestal",
+            no_zero=True,
+        )
+
+        self.ion_temperature_separatrix = ensure_positive_float(
+            ion_temperature_separatrix,
+            var_name="TokamakSource.ion_temperature_separatrix",
+            no_zero=True,
+        )
+
+        self.ion_temperature_peaking_factor = float(ion_temperature_peaking_factor)
+
+        self.ion_temperature_beta = float(ion_temperature_beta)
+
+        if mode not in ["H", "L", "A"]:
+            raise ValueError('TokamakSource.mode must be one of "H", "L", or "A"')
         self.mode = mode
-        self.pedestal_radius = pedestal_radius
-        self.ion_density_pedestal = ion_density_pedestal
-        self.ion_density_separatrix = ion_density_separatrix
-        self.ion_temperature_centre = ion_temperature_centre
-        self.ion_temperature_peaking_factor = ion_temperature_peaking_factor
-        self.ion_temperature_pedestal = ion_temperature_pedestal
-        self.ion_temperature_separatrix = ion_temperature_separatrix
-        self.ion_temperature_beta = ion_temperature_beta
-        self.shafranov_factor = shafranov_factor
-        self.angles = angles
-        self.sample_size = sample_size
 
-        # Perform sanity checks for inputs not caught by properties
-        if self.major_radius <= self.minor_radius:
-            raise ValueError("Major radius must be greater than minor radius")
-
-        if self.minor_radius <= self.pedestal_radius:
-            raise ValueError("Minor radius must be greater than pedestal radius")
-
-        if abs(self.shafranov_factor) >= 0.5 * minor_radius or np.isnan(
-            self.shafranov_factor
-        ):
-            raise ValueError("Shafranov factor must be smaller than 0.5*minor radius")
-
-        if len(self.angles) != 2:
+        if len(angles) != 2:
             raise ValueError(
                 "TokamakSource.angles must be set to a list/tuple of length 2."
             )
-        self.angles = tuple(sorted(self.angles))
+        try:
+            float(angles[0])
+            float(angles[1])
+        except ValueError:
+            raise ValueError(
+                "TokamakSource.angles: minimum and maximum angles must be "
+                "convertable to float."
+            )
+        self.angles = tuple(sorted(angles))
+
+        self.sample_size = ensure_positive_int(
+            sample_size, 
+            no_zero=True,
+            var_name = "TokamakSource.sample_size"
+        )
 
         # Create a list of souces
         self.sample_sources()
