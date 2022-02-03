@@ -54,21 +54,20 @@ class TokamakSource:
             to 1000.
     """
 
-    major_radius = positive_float("major_radius", no_zero=True)
-    minor_radius = positive_float("minor_radius", no_zero=True)
-    elongation = positive_float("elongation", no_zero=True)
-    triangularity = in_range("triangularity", bounds=(-1.0, 1.0))
-    ion_density_centre = positive_float("ion_density_centre")
-    ion_density_pedestal = positive_float("ion_density_pedestal")
-    ion_density_separatrix = positive_float("ion_density_separatrix")
-    ion_temperature_centre = positive_float("ion_temperature_centre")
-    ion_temperature_pedestal = positive_float("ion_temperature_pedestal")
-    ion_temperature_separatrix = positive_float("ion_temperature_separatrix")
-    pedestal_radius = positive_float("pedestal_radius", no_zero=True)
-    sample_size = positive_int("sample_size")
+    major_radius = positive_float( no_zero=True)
+    minor_radius = positive_float( no_zero=True)
+    elongation = positive_float( no_zero=True)
+    triangularity = in_range( bounds=(-1.0, 1.0))
+    ion_density_centre = positive_float()
+    ion_density_pedestal = positive_float()
+    ion_density_separatrix = positive_float()
+    ion_temperature_centre = positive_float()
+    ion_temperature_pedestal = positive_float()
+    ion_temperature_separatrix = positive_float()
+    pedestal_radius = positive_float( no_zero=True)
+    sample_size = positive_int()
 
     mode = property_factory(
-        "mode",
         condition=lambda x: x in ["H", "L", "A"],
         condition_err_msg='Must be either "H", "L", or "A".',
     )
@@ -115,20 +114,26 @@ class TokamakSource:
         self.sample_size = sample_size
 
         # Perform sanity checks for inputs not caught by properties
-        if self.major_radius <= self.minor_radius:
-            raise ValueError("Major radius must be greater than minor radius")
+        if self.minor_radius >= self.major_radius:
+            raise ValueError("Minor radius must be smaller than major radius")
 
-        if self.minor_radius <= self.pedestal_radius:
-            raise ValueError("Minor radius must be greater than pedestal radius")
+        if self.pedestal_radius >= self.minor_radius:
+            raise ValueError("Pedestal radius must be smaller than minor radius")
 
-        if abs(self.shafranov_factor) >= 0.5 * minor_radius or np.isnan(
-            self.shafranov_factor
-        ):
+        if abs(self.shafranov_factor) >= 0.5 * minor_radius:
             raise ValueError("Shafranov factor must be smaller than 0.5*minor radius")
 
         if len(self.angles) != 2:
             raise ValueError(
                 "TokamakSource.angles must be set to a list/tuple of length 2."
+            )
+        try:
+            float(self.angles[0])
+            float(self.angles[1])
+        except ValueError:
+            raise ValueError(
+                "TokamakSource.angles: minimum and maximum angles must be "
+                "convertable to float."
             )
         self.angles = tuple(sorted(self.angles))
 

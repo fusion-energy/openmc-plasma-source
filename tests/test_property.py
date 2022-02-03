@@ -14,26 +14,23 @@ import pytest
 def property_class():
     class MyClass:
         ends_in_dot = property_factory(
-            "ends_in_dot",
             transform=lambda z: z + ".",
             transform_err_msg="Couldn't add to end of string",
         )
 
         equal_to_5 = property_factory(
-            "equal_to_5",
             condition=lambda z: z == 5,
             condition_err_msg="Should be equal to 5",
         )
 
         less_than_5 = property_factory(
-            "less_than_5",
             condition=lambda z: z < 5,
             condition_err_msg="Should be less than 5",
         )
 
-        pos_float = positive_float("pos_float")
-        pos_int = positive_int("pos_int")
-        ranged = in_range("ranged", (-1.0, 1.0))
+        pos_float = positive_float()
+        pos_int = positive_int()
+        ranged = in_range((-1.0, 1.0))
 
         def __init__(self):
             self.ends_in_dot = "string"
