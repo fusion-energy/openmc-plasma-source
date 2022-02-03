@@ -116,7 +116,7 @@ class TokamakSource:
             shafranov_factor,
             bounds=(-0.5 * minor_radius, 0.5 * minor_radius),
             inclusive=(False, False),
-            err_msg = (
+            err_msg=(
                 "TokamakSource.shafranov_factor should have a magnitude "
                 "less than 0.5 * minor_radius"
             ),
@@ -183,9 +183,7 @@ class TokamakSource:
         self.angles = tuple(sorted(angles))
 
         self.sample_size = ensure_positive_int(
-            sample_size, 
-            no_zero=True,
-            var_name = "TokamakSource.sample_size"
+            sample_size, no_zero=True, var_name="TokamakSource.sample_size"
         )
 
         # Create a list of souces
@@ -370,7 +368,7 @@ def neutron_source_density(ion_density, ion_temperature):
     ion_density = np.asarray(ion_density)
     ion_temperature = np.asarray(ion_temperature)
 
-    return ion_density ** 2 * DT_xs(ion_temperature)
+    return ion_density**2 * DT_xs(ion_temperature)
 
 
 def DT_xs(ion_temperature):

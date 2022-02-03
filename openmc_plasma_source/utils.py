@@ -88,9 +88,7 @@ def ensure_positive_int(
             raise ValueError(
                 f"Input {var_name}={x} could not convert to int without rounding."
             )
-        raise ValueError(
-            f"Input {x} could not convert to int without rounding."
-        )
+        raise ValueError(f"Input {x} could not convert to int without rounding.")
     return val
 
 
@@ -121,7 +119,7 @@ def ensure_in_range(
         result (bool): True if within range, false otherwise.
     """
     try:
-        x=float(x)
+        x = float(x)
     except ValueError as e:
         if err_msg:
             raise ValueError(err_msg)
@@ -141,7 +139,7 @@ def ensure_in_range(
             "bounds[0] should be the lower bound, while bounds[1] "
             "should be the upper bound."
         )
-    is_in_range = ( x >= bounds[0] if inclusive[0] else x > bounds[0]) and (
+    is_in_range = (x >= bounds[0] if inclusive[0] else x > bounds[0]) and (
         x <= bounds[1] if inclusive[1] else x < bounds[1]
     )
     if not is_in_range:
