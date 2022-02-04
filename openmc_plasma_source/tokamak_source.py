@@ -319,7 +319,7 @@ def neutron_source_density(ion_density, ion_temperature):
     ion_density = np.asarray(ion_density)
     ion_temperature = np.asarray(ion_temperature)
 
-    return ion_density ** 2 * DT_xs(ion_temperature)
+    return ion_density**2 * DT_xs(ion_temperature)
 
 
 def DT_xs(ion_temperature):
