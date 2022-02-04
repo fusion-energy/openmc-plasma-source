@@ -19,13 +19,13 @@ def property_factory(
 
     Parameters:
 
-        condition : Should either be None, meaning any input is accepted, or a
-            function taking one argument and returning a bool. An example of a
-            common condition may be the property must be non-negative.
-        transform : Should either be None, meaning the value is not modified,
-            or function that takes one argument. This is used to modify inputs
-            to the property. If set to a type (e.g. int, float, str), transform
-            will attempt to cast the input to that type.
+        condition: Should either be None, meaning any input is accepted, or a
+            function f(arg) --> bool. An example of a common condition may be
+            that the property must be non-negative: `lambda x: x >= 0`
+        transform: Should either be None, meaning the value is not modified,
+            or a function f(arg) --> result (for any result type). This is used
+            to modify inputs to the property. If set to a type (e.g. int,
+            float, str), transform will attempt to cast the input to that type.
         condition_err_msg (str): Message to print if 'condition' returns False.
         transform_err_msg (str): Message to print if casting to 'transform'
             fails.
@@ -46,7 +46,7 @@ def property_factory(
 
     def getter(instance):
         """Retrieve the property from the given class instance."""
-        return getattr(instance,internal_name)
+        return getattr(instance, internal_name)
 
     def setter(instance, value):
         """Assign 'value' to the property within the given class instance."""
@@ -91,13 +91,14 @@ def property_factory(
 
     return property(getter, setter)
 
+
 def positive_float(no_zero=False):
     """Creates property that must greater than or equal to 0"""
     return property_factory(
         condition=lambda x: x > 0 if no_zero else x >= 0,
         condition_err_msg="Must be greater than or equal to 0",
         transform=float,
-        transform_err_msg="Must be convertable to float",
+        transform_err_msg="Must be convertible to float",
     )
 
 
@@ -107,7 +108,7 @@ def positive_int(no_zero=False):
         condition=lambda x: x > 0 if no_zero else x >= 0,
         condition_err_msg="Must be greater than or equal to 0",
         transform=int,
-        transform_err_msg="Must be convertable to int",
+        transform_err_msg="Must be convertible to int",
     )
 
 

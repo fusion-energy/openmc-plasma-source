@@ -54,17 +54,17 @@ class TokamakSource:
             to 1000.
     """
 
-    major_radius = positive_float( no_zero=True)
-    minor_radius = positive_float( no_zero=True)
-    elongation = positive_float( no_zero=True)
-    triangularity = in_range( bounds=(-1.0, 1.0))
+    major_radius = positive_float(no_zero=True)
+    minor_radius = positive_float(no_zero=True)
+    elongation = positive_float(no_zero=True)
+    triangularity = in_range(bounds=(-1.0, 1.0))
     ion_density_centre = positive_float()
     ion_density_pedestal = positive_float()
     ion_density_separatrix = positive_float()
     ion_temperature_centre = positive_float()
     ion_temperature_pedestal = positive_float()
     ion_temperature_separatrix = positive_float()
-    pedestal_radius = positive_float( no_zero=True)
+    pedestal_radius = positive_float(no_zero=True)
     sample_size = positive_int()
 
     mode = property_factory(
@@ -133,7 +133,7 @@ class TokamakSource:
         except ValueError:
             raise ValueError(
                 "TokamakSource.angles: minimum and maximum angles must be "
-                "convertable to float."
+                "convertible to float."
             )
         self.angles = tuple(sorted(self.angles))
 
