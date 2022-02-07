@@ -1,4 +1,7 @@
 import numpy as np
+import openmc
+
+import proper_tea as pt
 
 
 class TokamakSource:
@@ -46,50 +49,95 @@ class TokamakSource:
             to 1000.
     """
 
+    major_radius = pt.positive_float(allow_zero=False)
+    minor_radius = pt.positive_float(allow_zero=False)
+    elongation = pt.positive_float(allow_zero=False)
+    triangularity = pt.in_range(bounds=(-1.0, 1.0))
+    mode = pt.in_set({"H", "L", "A"})
+    ion_density_centre = pt.positive_float()
+    ion_density_peaking_factor = pt.floating_point()
+    ion_density_pedestal = pt.positive_float()
+    ion_density_separatrix = pt.positive_float()
+    ion_temperature_centre = pt.positive_float()
+    ion_temperature_peaking_factor = pt.floating_point()
+    ion_temperature_beta = pt.floating_point()
+    ion_temperature_pedestal = pt.positive_float()
+    ion_temperature_separatrix = pt.positive_float()
+    pedestal_radius = pt.positive_float(allow_zero=False)
+    sample_size = pt.positive_int(allow_zero=False)
+
+    @property
+    def angles(self):
+        return self._angles
+
+    @angles.setter
+    def angles(self, value):
+        angles_err = (
+            "TokamakSource.angles must be iterable, have length 2, and contain "
+            "objects convertible to float"
+        )
+        try:
+            if len(value) != 2:
+                raise ValueError(angles_err)
+        except TypeError as e:
+            raise ValueError(angles_err) from e
+        try:
+            self._angles = tuple(sorted(float(x) for x in value))
+        except (ValueError, TypeError) as e:
+            raise ValueError(angles_err) from e
+
     def __init__(
         self,
-        major_radius,
-        minor_radius,
-        elongation,
-        triangularity,
-        mode,
-        ion_density_centre,
-        ion_density_peaking_factor,
-        ion_density_pedestal,
-        ion_density_separatrix,
-        ion_temperature_centre,
-        ion_temperature_peaking_factor,
-        ion_temperature_beta,
-        ion_temperature_pedestal,
-        ion_temperature_separatrix,
-        pedestal_radius,
-        shafranov_factor,
+        major_radius: float,
+        minor_radius: float,
+        elongation: float,
+        triangularity: float,
+        mode: str,
+        ion_density_centre: float,
+        ion_density_peaking_factor: float,
+        ion_density_pedestal: float,
+        ion_density_separatrix: float,
+        ion_temperature_centre: float,
+        ion_temperature_peaking_factor: float,
+        ion_temperature_beta: float,
+        ion_temperature_pedestal: float,
+        ion_temperature_separatrix: float,
+        pedestal_radius: float,
+        shafranov_factor: float,
         angles=(0, 2 * np.pi),
-        sample_size=1000,
+        sample_size: int = 1000,
     ) -> None:
+        # Assign attributes
         self.major_radius = major_radius
         self.minor_radius = minor_radius
         self.elongation = elongation
         self.triangularity = triangularity
         self.ion_density_centre = ion_density_centre
-        self.mode = mode
         self.ion_density_peaking_factor = ion_density_peaking_factor
+        self.mode = mode
         self.pedestal_radius = pedestal_radius
         self.ion_density_pedestal = ion_density_pedestal
         self.ion_density_separatrix = ion_density_separatrix
-
         self.ion_temperature_centre = ion_temperature_centre
         self.ion_temperature_peaking_factor = ion_temperature_peaking_factor
         self.ion_temperature_pedestal = ion_temperature_pedestal
         self.ion_temperature_separatrix = ion_temperature_separatrix
         self.ion_temperature_beta = ion_temperature_beta
-
         self.shafranov_factor = shafranov_factor
-
+        self.angles = angles
         self.sample_size = sample_size
 
-        self.angles = angles
+        # Perform sanity checks for inputs not caught by properties
+        if self.minor_radius >= self.major_radius:
+            raise ValueError("Minor radius must be smaller than major radius")
 
+        if self.pedestal_radius >= self.minor_radius:
+            raise ValueError("Pedestal radius must be smaller than minor radius")
+
+        if abs(self.shafranov_factor) >= 0.5 * minor_radius:
+            raise ValueError("Shafranov factor must be smaller than 0.5*minor radius")
+
+        # Create a list of souces
         self.sample_sources()
         self.sources = self.make_openmc_sources()
 
@@ -103,31 +151,30 @@ class TokamakSource:
         Returns:
             float, ndarray: ion density in m-3
         """
+
+        r = np.asarray(r)
+        if np.any(r < 0):
+            raise ValueError("Minor radius must not be negative")
+
         if self.mode == "L":
             density = (
                 self.ion_density_centre
                 * (1 - (r / self.major_radius) ** 2) ** self.ion_density_peaking_factor
             )
         elif self.mode in ["H", "A"]:
-            # TODO: find an alternative to iterating through the array
-            if isinstance(r, np.ndarray):
-                density = []
-                for radius in r:
-                    if 0 < radius < self.pedestal_radius:
-                        prod = self.ion_density_centre - self.ion_density_pedestal
-                        prod *= (
-                            1 - (radius / self.pedestal_radius) ** 2
-                        ) ** self.ion_density_peaking_factor
-
-                        density_loc = self.ion_density_pedestal + prod
-                    else:
-                        prod = self.ion_density_pedestal - self.ion_density_separatrix
-                        prod *= (self.major_radius - radius) / (
-                            self.major_radius - self.pedestal_radius
-                        )
-                        density_loc = self.ion_density_separatrix + prod
-                    density.append(density_loc)
-                density = np.array(density)
+            density = np.where(
+                r < self.pedestal_radius,
+                (
+                    (self.ion_density_centre - self.ion_density_pedestal)
+                    * (1 - (r / self.pedestal_radius) ** 2)
+                    ** self.ion_density_peaking_factor
+                ),
+                (
+                    (self.ion_density_pedestal - self.ion_density_separatrix)
+                    * (self.major_radius - r)
+                    / (self.major_radius - self.pedestal_radius)
+                ),
+            )
         return density
 
     def ion_temperature(self, r):
@@ -140,6 +187,11 @@ class TokamakSource:
         Returns:
             float, ndarray: ion temperature (keV)
         """
+
+        r = np.asarray(r)
+        if np.any(r < 0):
+            raise ValueError("Minor radius must not be negative")
+
         if self.mode == "L":
             temperature = (
                 self.ion_temperature_centre
@@ -147,32 +199,21 @@ class TokamakSource:
                 ** self.ion_temperature_peaking_factor
             )
         elif self.mode in ["H", "A"]:
-            # TODO: find an alternative to iterating through the array
-            if isinstance(r, np.ndarray):
-                temperature = []
-                for radius in r:
-                    if 0 < radius < self.pedestal_radius:
-                        prod = (
-                            self.ion_temperature_centre - self.ion_temperature_pedestal
-                        )
-                        prod *= (
-                            1
-                            - (radius / self.pedestal_radius)
-                            ** self.ion_temperature_beta
-                        ) ** self.ion_temperature_peaking_factor
-
-                        temperature_loc = self.ion_temperature_pedestal + prod
-                    else:
-                        prod = (
-                            self.ion_temperature_pedestal
-                            - self.ion_temperature_separatrix
-                        )
-                        prod *= (self.major_radius - radius) / (
-                            self.major_radius - self.pedestal_radius
-                        )
-                        temperature_loc = self.ion_temperature_separatrix + prod
-                    temperature.append(temperature_loc)
-                temperature = np.array(temperature)
+            temperature = np.where(
+                r < self.pedestal_radius,
+                (
+                    self.ion_temperature_pedestal
+                    + (self.ion_temperature_centre - self.ion_temperature_pedestal)
+                    * (1 - (r / self.pedestal_radius) ** self.ion_temperature_beta)
+                    ** self.ion_temperature_peaking_factor
+                ),
+                (
+                    self.ion_temperature_separatrix
+                    + (self.ion_temperature_pedestal - self.ion_temperature_separatrix)
+                    * (self.major_radius - r)
+                    / (self.major_radius - self.pedestal_radius)
+                ),
+            )
         return temperature
 
     def convert_a_alpha_to_R_Z(self, a, alpha):
@@ -186,6 +227,11 @@ class TokamakSource:
         Returns:
             ((float, ndarray), (float, ndarray)): (R, Z) coordinates
         """
+        a = np.asarray(a)
+        alpha = np.asarray(alpha)
+        if np.any(a < 0):
+            raise ValueError("Radius 'a'  must not be negative")
+
         shafranov_shift = self.shafranov_factor * (1.0 - (a / self.minor_radius) ** 2)
         R = (
             self.major_radius
@@ -228,7 +274,6 @@ class TokamakSource:
         Returns:
             list: list of openmc.Source()
         """
-        import openmc
 
         sources = []
         # create a ring source for each sample in the plasma source
@@ -270,6 +315,10 @@ def neutron_source_density(ion_density, ion_temperature):
     Returns:
         float, ndarray: Neutron source density (neutron/s/m3)
     """
+
+    ion_density = np.asarray(ion_density)
+    ion_temperature = np.asarray(ion_temperature)
+
     return ion_density**2 * DT_xs(ion_temperature)
 
 
@@ -283,6 +332,9 @@ def DT_xs(ion_temperature):
     Returns:
         float, ndarray: the DT cross section at the given temperature
     """
+
+    ion_temperature = np.asarray(ion_temperature)
+
     c = [
         2.5663271e-18,
         19.983026,
@@ -292,10 +344,14 @@ def DT_xs(ion_temperature):
         6.6024089e-2,
         8.1215505e-3,
     ]
-    prod = ion_temperature * (c[2] + ion_temperature * (c[3] - c[4] * ion_temperature))
-    prod *= 1 / (1.0 + ion_temperature * (c[5] + c[6] * ion_temperature))
-    U = 1 - prod
 
-    val = c[0] / (U ** (5 / 6) * ion_temperature ** (2 / 3))
-    val *= np.exp(-c[1] * (U / ion_temperature) ** (1 / 3))
+    U = 1 - ion_temperature * (
+        c[2] + ion_temperature * (c[3] - c[4] * ion_temperature)
+    ) / (1.0 + ion_temperature * (c[5] + c[6] * ion_temperature))
+
+    val = (
+        c[0]
+        * np.exp(-c[1] * (U / ion_temperature) ** (1 / 3))
+        / (U ** (5 / 6) * ion_temperature ** (2 / 3))
+    )
     return val
