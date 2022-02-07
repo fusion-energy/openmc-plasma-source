@@ -82,8 +82,8 @@ class TokamakSource:
         except TypeError as e:
             raise ValueError(angles_err) from e
         try:
-           self._angles = tuple(sorted(float(x) for x in value))
-        except (ValueError,TypeError) as e:
+            self._angles = tuple(sorted(float(x) for x in value))
+        except (ValueError, TypeError) as e:
             raise ValueError(angles_err) from e
 
     def __init__(
