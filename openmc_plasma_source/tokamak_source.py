@@ -1,12 +1,7 @@
 import numpy as np
 import openmc
 
-from openmc_plasma_source.properties import (
-    property_factory,
-    positive_float,
-    positive_int,
-    in_range,
-)
+import proper_tea as pt
 
 
 class TokamakSource:
@@ -54,23 +49,42 @@ class TokamakSource:
             to 1000.
     """
 
-    major_radius = positive_float(no_zero=True)
-    minor_radius = positive_float(no_zero=True)
-    elongation = positive_float(no_zero=True)
-    triangularity = in_range(bounds=(-1.0, 1.0))
-    ion_density_centre = positive_float()
-    ion_density_pedestal = positive_float()
-    ion_density_separatrix = positive_float()
-    ion_temperature_centre = positive_float()
-    ion_temperature_pedestal = positive_float()
-    ion_temperature_separatrix = positive_float()
-    pedestal_radius = positive_float(no_zero=True)
-    sample_size = positive_int()
+    major_radius = pt.positive_float(allow_zero=False)
+    minor_radius = pt.positive_float(allow_zero=False)
+    elongation = pt.positive_float(allow_zero=False)
+    triangularity = pt.in_range(bounds=(-1.0, 1.0))
+    mode = pt.in_set({"H", "L", "A"})
+    ion_density_centre = pt.positive_float()
+    ion_density_peaking_factor = pt.floating_point()
+    ion_density_pedestal = pt.positive_float()
+    ion_density_separatrix = pt.positive_float()
+    ion_temperature_centre = pt.positive_float()
+    ion_temperature_peaking_factor = pt.floating_point()
+    ion_temperature_beta = pt.floating_point()
+    ion_temperature_pedestal = pt.positive_float()
+    ion_temperature_separatrix = pt.positive_float()
+    pedestal_radius = pt.positive_float(allow_zero=False)
+    sample_size = pt.positive_int(allow_zero=False)
 
-    mode = property_factory(
-        condition=lambda x: x in ["H", "L", "A"],
-        condition_err_msg='Must be either "H", "L", or "A".',
-    )
+    @property
+    def angles(self):
+        return self._angles
+
+    @angles.setter
+    def angles(self, value):
+        angles_err = (
+            "TokamakSource.angles must be iterable, have length 2, and contain "
+            "objects convertible to float"
+        )
+        try:
+            if len(value) != 2:
+                raise ValueError(angles_err)
+        except TypeError as e:
+            raise ValueError(angles_err) from e
+        try:
+           self._angles = tuple(sorted(float(x) for x in value))
+        except (ValueError,TypeError) as e:
+            raise ValueError(angles_err) from e
 
     def __init__(
         self,
@@ -84,8 +98,8 @@ class TokamakSource:
         ion_density_pedestal: float,
         ion_density_separatrix: float,
         ion_temperature_centre: float,
-        ion_temperature_peaking_factor,
-        ion_temperature_beta,
+        ion_temperature_peaking_factor: float,
+        ion_temperature_beta: float,
         ion_temperature_pedestal: float,
         ion_temperature_separatrix: float,
         pedestal_radius: float,
@@ -122,20 +136,6 @@ class TokamakSource:
 
         if abs(self.shafranov_factor) >= 0.5 * minor_radius:
             raise ValueError("Shafranov factor must be smaller than 0.5*minor radius")
-
-        if len(self.angles) != 2:
-            raise ValueError(
-                "TokamakSource.angles must be set to a list/tuple of length 2."
-            )
-        try:
-            float(self.angles[0])
-            float(self.angles[1])
-        except ValueError:
-            raise ValueError(
-                "TokamakSource.angles: minimum and maximum angles must be "
-                "convertible to float."
-            )
-        self.angles = tuple(sorted(self.angles))
 
         # Create a list of souces
         self.sample_sources()
