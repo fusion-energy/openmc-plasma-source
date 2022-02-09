@@ -4,13 +4,16 @@ Defines dictionary for determining mean energy and mass of reactants
 for a given fusion fuel type.
 """
 
-from dataclasses import dataclass
+import proper_tea as pt
 
 
-@dataclass
 class Fuel:
-    mean_energy: float  # mean energy, eV
-    mass_of_reactants: float  # mass of the reactants, AMU
+    mean_energy = pt.positive_float(allow_zero=False)  # mean energy, eV
+    mass_of_reactants = pt.positive(allow_zero=False)  # mass of the reactants, AMU
+
+    def __init__(self, mean_energy, mass_of_reactants):
+        self.mean_energy = mean_energy
+        self.mass_of_reactants = mass_of_reactants
 
 
 fuel_types = {
