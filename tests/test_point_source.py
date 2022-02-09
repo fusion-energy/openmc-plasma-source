@@ -48,15 +48,15 @@ def test_bad_temperature(temperature):
         FusionPointSource(temperature=temperature)
 
 
-@pytest.mark.parametrize("fuel_type", ["DT", "DD"])
-def test_fuel(fuel_type):
+@pytest.mark.parametrize("fuel", ["DT", "DD"])
+def test_fuel(fuel):
     # Should accept either 'DD' or 'DT'
-    my_source = FusionPointSource(fuel_type=fuel_type)
-    assert my_source.fuel_type == fuel_type
+    my_source = FusionPointSource(fuel=fuel)
+    assert my_source.fuel_type == fuel
 
 
-@pytest.mark.parametrize("fuel_type", ["топливо", 5])
-def test_wrong_fuel(fuel_type):
+@pytest.mark.parametrize("fuel", ["топливо", 5])
+def test_wrong_fuel(fuel):
     # Should reject fuel types besides those listed in fuel_types.py
     with pytest.raises(ValueError):
-        FusionPointSource(fuel_type=fuel_type)
+        FusionPointSource(fuel=fuel)

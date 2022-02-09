@@ -27,12 +27,12 @@ class FusionPointSource(openmc.Source):
         self,
         coordinate: Tuple[float, float, float] = (0, 0, 0),
         temperature: float = 20000.0,
-        fuel_type: str = "DT",
+        fuel: str = "DT",
     ):
         # Set local attributes
         self.coordinate = coordinate
         self.temperature = temperature
-        self.fuel_type = fuel_type
+        self.fuel_type = fuel
         self.fuel = fuel_types[self.fuel_type]
 
         # Call init for openmc.Source

@@ -33,7 +33,7 @@ class FusionRingSource(openmc.Source):
         angles: Tuple[float, float] = (0, 2 * np.pi),
         z_placement: float = 0,
         temperature: float = 20000.0,
-        fuel_type: str = "DT",
+        fuel: str = "DT",
     ):
 
         # Set local attributes
@@ -41,7 +41,7 @@ class FusionRingSource(openmc.Source):
         self.angles = angles
         self.z_placement = z_placement
         self.temperature = temperature
-        self.fuel_type = fuel_type
+        self.fuel_type = fuel
         self.fuel = fuel_types[self.fuel_type]
 
         # Call init for openmc.Source
