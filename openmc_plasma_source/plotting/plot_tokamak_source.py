@@ -103,7 +103,7 @@ def plot_tokamak_source_3D(
         }
     except AttributeError as e:
         raise ValueError(
-            f"openmc_plasma_source.scatter_tokamak_source: argument 'source' "
+            f"openmc_plasma_source.plot_tokamak_source_3D: argument 'source' "
             f"must be of type TokamakSource"
         ) from e
 
@@ -114,7 +114,7 @@ def plot_tokamak_source_3D(
             quantity_values = quantity_to_attribute[quantity]
         except KeyError as e:
             raise ValueError(
-                f"openmc_plasma_source.scatter_tokamak_source: Unknown 'quantity' "
+                f"openmc_plasma_source.plot_tokamak_source_3D: Unknown 'quantity' "
                 f"provided, options are {quantity_to_attribute.keys()}"
             ) from e
     else:
