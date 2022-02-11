@@ -46,7 +46,7 @@ my_source = TokamakSource(
   ).make_openmc_sources()
 ```
 
-For a more complete example check out the [example script](https://github.com/fusion-energy/openmc-plasma-source/blob/better_readme/examples/tokamak_source_example.py).
+For a more complete example check out the [example script](https://github.com/fusion-energy/openmc-plasma-source/blob/main/examples/tokamak_source_example.py).
 
 ![out](https://user-images.githubusercontent.com/40028739/135100022-330aa51c-e2a2-401c-9738-90f3e99c84d4.png)
  ![out](https://user-images.githubusercontent.com/40028739/135098576-a94709ef-96b4-4b8d-8fa0-76a201b6c5d2.png)
