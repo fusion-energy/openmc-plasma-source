@@ -134,7 +134,7 @@ def test_scatter_tokamak_not_source():
         fig = plt.figure()
         ax = fig.gca()
         ops_plt.scatter_tokamak_source("hello world", ax=ax)
-        plt.close(fig)
+    plt.close()
     assert "TokamakSource" in str(excinfo.value)
 
 
@@ -145,14 +145,13 @@ def test_scatter_tokamak_wrong_quantity(tokamak_source, quantity):
         fig = plt.figure()
         ax = fig.gca()
         ops_plt.scatter_tokamak_source(tokamak_source, ax=ax, quantity=quantity)
-        plt.close(fig)
+    plt.close()
     assert "quantity" in str(excinfo.value)
 
 
 def test_plot_tokamak_source_3D_default(tokamak_source):
     """Ensure plots correctly with default inputs"""
     plt.figure()
-    assert not plt.gca().lines  # Check current ax is empty
     ops_plt.plot_tokamak_source_3D(tokamak_source)
     assert plt.gca().lines  # Check current ax is not empty
     # Save for viewing, clean up
@@ -248,7 +247,7 @@ def test_plot_tokamak_source_3D_not_source():
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1, projection="3d")
         ops_plt.plot_tokamak_source_3D("hello world", ax=ax)
-        plt.close(fig)
+    plt.close()
     assert "TokamakSource" in str(excinfo.value)
 
 
@@ -259,5 +258,5 @@ def test_scatter_tokamak_wrong_quantity(tokamak_source, quantity):
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1, projection="3d")
         ops_plt.plot_tokamak_source_3D(tokamak_source, ax=ax, quantity=quantity)
-        plt.close(fig)
+    plt.close()
     assert "quantity" in str(excinfo.value)
