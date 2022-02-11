@@ -1,7 +1,8 @@
+from typing import Tuple
 import numpy as np
-import openmc
-
 import proper_tea as pt
+import proper_tea.numpy
+import openmc
 
 
 class TokamakSource:
@@ -64,27 +65,8 @@ class TokamakSource:
     ion_temperature_pedestal = pt.positive_float()
     ion_temperature_separatrix = pt.positive_float()
     pedestal_radius = pt.positive_float(allow_zero=False)
+    angles = pt.numpy.numpy_array(shape=(2,), dtype=float, sort=True)
     sample_size = pt.positive_int(allow_zero=False)
-
-    @property
-    def angles(self):
-        return self._angles
-
-    @angles.setter
-    def angles(self, value):
-        angles_err = (
-            "TokamakSource.angles must be iterable, have length 2, and contain "
-            "objects convertible to float"
-        )
-        try:
-            if len(value) != 2:
-                raise ValueError(angles_err)
-        except TypeError as e:
-            raise ValueError(angles_err) from e
-        try:
-            self._angles = tuple(sorted(float(x) for x in value))
-        except (ValueError, TypeError) as e:
-            raise ValueError(angles_err) from e
 
     def __init__(
         self,
@@ -104,7 +86,7 @@ class TokamakSource:
         ion_temperature_separatrix: float,
         pedestal_radius: float,
         shafranov_factor: float,
-        angles=(0, 2 * np.pi),
+        angles: Tuple[float, float] = (0, 2 * np.pi),
         sample_size: int = 1000,
     ) -> None:
         # Assign attributes
