@@ -252,7 +252,7 @@ def test_plot_tokamak_source_3D_not_source():
 
 
 @pytest.mark.parametrize("quantity", ["coucou", "ion_density", 17])
-def test_scatter_tokamak_wrong_quantity(tokamak_source, quantity):
+def test_plot_tokamak_source_3D_wrong_quantity(tokamak_source, quantity):
     """Ensure failure when incorrect quantity specified"""
     with pytest.raises(ValueError) as excinfo:
         fig = plt.figure()
