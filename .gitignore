@@ -134,3 +134,6 @@ dmypy.json
 
 # vim swap files
 *.swp
+
+# image files created by tests
+tests/*.png
