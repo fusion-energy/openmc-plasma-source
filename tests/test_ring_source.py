@@ -31,18 +31,16 @@ def test_bad_radius(radius):
         my_source = FusionRingSource(radius=radius)
 
 
-@pytest.mark.parametrize("angles", [(1.0, 2), [0, np.pi], (np.pi, 0)])
+@pytest.mark.parametrize("angles", [(1.0, 2), (0, np.pi), (np.pi, 0)])
 def test_angles(angles):
-    # Should allow any iterable of length 2 with contents convertible to float
-    # If angles are given in reverse order, it should sort them automatically
+    # Should allow any tuple of length 2 with contents convertible to float
     my_source = FusionRingSource(radius=1.0, angles=angles)
-    assert np.array_equal(my_source.angles, sorted(angles))
-    assert my_source.angles[0] < my_source.angles[1]
+    assert np.array_equal(my_source.angles, angles)
 
 
-@pytest.mark.parametrize("angles", [(1,), [1, 2, 3, 4], 5, "ab"])
+@pytest.mark.parametrize("angles", [(1,), [1, 2], 5, "ab", ("a", "b")])
 def test_bad_angles(angles):
-    # Should reject iterables of length != 2, anything non iterable, and anything
+    # Should reject iterables of length != 2, anything non tuple, and anything
     # that can't convert to float
     with pytest.raises(ValueError):
         FusionRingSource(radius=1.0, angles=angles)
@@ -72,5 +70,5 @@ def test_fuel(fuel):
 @pytest.mark.parametrize("fuel", ["топливо", 5])
 def test_wrong_fuel(fuel):
     # Should reject fuel types besides those listed in fuel_types.py
-    with pytest.raises(ValueError):
+    with pytest.raises((KeyError, TypeError)):
         FusionRingSource(radius=1.0, fuel=fuel)

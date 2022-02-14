@@ -1,12 +1,11 @@
+import openmc
 from typing import Tuple
-import proper_tea as pt
-import proper_tea.numpy
+from param import Parameterized, Number, NumericTuple, ListSelector
+
 from .fuel_types import fuel_types
 
-import openmc
 
-
-class FusionPointSource(openmc.Source):
+class FusionPointSource(openmc.Source, Parameterized):
     """An openmc.Source object with some presets to make it more convenient
     for fusion simulations using a point source. All attributes can be changed
     after initialization if required. Default isotropic point source at the
@@ -19,9 +18,9 @@ class FusionPointSource(openmc.Source):
         fuel_type (str): The fusion fuel mix. Either 'DT' or 'DD'.
     """
 
-    coordinate = pt.numpy.numpy_array(shape=(3,), dtype=float)
-    temperature = pt.positive_float()  # temperature in eV
-    fuel_type = pt.in_set(fuel_types.keys())
+    coordinate = NumericTuple((0, 0, 0), length=3)
+    temperature = Number(20000, bounds=(0, None))  # temperature in eV
+    fuel_type = ListSelector(fuel_types.keys())
 
     def __init__(
         self,
