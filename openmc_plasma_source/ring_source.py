@@ -20,10 +20,10 @@ class FusionRingSource(openmc.Source, Parameterized):
         fuel_type (str): The fusion fuel mix. Either 'DT' or 'DD'.
     """
 
-    radius = Number(3, bounds=(0, None), inclusive_bounds=(False, False))
+    radius = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
     angles = Range((0, 2 * np.pi))
-    z_placement = Number(0)
-    temperature = Number(20000, bounds=(0, None))
+    z_placement = Number()
+    temperature = Number(bounds=(0, None))
     fuel_type = ListSelector(fuel_types.keys())
 
     def __init__(

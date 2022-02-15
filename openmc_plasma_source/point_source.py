@@ -18,8 +18,8 @@ class FusionPointSource(openmc.Source, Parameterized):
         fuel_type (str): The fusion fuel mix. Either 'DT' or 'DD'.
     """
 
-    coordinate = NumericTuple((0, 0, 0), length=3)
-    temperature = Number(20000, bounds=(0, None))  # temperature in eV
+    coordinate = NumericTuple(None, length=3)
+    temperature = Number(None, bounds=(0, None))  # temperature in eV
     fuel_type = ListSelector(fuel_types.keys())
 
     def __init__(
