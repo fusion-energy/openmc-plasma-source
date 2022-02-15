@@ -3,7 +3,7 @@ jobs:
   # test:
   build:
     docker:
-      - image: openmc/openmc
+        - image: openmc/openmc:v0.12.2
     steps:
       - checkout
       - run:
