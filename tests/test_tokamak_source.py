@@ -171,12 +171,12 @@ def test_bad_shafranov_factor(tokamak_args_dict, major_radius, minor_radius, sha
 )
 def test_angles(tokamak_args_dict, angles):
     """Checks that custom angles can be set"""
-    # Note: should accept negative angles and angles in wrong order
+    # Note: should accept negative angles and angles in reverse order
     tokamak_args_dict["angles"] = angles
     tokamak_source = TokamakSource(**tokamak_args_dict)
-    assert np.array_equal(tokamak_source.angles, sorted(angles))
+    assert np.array_equal(tokamak_source.angles, angles)
     for source in tokamak_source.sources:
-        assert np.array_equal((source.space.phi.a, source.space.phi.b), sorted(angles))
+        assert np.array_equal((source.space.phi.a, source.space.phi.b), angles)
 
 
 @pytest.mark.parametrize("angles", [(0, 1, 2), -5, ("hello", "world")])

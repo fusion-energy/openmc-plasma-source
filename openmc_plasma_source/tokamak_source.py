@@ -1,11 +1,10 @@
-from typing import Tuple
-import numpy as np
-import proper_tea as pt
-import proper_tea.numpy
 import openmc
+import numpy as np
+from typing import Tuple
+from param import Parameterized, Number, Integer, Range, ListSelector
 
 
-class TokamakSource:
+class TokamakSource(Parameterized):
     """Plasma neutron source sampling.
     This class greatly relies on models described in [1]
 
@@ -50,23 +49,23 @@ class TokamakSource:
             to 1000.
     """
 
-    major_radius = pt.positive_float(allow_zero=False)
-    minor_radius = pt.positive_float(allow_zero=False)
-    elongation = pt.positive_float(allow_zero=False)
-    triangularity = pt.in_range(bounds=(-1.0, 1.0))
-    mode = pt.in_set({"H", "L", "A"})
-    ion_density_centre = pt.positive_float()
-    ion_density_peaking_factor = pt.floating_point()
-    ion_density_pedestal = pt.positive_float()
-    ion_density_separatrix = pt.positive_float()
-    ion_temperature_centre = pt.positive_float()
-    ion_temperature_peaking_factor = pt.floating_point()
-    ion_temperature_beta = pt.floating_point()
-    ion_temperature_pedestal = pt.positive_float()
-    ion_temperature_separatrix = pt.positive_float()
-    pedestal_radius = pt.positive_float(allow_zero=False)
-    angles = pt.numpy.numpy_array(shape=(2,), dtype=float, sort=True)
-    sample_size = pt.positive_int(allow_zero=False)
+    major_radius = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
+    minor_radius = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
+    elongation = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
+    triangularity = Number(bounds=(-1.0, 1.0))
+    mode = ListSelector(["H", "L", "A"])
+    ion_density_centre = Number(bounds=(0, None))
+    ion_density_peaking_factor = Number()
+    ion_density_pedestal = Number(bounds=(0, None))
+    ion_density_separatrix = Number(bounds=(0, None))
+    ion_temperature_centre = Number(bounds=(0, None))
+    ion_temperature_peaking_factor = Number()
+    ion_temperature_beta = Number()
+    ion_temperature_pedestal = Number(bounds=(0, None))
+    ion_temperature_separatrix = Number(bounds=(0, None))
+    pedestal_radius = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
+    angles = Range((0, 2 * np.pi))
+    sample_size = Integer(None, bounds=(0, None), inclusive_bounds=(False, False))
 
     def __init__(
         self,
