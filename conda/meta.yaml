@@ -1,0 +1,48 @@
+{% set name = "openmc_plasma_source" %}
+
+package:
+  name: "{{ name|lower }}"
+  # conda package version tag is obtained from the git release version tag
+  version: {{ GIT_DESCRIBE_TAG }}
+
+source:
+  path: ..
+
+build:
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+
+requirements:
+  build:
+    - python {{ python }}
+    - setuptools
+  run:
+    - python {{ python }}
+    - openmc
+    - param
+    - importlib-metadata  # <py3.8
+
+test:
+  imports:
+    - openmc_plasma_source
+  requires:
+    - pytest
+    - hypothesis
+  source_files:
+    - tests/
+  commands:
+    - pytest tests
+
+
+about:
+  home: "https://github.com/fusion-energy/openmc_plasma_source"
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE.txt
+  doc_url: https://github.com/fusion-energy/openmc_plasma_source
+  dev_url: https://github.com/fusion-energy/openmc_plasma_source
+  summary: openmc_plasma_source - Creates tokamak plasma sources for OpenMC
+
+extra:
+  recipe-maintainers:
+    - shimwell
