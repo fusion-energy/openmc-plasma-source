@@ -316,7 +316,7 @@ def tokamak_source_strategy(draw):
 @settings(max_examples=50)
 def test_strengths_are_normalised(tokamak_source):
     """Tests that the sum of the strengths attribute is equal to"""
-    assert pytest.approx(sum(tokamak_source.strengths), 1)
+    assert pytest.approx(sum(tokamak_source.strengths)) == 1
 
 
 @given(tokamak_source=tokamak_source_strategy())
