@@ -1,15 +1,16 @@
 import openmc
+from openmc_source_plotter import SourceWithPlotting
 from typing import Tuple
 from param import Parameterized, Number, NumericTuple, ListSelector
 
 from .fuel_types import fuel_types
 
 
-class FusionPointSource(openmc.Source, Parameterized):
-    """An openmc.Source object with some presets to make it more convenient
-    for fusion simulations using a point source. All attributes can be changed
-    after initialization if required. Default isotropic point source at the
-    origin with a Muir energy distribution.
+class FusionPointSource(SourceWithPlotting, Parameterized):
+    """An extended openmc.Source object with some presets to make it more
+    convenient for fusion simulations and plotting. All attributes can be
+    changed after initialization if required. Default isotropic point source at
+    the origin with a Muir energy distribution.
 
     Args:
         coordinate (tuple[float,float,float]): Location of the point source.

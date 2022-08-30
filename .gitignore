@@ -137,3 +137,7 @@ dmypy.json
 
 # image files created by tests
 tests/*.png
+
+# openmc output files
+*.h5
+*.out

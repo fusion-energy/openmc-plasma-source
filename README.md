@@ -43,6 +43,8 @@ my_source = TokamakSource(
     shafranov_factor=0.44789,
     triangularity=0.270,
     ion_temperature_beta=6
+    sample_size=1000,
+    angles = (0, 2*3.14)  # angle in radians
   ).make_openmc_sources()
 ```
 
@@ -52,7 +54,6 @@ For a more complete example check out the [example script](https://github.com/fu
  ![out](https://user-images.githubusercontent.com/40028739/135098576-a94709ef-96b4-4b8d-8fa0-76a201b6c5d2.png)
 
 ### Ring Source
-
 
 Create a ring source with temperature distribution of a 2000 eV plasma.
 
@@ -80,6 +81,10 @@ my_plasma = FusionPointSource(
     fuel = 'DT'  # or 'DD'
 )
 ```
+
+## Plotting
+
+All sources are ```openmc_source_plotter.SourceWithPlotting()``` objects which inherit from ```openmc.Source()``` and can therefore be used as ```openmc.Source()```. The objects are also extended to provide convenient plotting methods. See [openmc_source_plotter](https://github.com/fusion-energy/openmc_source_plotter) for more details.
 
 ## Testing
 

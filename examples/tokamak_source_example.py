@@ -44,7 +44,7 @@ settings = openmc.Settings()
 settings.run_mode = "fixed source"
 settings.batches = 10
 settings.particles = 1000
-settings.source = my_plasma.sources
+settings.source = my_plasma.sources  # the .sources attribute returns a list of openmc.Sources
 
 # Finally, define a mesh tally so that we can see the resulting flux
 mesh = openmc.RegularMesh()
