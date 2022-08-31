@@ -1,12 +1,12 @@
 import openmc
-from openmc_source_plotter import SourceWithPlotting
+import openmc_source_plotter  # extends openmc.Source with plotting methods
 from typing import Tuple
 from param import Parameterized, Number, NumericTuple, ListSelector
 
 from .fuel_types import fuel_types
 
 
-class FusionPointSource(SourceWithPlotting, Parameterized):
+class FusionPointSource(openmc.Source, Parameterized):
     """An extended openmc.Source object with some presets to make it more
     convenient for fusion simulations and plotting. All attributes can be
     changed after initialization if required. Default isotropic point source at

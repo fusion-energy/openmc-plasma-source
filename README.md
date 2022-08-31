@@ -84,7 +84,10 @@ my_plasma = FusionPointSource(
 
 ## Plotting
 
-All sources are ```openmc_source_plotter.SourceWithPlotting()``` objects which inherit from ```openmc.Source()``` and can therefore be used as ```openmc.Source()```. The objects are also extended to provide convenient plotting methods. See [openmc_source_plotter](https://github.com/fusion-energy/openmc_source_plotter) for more details.
+All sources are ```openmc_source_plotter.Source()``` objects which builds on
+top of ```openmc.Source()``` with some additional convenient plotting methods.
+See [openmc_source_plotter](https://github.com/fusion-energy/openmc_source_plotter) 
+for more details.
 
 ## Testing
 

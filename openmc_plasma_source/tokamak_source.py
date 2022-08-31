@@ -1,5 +1,5 @@
 import openmc
-from openmc_source_plotter import SourceWithPlotting
+import openmc_source_plotter  # extends openmc.Source with plotting methods
 import numpy as np
 from typing import Tuple
 from param import Parameterized, Number, Integer, Range, ListSelector
@@ -260,7 +260,7 @@ class TokamakSource(Parameterized):
         sources = []
         # create a ring source for each sample in the plasma source
         for i in range(len(self.strengths)):
-            my_source = SourceWithPlotting()
+            my_source = openmc.Source()
 
             # extract the RZ values accordingly
             radius = openmc.stats.Discrete([self.RZ[0][i]], [1])

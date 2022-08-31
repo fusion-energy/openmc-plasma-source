@@ -1,5 +1,5 @@
 import openmc
-from openmc_source_plotter import SourceWithPlotting
+import openmc_source_plotter  # extends openmc.Source with plotting methods
 import numpy as np
 from typing import Tuple
 from param import Parameterized, Number, Range, ListSelector
@@ -7,7 +7,7 @@ from param import Parameterized, Number, Range, ListSelector
 from .fuel_types import fuel_types
 
 
-class FusionRingSource(SourceWithPlotting, Parameterized):
+class FusionRingSource(openmc.Source, Parameterized):
     """An extended openmc.Source object with some presets to make it more
     convenient for fusion simulations and plotting. All attributes can be
     changed after initialization if required. Default isotropic ring source
