@@ -44,7 +44,7 @@ my_source = TokamakSource(
     triangularity=0.270,
     ion_temperature_beta=6
     sample_size=1000,
-    angles = (0, 2*3.14)  # angle in radians
+    angles=(0, 2 * 3.14)  # angle in radians
   ).make_openmc_sources()
 ```
 
