@@ -301,7 +301,7 @@ def tokamak_source_strategy(draw):
         shafranov_factor=shafranov_factor,
         ion_density_centre=1.09e20,
         ion_density_peaking_factor=1,
-        ion_density_pedestal=1.09e20,
+        ion_density_pedestal=1.01e20,
         ion_density_separatrix=3e19,
         ion_temperature_centre=45.9,
         ion_temperature_peaking_factor=8.06,
