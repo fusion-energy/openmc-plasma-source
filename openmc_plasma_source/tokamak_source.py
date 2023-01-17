@@ -149,11 +149,13 @@ class TokamakSource(Parameterized):
                     (self.ion_density_centre - self.ion_density_pedestal)
                     * (1 - (r / self.pedestal_radius) ** 2)
                     ** self.ion_density_peaking_factor
+                    + self.ion_density_pedestal
                 ),
                 (
                     (self.ion_density_pedestal - self.ion_density_separatrix)
                     * (self.major_radius - r)
                     / (self.major_radius - self.pedestal_radius)
+                    + self.ion_density_separatrix
                 ),
             )
         return density
