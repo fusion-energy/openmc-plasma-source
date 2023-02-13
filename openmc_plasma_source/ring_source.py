@@ -34,7 +34,6 @@ class FusionRingSource(openmc.Source, Parameterized):
         temperature: float = 20000.0,
         fuel: str = "DT",
     ):
-
         # Set local attributes
         self.radius = radius
         self.angles = angles

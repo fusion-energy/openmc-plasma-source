@@ -20,8 +20,8 @@ class TokamakSource(Parameterized):
         openmc_sources = my_plasma.make_openmc_sources()
 
     Args:
-        major_radius (float): Plasma major radius (m)
-        minor_radius (float): Plasma minor radius (m)
+        major_radius (float): Plasma major radius (cm)
+        minor_radius (float): Plasma minor radius (cm)
         elongation (float): Plasma elongation
         triangularity (float): Plasma triangularity
         mode (str): Confinement mode ("L", "H", "A")
@@ -39,7 +39,7 @@ class TokamakSource(Parameterized):
         ion_temperature_pedestal (float): Ion temperature at pedestal (keV)
         ion_temperature_separatrix (float): Ion temperature at separatrix
             (keV)
-        pedestal_radius (float): Minor radius at pedestal (m)
+        pedestal_radius (float): Minor radius at pedestal (cm)
         shafranov_factor (float): Shafranov factor (referred in [1] as esh)
             also known as outward radial displacement of magnetic surfaces
             (m)
@@ -127,7 +127,7 @@ class TokamakSource(Parameterized):
         only dependent on the minor radius.
 
         Args:
-            r (float, ndarray): the minor radius (m)
+            r (float, ndarray): the minor radius (cm)
 
         Returns:
             float, ndarray: ion density in m-3
@@ -165,7 +165,7 @@ class TokamakSource(Parameterized):
         temperature is only dependent on the minor radius.
 
         Args:
-            r (float, ndarray): minor radius (m)
+            r (float, ndarray): minor radius (cm)
 
         Returns:
             float, ndarray: ion temperature (keV)
@@ -204,7 +204,7 @@ class TokamakSource(Parameterized):
         coordinates.
 
         Args:
-            a (float, ndarray): minor radius (m)
+            a (float, ndarray): minor radius (cm)
             alpha (float, ndarray): angle (rad)
 
         Returns:

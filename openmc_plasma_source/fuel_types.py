@@ -8,7 +8,6 @@ from param import Parameterized, Number
 
 
 class Fuel(Parameterized):
-
     # mean energy, eV
     mean_energy = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
 
