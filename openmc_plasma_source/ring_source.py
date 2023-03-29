@@ -53,7 +53,7 @@ class FusionRingSource(openmc.Source, Parameterized):
             origin=(0.0, 0.0, 0.0),
         )
         self.angle = openmc.stats.Isotropic()
-        self.energy = openmc.stats.Muir(
+        self.energy = openmc.stats.muir(
             e0=self.fuel.mean_energy,
             m_rat=self.fuel.mass_of_reactants,
             kt=self.temperature,
