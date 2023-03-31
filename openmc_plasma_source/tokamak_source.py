@@ -274,7 +274,7 @@ class TokamakSource(Parameterized):
             )
 
             my_source.angle = openmc.stats.Isotropic()
-            my_source.energy = openmc.stats.Muir(
+            my_source.energy = openmc.stats.muir(
                 e0=14080000.0, m_rat=5.0, kt=self.temperatures[i]
             )
 

@@ -40,7 +40,7 @@ class FusionPointSource(openmc.Source, Parameterized):
         # performed after the super init as these are Source attributes
         self.space = openmc.stats.Point(self.coordinate)
         self.angle = openmc.stats.Isotropic()
-        self.energy = openmc.stats.Muir(
+        self.energy = openmc.stats.muir(
             e0=self.fuel.mean_energy,
             m_rat=self.fuel.mass_of_reactants,
             kt=self.temperature,
