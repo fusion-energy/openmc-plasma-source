@@ -17,7 +17,7 @@ jobs:
       image: openmc/openmc:v0.13.3
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       
       - name: Install
         run: |

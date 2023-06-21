@@ -255,13 +255,13 @@ class TokamakSource(Parameterized):
             Defaults to (0, 2*np.pi).
 
         Returns:
-            list: list of openmc.Source()
+            list: list of openmc.IndependentSource()
         """
 
         sources = []
         # create a ring source for each sample in the plasma source
         for i in range(len(self.strengths)):
-            my_source = openmc.Source()
+            my_source = openmc.IndependentSource()
 
             # extract the RZ values accordingly
             radius = openmc.stats.Discrete([self.RZ[0][i]], [1])

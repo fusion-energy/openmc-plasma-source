@@ -5,7 +5,7 @@ from param import Parameterized, Number, NumericTuple, ListSelector
 from .fuel_types import fuel_types
 
 
-class FusionPointSource(openmc.Source, Parameterized):
+class FusionPointSource(openmc.IndependentSource):
     """An openmc.Source object with some presets to make it more convenient
     for fusion simulations using a point source. All attributes can be changed
     after initialization if required. Default isotropic point source at the
