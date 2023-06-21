@@ -6,7 +6,7 @@ from param import Parameterized, Number, Range, ListSelector
 from .fuel_types import fuel_types
 
 
-class FusionRingSource(openmc.IndependentSource):
+class FusionRingSource(openmc.IndependentSource, Parameterized):
     """An openmc.Source object with some presets to make it more convenient
     for fusion simulations using a ring source. All attributes can be changed
     after initialization if required. Default isotropic ring source with a Muir
