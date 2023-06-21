@@ -1,11 +1,14 @@
 import openmc
 from typing import Tuple
-from param import Parameterized, Number, NumericTuple, ListSelector
 
-from .fuel_types import fuel_types
+from .fuel_types import get_muir_paramters
 
 
-class FusionPointSource(openmc.IndependentSource, Parameterized):
+def fusion_point_source(
+    coordinate: Tuple[float, float, float] = (0, 0, 0),
+    temperature: float = 20000.0,
+    fuel: str = "DT",     
+):
     """An openmc.Source object with some presets to make it more convenient
     for fusion simulations using a point source. All attributes can be changed
     after initialization if required. Default isotropic point source at the
@@ -18,30 +21,16 @@ class FusionPointSource(openmc.IndependentSource, Parameterized):
         fuel_type (str): The fusion fuel mix. Either 'DT' or 'DD'.
     """
 
-    coordinate = NumericTuple(None, length=3)
-    temperature = Number(None, bounds=(0, None))  # temperature in eV
-    fuel_type = ListSelector(fuel_types.keys())
+    source = openmc.IndepedentSource()
+    source.space = openmc.stats.Point(coordinate)
+    source.angle = openmc.stats.Isotropic()
 
-    def __init__(
-        self,
-        coordinate: Tuple[float, float, float] = (0, 0, 0),
-        temperature: float = 20000.0,
-        fuel: str = "DT",
-    ):
-        # Set local attributes
-        self.coordinate = coordinate
-        self.temperature = temperature
-        self.fuel_type = fuel
-        self.fuel = fuel_types[self.fuel_type]
+    mean_energy, mass_of_reactants = get_muir_paramters(fuel)
 
-        # Call init for openmc.Source
-        super().__init__()
+    source.energy = openmc.stats.muir(
+        e0=mean_energy,
+        m_rat=mass_of_reactants,
+        kt=temperature,
+    )
 
-        # performed after the super init as these are Source attributes
-        self.space = openmc.stats.Point(self.coordinate)
-        self.angle = openmc.stats.Isotropic()
-        self.energy = openmc.stats.muir(
-            e0=self.fuel.mean_energy,
-            m_rat=self.fuel.mass_of_reactants,
-            kt=self.temperature,
-        )
+    return source
