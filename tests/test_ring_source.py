@@ -6,10 +6,10 @@ import numpy as np
 
 
 def test_creation():
-    my_source = FusionRingSource(radius=1, z_placement=1)
+    my_source = FusionRingSource(radius=1.0, z_placement=1.0)
 
-    # Ensure it is of type openmc.Source
-    assert isinstance(my_source, openmc.Source)
+    # Ensure it is of type openmc.IndependentSource
+    assert isinstance(my_source, openmc.IndependentSource)
 
     # Ensure it has space, angle, and energy set
     assert isinstance(my_source.space, openmc.stats.CylindricalIndependent)
@@ -17,7 +17,7 @@ def test_creation():
     assert isinstance(my_source.energy, openmc.stats.univariate.Normal)
 
 
-@pytest.mark.parametrize("radius", [1.0, 5.6, 1e5, 7])
+@pytest.mark.parametrize("radius", [1.0, 5.6, 1e5, 7.0])
 def test_radius(radius):
     # should allow any positive float
     my_source = FusionRingSource(radius=radius)
@@ -31,14 +31,14 @@ def test_bad_radius(radius):
         my_source = FusionRingSource(radius=radius)
 
 
-@pytest.mark.parametrize("angles", [(1.0, 2), (0, np.pi), (np.pi, 0)])
+@pytest.mark.parametrize("angles", [(1.0, 2.0), (0.0, np.pi), (np.pi, 0.0)])
 def test_angles(angles):
     # Should allow any tuple of length 2 with contents convertible to float
     my_source = FusionRingSource(radius=1.0, angles=angles)
     assert np.array_equal(my_source.angles, angles)
 
 
-@pytest.mark.parametrize("angles", [(1,), [1, 2], 5, "ab", ("a", "b")])
+@pytest.mark.parametrize("angles", [(1.0,), [1, 2], 5, "ab", ("a", "b")])
 def test_bad_angles(angles):
     # Should reject iterables of length != 2, anything non tuple, and anything
     # that can't convert to float
