@@ -219,6 +219,26 @@ class TokamakSource:
         else:
             raise ValueError("Ion density separatrix must be a number greater than 0")
 
+    @property
+    def angles(self):
+        return self._angles
+
+    @angles.setter
+    def angles(self, value):
+        if (
+            isinstance(value, tuple)
+            and len(value) == 2
+            and all(
+                isinstance(angle, (int, float)) and 0 <= angle <= 2 * np.pi
+                for angle in value
+            )
+        ):
+            self._angles = value
+        else:
+            raise ValueError(
+                "Angles must be a tuple of floats between zero and 2 * np.pi"
+            )
+
     # TODO setters and getters for the rest
 
     def _bounds_check(value, bounds):
