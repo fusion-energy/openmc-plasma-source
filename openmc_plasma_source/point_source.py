@@ -50,7 +50,7 @@ class FusionPointSource(openmc.IndependentSource):
         if (
             isinstance(value, tuple)
             and len(value) == 3
-            and all(isinstance(x, float) for x in value)
+            and all(isinstance(x, (int, float)) for x in value)
         ):
             self._coordinate = value
         else:

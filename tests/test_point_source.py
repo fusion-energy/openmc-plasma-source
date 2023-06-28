@@ -18,7 +18,7 @@ def test_creation():
 
 
 @pytest.mark.parametrize(
-    "coordinate", [(1.0, 2.0, 3.0), (4.0, 5.0, 6.0), tuple(np.linspace(1.0, 3.0, 3))]
+    "coordinate", [(1, 2, 3), (4.0, 5.0, 6.0), tuple(np.linspace(1.0, 3.0, 3))]
 )
 def test_coordinate(coordinate):
     # Should allow any tuple of length 3 containing numbers
@@ -36,7 +36,7 @@ def test_bad_coordinate(coordinate):
         FusionPointSource(coordinate=coordinate)
 
 
-@pytest.mark.parametrize("temperature", [20000.0, 1e4, 0.1, 25000.0])
+@pytest.mark.parametrize("temperature", [20000, 1e4, 0.1, 25000.0])
 def test_temperature(temperature):
     # Should accept any positive float
     my_source = FusionPointSource(temperature=temperature)

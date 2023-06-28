@@ -58,7 +58,7 @@ class FusionRingSource(openmc.IndependentSource):
 
     @radius.setter
     def radius(self, value):
-        if isinstance(value, float) and value > 0:
+        if isinstance(value, (int, float)) and value > 0:
             self._radius = value
         else:
             raise ValueError("Radius must be a float strictly greater than 0.")
@@ -73,7 +73,8 @@ class FusionRingSource(openmc.IndependentSource):
             isinstance(value, tuple)
             and len(value) == 2
             and all(
-                isinstance(angle, float) and 0 <= angle <= 2 * np.pi for angle in value
+                isinstance(angle, (int, float)) and 0 <= angle <= 2 * np.pi
+                for angle in value
             )
         ):
             self._angles = value
@@ -88,7 +89,7 @@ class FusionRingSource(openmc.IndependentSource):
 
     @z_placement.setter
     def z_placement(self, value):
-        if isinstance(value, float):
+        if isinstance(value, (int, float)):
             self._z_placement = value
         else:
             raise ValueError("Z placement must be a float.")
@@ -99,7 +100,7 @@ class FusionRingSource(openmc.IndependentSource):
 
     @temperature.setter
     def temperature(self, value):
-        if isinstance(value, float) and value > 0:
+        if isinstance(value, (int, float)) and value > 0:
             self._temperature = value
         else:
             raise ValueError("Temperature must be a float strictly greater than 0.")
