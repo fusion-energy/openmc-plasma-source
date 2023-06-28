@@ -103,27 +103,6 @@ class TokamakSource:
         self.sample_sources()
         self.sources = self.make_openmc_sources()
 
-
-class TokamakSource:
-    def __init__(self):
-        self._major_radius = None
-        self._minor_radius = None
-        self._elongation = None
-        self._triangularity = None
-        self._mode = None
-        self._ion_density_centre = None
-        self._ion_density_peaking_factor = None
-        self._ion_density_pedestal = None
-        self._ion_density_separatrix = None
-        self._ion_temperature_centre = None
-        self._ion_temperature_peaking_factor = None
-        self._ion_temperature_beta = None
-        self._ion_temperature_pedestal = None
-        self._ion_temperature_separatrix = None
-        self._pedestal_radius = None
-        self._angles = None
-        self._sample_size = None
-
     @property
     def major_radius(self):
         return self._major_radius
