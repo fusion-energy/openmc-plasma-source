@@ -40,3 +40,40 @@ class FusionPointSource(openmc.IndependentSource):
             m_rat=self.fuel.mass_of_reactants,
             kt=self.temperature,
         )
+
+    @property
+    def coordinate(self):
+        return self._coordinate
+
+    @coordinate.setter
+    def coordinate(self, value):
+        if (
+            isinstance(value, tuple)
+            and len(value) == 3
+            and all(isinstance(x, float) for x in value)
+        ):
+            self._coordinate = value
+        else:
+            raise ValueError("coordinate must be a tuple of three floats.")
+
+    @property
+    def temperature(self):
+        return self._temperature
+
+    @temperature.setter
+    def temperature(self, value):
+        if value > 0:
+            self._temperature = value
+        else:
+            raise ValueError("Temperature must be strictly positive.")
+
+    @property
+    def fuel_type(self):
+        return self._fuel_type
+
+    @fuel_type.setter
+    def fuel_type(self, value):
+        if value in fuel_types:
+            self._fuel_type = value
+        else:
+            raise ValueError("Invalid fuel type")

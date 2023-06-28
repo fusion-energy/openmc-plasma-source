@@ -51,3 +51,66 @@ class FusionRingSource(openmc.IndependentSource):
             m_rat=self.fuel.mass_of_reactants,
             kt=self.temperature,
         )
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @radius.setter
+    def radius(self, value):
+        if isinstance(value, float) and value > 0:
+            self._radius = value
+        else:
+            raise ValueError("Radius must be a float strictly greater than 0.")
+
+    @property
+    def angles(self):
+        return self._angles
+
+    @angles.setter
+    def angles(self, value):
+        if (
+            isinstance(value, tuple)
+            and len(value) == 2
+            and all(
+                isinstance(angle, float) and 0 <= angle <= 2 * np.pi for angle in value
+            )
+        ):
+            self._angles = value
+        else:
+            raise ValueError(
+                "Angles must be a tuple of floats between zero and 2 * np.pi"
+            )
+
+    @property
+    def z_placement(self):
+        return self._z_placement
+
+    @z_placement.setter
+    def z_placement(self, value):
+        if isinstance(value, float):
+            self._z_placement = value
+        else:
+            raise ValueError("Z placement must be a float.")
+
+    @property
+    def temperature(self):
+        return self._temperature
+
+    @temperature.setter
+    def temperature(self, value):
+        if isinstance(value, float) and value > 0:
+            self._temperature = value
+        else:
+            raise ValueError("Temperature must be a float strictly greater than 0.")
+
+    @property
+    def fuel_type(self):
+        return self._fuel_type
+
+    @fuel_type.setter
+    def fuel_type(self, value):
+        if value in fuel_types.keys():
+            self._fuel_type = value
+        else:
+            raise ValueError("Invalid fuel type.")

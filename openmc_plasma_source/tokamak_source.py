@@ -103,6 +103,154 @@ class TokamakSource:
         self.sample_sources()
         self.sources = self.make_openmc_sources()
 
+
+class TokamakSource:
+    def __init__(self):
+        self._major_radius = None
+        self._minor_radius = None
+        self._elongation = None
+        self._triangularity = None
+        self._mode = None
+        self._ion_density_centre = None
+        self._ion_density_peaking_factor = None
+        self._ion_density_pedestal = None
+        self._ion_density_separatrix = None
+        self._ion_temperature_centre = None
+        self._ion_temperature_peaking_factor = None
+        self._ion_temperature_beta = None
+        self._ion_temperature_pedestal = None
+        self._ion_temperature_separatrix = None
+        self._pedestal_radius = None
+        self._angles = None
+        self._sample_size = None
+
+    @property
+    def major_radius(self):
+        return self._major_radius
+
+    @major_radius.setter
+    def major_radius(self, value):
+        if value is None:
+            self._major_radius = None
+        else:
+            if isinstance(value, (int, float)) and (
+                self._bounds_check(value, (0, None))
+                or self._bounds_check(value, (0, None), True)
+            ):
+                self._major_radius = value
+            else:
+                raise ValueError(
+                    "Major radius must be a number within the specified bounds"
+                )
+
+    @property
+    def minor_radius(self):
+        return self._minor_radius
+
+    @minor_radius.setter
+    def minor_radius(self, value):
+        if value is None:
+            self._minor_radius = None
+        else:
+            if isinstance(value, (int, float)) and (
+                self._bounds_check(value, (0, None))
+                or self._bounds_check(value, (0, None), True)
+            ):
+                self._minor_radius = value
+            else:
+                raise ValueError(
+                    "Minor radius must be a number within the specified bounds"
+                )
+
+    @property
+    def elongation(self):
+        return self._elongation
+
+    @elongation.setter
+    def elongation(self, value):
+        if value is None:
+            self._elongation = None
+        else:
+            if isinstance(value, (int, float)) and (
+                self._bounds_check(value, (0, None))
+                or self._bounds_check(value, (0, None), True)
+            ):
+                self._elongation = value
+            else:
+                raise ValueError(
+                    "Elongation must be a number within the specified bounds"
+                )
+
+    @property
+    def triangularity(self):
+        return self._triangularity
+
+    @triangularity.setter
+    def triangularity(self, value):
+        if isinstance(value, (int, float)) and self._bounds_check(value, (-1.0, 1.0)):
+            self._triangularity = value
+        else:
+            raise ValueError(
+                "Triangularity must be a number within the specified bounds"
+            )
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, value):
+        if value is None or value in ["H", "L", "A"]:
+            self._mode = value
+        else:
+            raise ValueError("Mode must be one of the following: ['H', 'L', 'A']")
+
+    @property
+    def ion_density_centre(self):
+        return self._ion_density_centre
+
+    @ion_density_centre.setter
+    def ion_density_centre(self, value):
+        if isinstance(value, (int, float)) and self._bounds_check(value, (0, None)):
+            self._ion_density_centre = value
+        else:
+            raise ValueError("Ion density centre must be a number greater than 0")
+
+    @property
+    def ion_density_peaking_factor(self):
+        return self._ion_density_peaking_factor
+
+    @ion_density_peaking_factor.setter
+    def ion_density_peaking_factor(self, value):
+        if isinstance(value, (int, float)):
+            self._ion_density_peaking_factor = value
+        else:
+            raise ValueError("Ion density peaking factor must be a number")
+
+    @property
+    def ion_density_pedestal(self):
+        return self._ion_density_pedestal
+
+    @ion_density_pedestal.setter
+    def ion_density_pedestal(self, value):
+        if isinstance(value, (int, float)) and self._bounds_check(value, (0, None)):
+            self._ion_density_pedestal = value
+        else:
+            raise ValueError("Ion density pedestal must be a number greater than 0")
+
+    @property
+    def ion_density_separatrix(self):
+        return self._ion_density_separatrix
+
+    @ion_density_separatrix.setter
+    def ion_density_separatrix(self, value):
+        if isinstance(value, (int, float)) and self._bounds_check(value, (0, None)):
+            self._ion_density_separatrix = value
+        else:
+            raise ValueError("Ion density separatrix must be a number greater than 0")
+
+    # TODO setters and getters for the rest
+
     def ion_density(self, r):
         """Computes the ion density at a given position. The ion density is
         only dependent on the minor radius.
