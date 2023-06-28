@@ -133,10 +133,7 @@ class TokamakSource:
         if value is None:
             self._major_radius = None
         else:
-            if isinstance(value, (int, float)) and (
-                self._bounds_check(value, (0, None))
-                or self._bounds_check(value, (0, None), True)
-            ):
+            if isinstance(value, (int, float)) and value > 0:
                 self._major_radius = value
             else:
                 raise ValueError(
@@ -152,10 +149,7 @@ class TokamakSource:
         if value is None:
             self._minor_radius = None
         else:
-            if isinstance(value, (int, float)) and (
-                self._bounds_check(value, (0, None))
-                or self._bounds_check(value, (0, None), True)
-            ):
+            if isinstance(value, (int, float)) and value > 0:
                 self._minor_radius = value
             else:
                 raise ValueError(
@@ -171,10 +165,7 @@ class TokamakSource:
         if value is None:
             self._elongation = None
         else:
-            if isinstance(value, (int, float)) and (
-                self._bounds_check(value, (0, None))
-                or self._bounds_check(value, (0, None), True)
-            ):
+            if isinstance(value, (int, float)) and value > 0:
                 self._elongation = value
             else:
                 raise ValueError(
@@ -187,7 +178,7 @@ class TokamakSource:
 
     @triangularity.setter
     def triangularity(self, value):
-        if isinstance(value, (int, float)) and self._bounds_check(value, (-1.0, 1.0)):
+        if isinstance(value, (int, float)) and -1.0 < value < 1.0:
             self._triangularity = value
         else:
             raise ValueError(
@@ -211,7 +202,7 @@ class TokamakSource:
 
     @ion_density_centre.setter
     def ion_density_centre(self, value):
-        if isinstance(value, (int, float)) and self._bounds_check(value, (0, None)):
+        if isinstance(value, (int, float)) and value > 0:
             self._ion_density_centre = value
         else:
             raise ValueError("Ion density centre must be a number greater than 0")
@@ -233,7 +224,7 @@ class TokamakSource:
 
     @ion_density_pedestal.setter
     def ion_density_pedestal(self, value):
-        if isinstance(value, (int, float)) and self._bounds_check(value, (0, None)):
+        if isinstance(value, (int, float)) and value > 0:
             self._ion_density_pedestal = value
         else:
             raise ValueError("Ion density pedestal must be a number greater than 0")
@@ -244,12 +235,15 @@ class TokamakSource:
 
     @ion_density_separatrix.setter
     def ion_density_separatrix(self, value):
-        if isinstance(value, (int, float)) and self._bounds_check(value, (0, None)):
+        if isinstance(value, (int, float)) and value > 0:
             self._ion_density_separatrix = value
         else:
             raise ValueError("Ion density separatrix must be a number greater than 0")
 
     # TODO setters and getters for the rest
+
+    def _bounds_check(value, bounds):
+        return bounds[0] < value
 
     def ion_density(self, r):
         """Computes the ion density at a given position. The ion density is
