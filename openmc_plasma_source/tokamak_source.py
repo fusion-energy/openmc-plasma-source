@@ -109,15 +109,12 @@ class TokamakSource:
 
     @major_radius.setter
     def major_radius(self, value):
-        if value is None:
-            self._major_radius = None
+        if isinstance(value, (int, float)) and value > 0:
+            self._major_radius = value
         else:
-            if isinstance(value, (int, float)) and value > 0:
-                self._major_radius = value
-            else:
-                raise ValueError(
-                    "Major radius must be a number within the specified bounds"
-                )
+            raise ValueError(
+                "Major radius must be a number within the specified bounds"
+            )
 
     @property
     def minor_radius(self):
@@ -125,15 +122,12 @@ class TokamakSource:
 
     @minor_radius.setter
     def minor_radius(self, value):
-        if value is None:
-            self._minor_radius = None
+        if isinstance(value, (int, float)) and value > 0:
+            self._minor_radius = value
         else:
-            if isinstance(value, (int, float)) and value > 0:
-                self._minor_radius = value
-            else:
-                raise ValueError(
-                    "Minor radius must be a number within the specified bounds"
-                )
+            raise ValueError(
+                "Minor radius must be a number within the specified bounds"
+            )
 
     @property
     def elongation(self):
@@ -141,15 +135,10 @@ class TokamakSource:
 
     @elongation.setter
     def elongation(self, value):
-        if value is None:
-            self._elongation = None
+        if isinstance(value, (int, float)) and value > 0:
+            self._elongation = value
         else:
-            if isinstance(value, (int, float)) and value > 0:
-                self._elongation = value
-            else:
-                raise ValueError(
-                    "Elongation must be a number within the specified bounds"
-                )
+            raise ValueError("Elongation must be a number within the specified bounds")
 
     @property
     def triangularity(self):
@@ -170,7 +159,7 @@ class TokamakSource:
 
     @mode.setter
     def mode(self, value):
-        if value is None or value in ["H", "L", "A"]:
+        if value in ["H", "L", "A"]:
             self._mode = value
         else:
             raise ValueError("Mode must be one of the following: ['H', 'L', 'A']")

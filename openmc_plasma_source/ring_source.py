@@ -92,7 +92,7 @@ class FusionRingSource(openmc.IndependentSource):
         if isinstance(value, (int, float)):
             self._z_placement = value
         else:
-            raise ValueError("Z placement must be a float.")
+            raise TypeError("Z placement must be a float.")
 
     @property
     def temperature(self):

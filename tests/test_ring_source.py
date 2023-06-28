@@ -72,3 +72,9 @@ def test_wrong_fuel(fuel):
     # Should reject fuel types besides those listed in fuel_types.py
     with pytest.raises((KeyError, TypeError)):
         FusionRingSource(radius=1.0, fuel=fuel)
+
+
+@pytest.mark.parametrize("z", [-2, 5])
+def test_wrong_z_placement(z):
+    with pytest.raises((TypeError)):
+        FusionRingSource(radius=1.0, z_placement=z)
