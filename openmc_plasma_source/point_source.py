@@ -62,10 +62,10 @@ class FusionPointSource(openmc.IndependentSource):
 
     @temperature.setter
     def temperature(self, value):
-        if value > 0:
+        if isinstance(value, (int, float)) and value > 0:
             self._temperature = value
         else:
-            raise ValueError("Temperature must be strictly positive.")
+            raise ValueError("Temperature must be strictly positive float.")
 
     @property
     def fuel_type(self):
@@ -76,4 +76,4 @@ class FusionPointSource(openmc.IndependentSource):
         if value in fuel_types:
             self._fuel_type = value
         else:
-            raise ValueError("Invalid fuel type")
+            raise KeyError("Invalid fuel type")
