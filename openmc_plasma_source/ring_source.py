@@ -73,7 +73,7 @@ class FusionRingSource(openmc.IndependentSource):
             isinstance(value, tuple)
             and len(value) == 2
             and all(
-                isinstance(angle, (int, float)) and 0 <= angle <= 2 * np.pi
+                isinstance(angle, (int, float)) and -2 * np.pi <= angle <= 2 * np.pi
                 for angle in value
             )
         ):
@@ -114,4 +114,4 @@ class FusionRingSource(openmc.IndependentSource):
         if value in fuel_types.keys():
             self._fuel_type = value
         else:
-            raise ValueError("Invalid fuel type.")
+            raise KeyError("Invalid fuel type.")

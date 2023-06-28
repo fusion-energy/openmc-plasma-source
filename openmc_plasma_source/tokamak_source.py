@@ -229,7 +229,7 @@ class TokamakSource:
             isinstance(value, tuple)
             and len(value) == 2
             and all(
-                isinstance(angle, (int, float)) and 0 <= angle <= 2 * np.pi
+                isinstance(angle, (int, float)) and -2 * np.pi <= angle <= 2 * np.pi
                 for angle in value
             )
         ):
