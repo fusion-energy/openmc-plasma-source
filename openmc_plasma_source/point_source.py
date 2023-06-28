@@ -19,7 +19,7 @@ class FusionPointSource(openmc.IndependentSource):
 
     def __init__(
         self,
-        coordinate: Tuple[float, float, float] = (0, 0, 0),
+        coordinate: Tuple[float, float, float] = (0.0, 0.0, 0.0),
         temperature: float = 20000.0,
         fuel: str = "DT",
     ):
