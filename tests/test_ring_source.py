@@ -74,7 +74,7 @@ def test_wrong_fuel(fuel):
         FusionRingSource(radius=1.0, fuel=fuel)
 
 
-@pytest.mark.parametrize("z", [-2, 5])
+@pytest.mark.parametrize("z", ["coucou", [5, 2.0]])
 def test_wrong_z_placement(z):
     with pytest.raises((TypeError)):
         FusionRingSource(radius=1.0, z_placement=z)
