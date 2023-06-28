@@ -157,7 +157,7 @@ class TokamakSource:
 
     @triangularity.setter
     def triangularity(self, value):
-        if isinstance(value, (int, float)) and -1.0 < value < 1.0:
+        if isinstance(value, (int, float)) and -1.0 <= value <= 1.0:
             self._triangularity = value
         else:
             raise ValueError(
