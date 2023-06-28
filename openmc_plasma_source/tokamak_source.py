@@ -1,10 +1,9 @@
 import openmc
 import numpy as np
 from typing import Tuple
-from param import Parameterized, Number, Integer, Range, ListSelector
 
 
-class TokamakSource(Parameterized):
+class TokamakSource:
     """Plasma neutron source sampling.
     This class greatly relies on models described in [1]
 
@@ -48,24 +47,6 @@ class TokamakSource(Parameterized):
         sample_size (int, optional): number of neutron sources. Defaults
             to 1000.
     """
-
-    major_radius = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
-    minor_radius = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
-    elongation = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
-    triangularity = Number(bounds=(-1.0, 1.0))
-    mode = ListSelector(["H", "L", "A"])
-    ion_density_centre = Number(bounds=(0, None))
-    ion_density_peaking_factor = Number()
-    ion_density_pedestal = Number(bounds=(0, None))
-    ion_density_separatrix = Number(bounds=(0, None))
-    ion_temperature_centre = Number(bounds=(0, None))
-    ion_temperature_peaking_factor = Number()
-    ion_temperature_beta = Number()
-    ion_temperature_pedestal = Number(bounds=(0, None))
-    ion_temperature_separatrix = Number(bounds=(0, None))
-    pedestal_radius = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
-    angles = Range((0, 2 * np.pi))
-    sample_size = Integer(None, bounds=(0, None), inclusive_bounds=(False, False))
 
     def __init__(
         self,

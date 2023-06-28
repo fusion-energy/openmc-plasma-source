@@ -1,12 +1,11 @@
 import openmc
 import numpy as np
 from typing import Tuple
-from param import Parameterized, Number, Range, ListSelector
 
 from .fuel_types import fuel_types
 
 
-class FusionRingSource(openmc.IndependentSource, Parameterized):
+class FusionRingSource(openmc.IndependentSource):
     """An openmc.Source object with some presets to make it more convenient
     for fusion simulations using a ring source. All attributes can be changed
     after initialization if required. Default isotropic ring source with a Muir
@@ -19,12 +18,6 @@ class FusionRingSource(openmc.IndependentSource, Parameterized):
         temperature (float): the temperature to use in the Muir distribution in eV,
         fuel_type (str): The fusion fuel mix. Either 'DT' or 'DD'.
     """
-
-    radius = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
-    angles = Range((0, 2 * np.pi))
-    z_placement = Number()
-    temperature = Number(bounds=(0, None))
-    fuel_type = ListSelector(fuel_types.keys())
 
     def __init__(
         self,

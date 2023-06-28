@@ -4,16 +4,8 @@ Defines dictionary for determining mean energy and mass of reactants
 for a given fusion fuel type.
 """
 
-from param import Parameterized, Number
 
-
-class Fuel(Parameterized):
-    # mean energy, eV
-    mean_energy = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
-
-    # mass of the reactants, AMU
-    mass_of_reactants = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
-
+class Fuel:
     def __init__(self, mean_energy, mass_of_reactants):
         self.mean_energy = mean_energy
         self.mass_of_reactants = mass_of_reactants

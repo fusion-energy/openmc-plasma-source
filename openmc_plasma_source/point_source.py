@@ -1,11 +1,10 @@
 import openmc
 from typing import Tuple
-from param import Parameterized, Number, NumericTuple, ListSelector
 
 from .fuel_types import fuel_types
 
 
-class FusionPointSource(openmc.IndependentSource, Parameterized):
+class FusionPointSource(openmc.IndependentSource):
     """An openmc.Source object with some presets to make it more convenient
     for fusion simulations using a point source. All attributes can be changed
     after initialization if required. Default isotropic point source at the
@@ -17,10 +16,6 @@ class FusionPointSource(openmc.IndependentSource, Parameterized):
         temperature (float): Temperature of the source (eV).
         fuel_type (str): The fusion fuel mix. Either 'DT' or 'DD'.
     """
-
-    coordinate = NumericTuple(None, length=3)
-    temperature = Number(None, bounds=(0, None))  # temperature in eV
-    fuel_type = ListSelector(fuel_types.keys())
 
     def __init__(
         self,
