@@ -1,9 +1,10 @@
 import openmc
 from openmc_plasma_source import FusionRingSource
+import math
 
 my_source = FusionRingSource(
     radius=700,
-    angles=(0.0, 6.28318530718),  # 360deg source
+    angles=(0.0, 2 * math.pi),  # 360deg source
     temperature=20000.0,
 )
 

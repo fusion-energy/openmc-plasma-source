@@ -14,10 +14,10 @@ jobs:
   testing:
     runs-on: ubuntu-latest
     container:
-      image: openmc/openmc:v0.13.3
+      image: openmc/openmc:develop
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       
       - name: Install
         run: |

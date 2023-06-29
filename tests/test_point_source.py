@@ -8,8 +8,8 @@ import numpy as np
 def test_creation():
     my_source = FusionPointSource()
 
-    # Ensure it is of type openmc.Source
-    assert isinstance(my_source, openmc.Source)
+    # Ensure it is of type openmc.IndependentSource
+    assert isinstance(my_source, openmc.IndependentSource)
 
     # Ensure it has space, angle, and energy set
     assert isinstance(my_source.space, openmc.stats.Point)
@@ -18,7 +18,7 @@ def test_creation():
 
 
 @pytest.mark.parametrize(
-    "coordinate", [(1.0, 2.0, 3.0), (4, 5, 6), tuple(np.linspace(1.0, 3.0, 3))]
+    "coordinate", [(1, 2, 3), (4.0, 5.0, 6.0), tuple(np.linspace(1.0, 3.0, 3))]
 )
 def test_coordinate(coordinate):
     # Should allow any tuple of length 3 containing numbers
@@ -26,7 +26,9 @@ def test_coordinate(coordinate):
     assert np.array_equal(my_source.coordinate, coordinate)
 
 
-@pytest.mark.parametrize("coordinate", [(1, 2), [3, 4, 5], 5, "abc", ("a", "b", "c")])
+@pytest.mark.parametrize(
+    "coordinate", [(1.0, 2.0), [3, 4, 5], 5, "abc", ("a", "b", "c")]
+)
 def test_bad_coordinate(coordinate):
     # Should reject iterables of length != 3, anything non-tuple, and anything
     # that can't convert to float
@@ -34,7 +36,7 @@ def test_bad_coordinate(coordinate):
         FusionPointSource(coordinate=coordinate)
 
 
-@pytest.mark.parametrize("temperature", [20000.0, 1e4, 0.1, 25000])
+@pytest.mark.parametrize("temperature", [20000, 1e4, 0.1, 25000.0])
 def test_temperature(temperature):
     # Should accept any positive float
     my_source = FusionPointSource(temperature=temperature)

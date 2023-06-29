@@ -1,11 +1,10 @@
 import openmc
 from typing import Tuple
-from param import Parameterized, Number, NumericTuple, ListSelector
 
 from .fuel_types import fuel_types
 
 
-class FusionPointSource(openmc.Source, Parameterized):
+class FusionPointSource(openmc.IndependentSource):
     """An openmc.Source object with some presets to make it more convenient
     for fusion simulations using a point source. All attributes can be changed
     after initialization if required. Default isotropic point source at the
@@ -18,13 +17,9 @@ class FusionPointSource(openmc.Source, Parameterized):
         fuel_type (str): The fusion fuel mix. Either 'DT' or 'DD'.
     """
 
-    coordinate = NumericTuple(None, length=3)
-    temperature = Number(None, bounds=(0, None))  # temperature in eV
-    fuel_type = ListSelector(fuel_types.keys())
-
     def __init__(
         self,
-        coordinate: Tuple[float, float, float] = (0, 0, 0),
+        coordinate: Tuple[float, float, float] = (0.0, 0.0, 0.0),
         temperature: float = 20000.0,
         fuel: str = "DT",
     ):
@@ -45,3 +40,40 @@ class FusionPointSource(openmc.Source, Parameterized):
             m_rat=self.fuel.mass_of_reactants,
             kt=self.temperature,
         )
+
+    @property
+    def coordinate(self):
+        return self._coordinate
+
+    @coordinate.setter
+    def coordinate(self, value):
+        if (
+            isinstance(value, tuple)
+            and len(value) == 3
+            and all(isinstance(x, (int, float)) for x in value)
+        ):
+            self._coordinate = value
+        else:
+            raise ValueError("coordinate must be a tuple of three floats.")
+
+    @property
+    def temperature(self):
+        return self._temperature
+
+    @temperature.setter
+    def temperature(self, value):
+        if isinstance(value, (int, float)) and value > 0:
+            self._temperature = value
+        else:
+            raise ValueError("Temperature must be strictly positive float.")
+
+    @property
+    def fuel_type(self):
+        return self._fuel_type
+
+    @fuel_type.setter
+    def fuel_type(self, value):
+        if value in fuel_types:
+            self._fuel_type = value
+        else:
+            raise KeyError("Invalid fuel type")

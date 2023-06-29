@@ -1,10 +1,9 @@
 import openmc
 import numpy as np
 from typing import Tuple
-from param import Parameterized, Number, Integer, Range, ListSelector
 
 
-class TokamakSource(Parameterized):
+class TokamakSource:
     """Plasma neutron source sampling.
     This class greatly relies on models described in [1]
 
@@ -48,24 +47,6 @@ class TokamakSource(Parameterized):
         sample_size (int, optional): number of neutron sources. Defaults
             to 1000.
     """
-
-    major_radius = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
-    minor_radius = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
-    elongation = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
-    triangularity = Number(bounds=(-1.0, 1.0))
-    mode = ListSelector(["H", "L", "A"])
-    ion_density_centre = Number(bounds=(0, None))
-    ion_density_peaking_factor = Number()
-    ion_density_pedestal = Number(bounds=(0, None))
-    ion_density_separatrix = Number(bounds=(0, None))
-    ion_temperature_centre = Number(bounds=(0, None))
-    ion_temperature_peaking_factor = Number()
-    ion_temperature_beta = Number()
-    ion_temperature_pedestal = Number(bounds=(0, None))
-    ion_temperature_separatrix = Number(bounds=(0, None))
-    pedestal_radius = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
-    angles = Range((0, 2 * np.pi))
-    sample_size = Integer(None, bounds=(0, None), inclusive_bounds=(False, False))
 
     def __init__(
         self,
@@ -121,6 +102,136 @@ class TokamakSource(Parameterized):
         # Create a list of souces
         self.sample_sources()
         self.sources = self.make_openmc_sources()
+
+    @property
+    def major_radius(self):
+        return self._major_radius
+
+    @major_radius.setter
+    def major_radius(self, value):
+        if isinstance(value, (int, float)) and value > 0:
+            self._major_radius = value
+        else:
+            raise ValueError(
+                "Major radius must be a number within the specified bounds"
+            )
+
+    @property
+    def minor_radius(self):
+        return self._minor_radius
+
+    @minor_radius.setter
+    def minor_radius(self, value):
+        if isinstance(value, (int, float)) and value > 0:
+            self._minor_radius = value
+        else:
+            raise ValueError(
+                "Minor radius must be a number within the specified bounds"
+            )
+
+    @property
+    def elongation(self):
+        return self._elongation
+
+    @elongation.setter
+    def elongation(self, value):
+        if isinstance(value, (int, float)) and value > 0:
+            self._elongation = value
+        else:
+            raise ValueError("Elongation must be a number within the specified bounds")
+
+    @property
+    def triangularity(self):
+        return self._triangularity
+
+    @triangularity.setter
+    def triangularity(self, value):
+        if isinstance(value, (int, float)) and -1.0 <= value <= 1.0:
+            self._triangularity = value
+        else:
+            raise ValueError(
+                "Triangularity must be a number within the specified bounds"
+            )
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, value):
+        if value in ["H", "L", "A"]:
+            self._mode = value
+        else:
+            raise ValueError("Mode must be one of the following: ['H', 'L', 'A']")
+
+    @property
+    def ion_density_centre(self):
+        return self._ion_density_centre
+
+    @ion_density_centre.setter
+    def ion_density_centre(self, value):
+        if isinstance(value, (int, float)) and value > 0:
+            self._ion_density_centre = value
+        else:
+            raise ValueError("Ion density centre must be a number greater than 0")
+
+    @property
+    def ion_density_peaking_factor(self):
+        return self._ion_density_peaking_factor
+
+    @ion_density_peaking_factor.setter
+    def ion_density_peaking_factor(self, value):
+        if isinstance(value, (int, float)):
+            self._ion_density_peaking_factor = value
+        else:
+            raise ValueError("Ion density peaking factor must be a number")
+
+    @property
+    def ion_density_pedestal(self):
+        return self._ion_density_pedestal
+
+    @ion_density_pedestal.setter
+    def ion_density_pedestal(self, value):
+        if isinstance(value, (int, float)) and value > 0:
+            self._ion_density_pedestal = value
+        else:
+            raise ValueError("Ion density pedestal must be a number greater than 0")
+
+    @property
+    def ion_density_separatrix(self):
+        return self._ion_density_separatrix
+
+    @ion_density_separatrix.setter
+    def ion_density_separatrix(self, value):
+        if isinstance(value, (int, float)) and value > 0:
+            self._ion_density_separatrix = value
+        else:
+            raise ValueError("Ion density separatrix must be a number greater than 0")
+
+    @property
+    def angles(self):
+        return self._angles
+
+    @angles.setter
+    def angles(self, value):
+        if (
+            isinstance(value, tuple)
+            and len(value) == 2
+            and all(
+                isinstance(angle, (int, float)) and -2 * np.pi <= angle <= 2 * np.pi
+                for angle in value
+            )
+        ):
+            self._angles = value
+        else:
+            raise ValueError(
+                "Angles must be a tuple of floats between zero and 2 * np.pi"
+            )
+
+    # TODO setters and getters for the rest
+
+    def _bounds_check(value, bounds):
+        return bounds[0] < value
 
     def ion_density(self, r):
         """Computes the ion density at a given position. The ion density is
@@ -255,13 +366,13 @@ class TokamakSource(Parameterized):
             Defaults to (0, 2*np.pi).
 
         Returns:
-            list: list of openmc.Source()
+            list: list of openmc.IndependentSource()
         """
 
         sources = []
         # create a ring source for each sample in the plasma source
         for i in range(len(self.strengths)):
-            my_source = openmc.Source()
+            my_source = openmc.IndependentSource()
 
             # extract the RZ values accordingly
             radius = openmc.stats.Discrete([self.RZ[0][i]], [1])

@@ -1,12 +1,11 @@
 import openmc
 import numpy as np
 from typing import Tuple
-from param import Parameterized, Number, Range, ListSelector
 
 from .fuel_types import fuel_types
 
 
-class FusionRingSource(openmc.Source, Parameterized):
+class FusionRingSource(openmc.IndependentSource):
     """An openmc.Source object with some presets to make it more convenient
     for fusion simulations using a ring source. All attributes can be changed
     after initialization if required. Default isotropic ring source with a Muir
@@ -19,12 +18,6 @@ class FusionRingSource(openmc.Source, Parameterized):
         temperature (float): the temperature to use in the Muir distribution in eV,
         fuel_type (str): The fusion fuel mix. Either 'DT' or 'DD'.
     """
-
-    radius = Number(None, bounds=(0, None), inclusive_bounds=(False, False))
-    angles = Range((0, 2 * np.pi))
-    z_placement = Number()
-    temperature = Number(bounds=(0, None))
-    fuel_type = ListSelector(fuel_types.keys())
 
     def __init__(
         self,
@@ -58,3 +51,67 @@ class FusionRingSource(openmc.Source, Parameterized):
             m_rat=self.fuel.mass_of_reactants,
             kt=self.temperature,
         )
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @radius.setter
+    def radius(self, value):
+        if isinstance(value, (int, float)) and value > 0:
+            self._radius = value
+        else:
+            raise ValueError("Radius must be a float strictly greater than 0.")
+
+    @property
+    def angles(self):
+        return self._angles
+
+    @angles.setter
+    def angles(self, value):
+        if (
+            isinstance(value, tuple)
+            and len(value) == 2
+            and all(
+                isinstance(angle, (int, float)) and -2 * np.pi <= angle <= 2 * np.pi
+                for angle in value
+            )
+        ):
+            self._angles = value
+        else:
+            raise ValueError(
+                "Angles must be a tuple of floats between zero and 2 * np.pi"
+            )
+
+    @property
+    def z_placement(self):
+        return self._z_placement
+
+    @z_placement.setter
+    def z_placement(self, value):
+        if isinstance(value, (int, float)):
+            self._z_placement = value
+        else:
+            raise TypeError("Z placement must be a float.")
+
+    @property
+    def temperature(self):
+        return self._temperature
+
+    @temperature.setter
+    def temperature(self, value):
+        if isinstance(value, (int, float)) and value > 0:
+            self._temperature = value
+        else:
+            raise ValueError("Temperature must be a float strictly greater than 0.")
+
+    @property
+    def fuel_type(self):
+        return self._fuel_type
+
+    @fuel_type.setter
+    def fuel_type(self, value):
+        if value in fuel_types.keys():
+            self._fuel_type = value
+        else:
+            raise KeyError("Invalid fuel type.")
