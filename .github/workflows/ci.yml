@@ -1,27 +1,46 @@
-name: CI
+name: CI testing
 
 on:
-  pull_request:    
-  push:
+  pull_request:
     branches:
-    - main
- 
+      - develop
+      - main
+    push:
+      - main
+
+
 jobs:
   testing:
     runs-on: ubuntu-latest
-    container:
-      image: openmc/openmc:develop
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      
+
+      - name: checkout actions
+        uses: actions/checkout@v4
+
+      - name: install dependencies
+        shell: bash
+        run: |
+
+          wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+          bash Miniforge3.sh -b -p "${HOME}/conda"
+          source "${HOME}/conda/etc/profile.d/conda.sh"
+          source "${HOME}/conda/etc/profile.d/mamba.sh"
+          sudo apt-get --allow-releaseinfo-change update
+          sudo apt-get update -y
+          sudo apt-get upgrade -y
+          sudo apt-get install -y libgl1-mesa-glx libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libosmesa6 libosmesa6-dev libgles2-mesa-dev libarchive-dev libpangocairo-1.0-0
+          mamba activate
+          mamba install -y -c conda-forge openmc
+          openmc_data_downloader -l ENDFB-7.1-NNDC -i Fe56 Be9 Li6 Li7
+
       - name: Install
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install .[tests]
-
+          python3 -m pip install .
+          python3 -c "import openmc_plasma_source"
+          
       - name: Run tests
         run: |
+          python3 -m pip install .[tests]
           python3 -m pytest -v tests
 
       - name: Run examples
