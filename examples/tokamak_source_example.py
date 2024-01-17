@@ -2,7 +2,7 @@ import openmc
 from openmc_plasma_source import TokamakSource
 
 # minimal geometry
-sphere_surface = openmc.Sphere(r=1000.0, boundary_type='vacuum')
+sphere_surface = openmc.Sphere(r=1000.0, boundary_type="vacuum")
 cell = openmc.Cell(region=-sphere_surface)
 geometry = openmc.Geometry([cell])
 
@@ -34,8 +34,6 @@ settings.particles = 1000
 settings.source = my_plasma.sources
 
 
-model = openmc.model.Model(
-    materials=None, geometry=geometry, settings=settings
-)
+model = openmc.model.Model(materials=None, geometry=geometry, settings=settings)
 
 model.run()

@@ -3,7 +3,7 @@ from openmc_plasma_source import FusionRingSource
 import math
 
 # minimal geometry
-sphere_surface = openmc.Sphere(r=1000.0, boundary_type='vacuum')
+sphere_surface = openmc.Sphere(r=1000.0, boundary_type="vacuum")
 cell = openmc.Cell(region=-sphere_surface)
 geometry = openmc.Geometry([cell])
 
@@ -21,8 +21,6 @@ settings.particles = 1000
 # tell OpenMC we're going to use our custom source
 settings.source = my_source
 
-model = openmc.model.Model(
-    materials=None, geometry=geometry, settings=settings
-)
+model = openmc.model.Model(materials=None, geometry=geometry, settings=settings)
 
 model.run()
