@@ -24,21 +24,10 @@ jobs:
           source "${HOME}/conda/etc/profile.d/mamba.sh"
           mamba activate
           mamba install -y -c conda-forge openmc
-          pip install openmc_data_downloader
-          openmc_data_downloader -l ENDFB-7.1-NNDC -i Fe56 Be9 Li6 Li7
-
-      - name: Install
-        run: |
-          python3 -m pip install .
-          python3 -c "import openmc_plasma_source"
-          
-      - name: Run tests
-        run: |
-          python3 -m pip install .[tests]
-          python3 -m pytest -v tests
-
-      - name: Run examples
-        run: |
-          python3 examples/point_source_example.py
-          python3 examples/ring_source_example.py
-          python3 examples/tokamak_source_example.py
+          pip install .
+          python -c "import openmc_plasma_source"
+          pip install .[tests]
+          pytest -v tests
+          python examples/point_source_example.py
+          python examples/ring_source_example.py
+          python examples/tokamak_source_example.py
