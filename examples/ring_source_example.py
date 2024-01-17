@@ -1,6 +1,10 @@
 import openmc
 from openmc_plasma_source import FusionRingSource
 import math
+from pathlib import Path
+
+# just making use of a local cross section xml file, replace with your own cross sections or comment out
+openmc.config["cross_sections"] = Path(__file__).parent.resolve() / "cross_sections.xml"
 
 # minimal geometry
 sphere_surface = openmc.Sphere(r=1000.0, boundary_type='vacuum')
