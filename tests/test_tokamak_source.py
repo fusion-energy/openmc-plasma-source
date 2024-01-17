@@ -264,7 +264,7 @@ def tokamak_source_strategy(draw):
         st.floats(
             min_value=1e-5 * major_radius,
             max_value=np.nextafter(major_radius, major_radius - 1),
-            **finites
+            **finites,
         )
     )
 
@@ -272,7 +272,7 @@ def tokamak_source_strategy(draw):
         st.floats(
             min_value=0.8 * minor_radius,
             max_value=np.nextafter(minor_radius, minor_radius - 1),
-            **finites
+            **finites,
         )
     )
 
@@ -288,7 +288,7 @@ def tokamak_source_strategy(draw):
         st.floats(
             min_value=np.nextafter(-0.5 * minor_radius, +1),
             max_value=np.nextafter(0.5 * minor_radius, -1),
-            **finites
+            **finites,
         )
     )
 

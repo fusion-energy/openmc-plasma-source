@@ -14,6 +14,6 @@ authors:
 - family-names: "Faisal"
   given-names: "Mohammed"
 title: "OpenMC Plasma Source"
-version: 0.2.4
-date-released: 2022-01-31
+version: 0.3.0
+date-released: 2023-01-12
 url: "https://github.com/fusion-energy/openmc-plasma-source"

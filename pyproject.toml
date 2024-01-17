@@ -1,11 +1,42 @@
 [build-system]
 requires = [
-    "setuptools >= 45",
-    "wheel",
-    "setuptools_scm[toml] >= 6.2",
-    "setuptools_scm_git_archive",
+    "setuptools>=65.5.0",
+    "setuptools_scm[toml]>=7.0.5"
 ]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "openmc_plasma_source"
+dynamic = ["version"]
+description = "Creates tokamak and ICF plasma sources for OpenMC"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+authors = [
+  { name="Rémi Delaporte-Mathurin" },
+]
+requires-python = ">=3.8"
+keywords = ["python", "neutron", "fusion", "source", "openmc", "energy", "tokamak"]
+dependencies = [
+    "numpy>=1.9",
+    "matplotlib>=3.2.2",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/fusion-energy/openmc-plasma-source"
+"Bug Tracker" = "https://github.com/fusion-energy/openmc-plasma-source/issues"
+
 [tool.setuptools_scm]
-write_to = "openmc_plasma_source/_version.py"
+write_to = "src/_version.py"
+
+[project.optional-dependencies]
+tests = [
+    "pytest>=5.4.3",
+    "hypothesis"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
