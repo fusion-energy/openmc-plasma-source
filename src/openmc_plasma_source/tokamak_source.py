@@ -41,7 +41,7 @@ class TokamakSource:
         pedestal_radius (float): Minor radius at pedestal (cm)
         shafranov_factor (float): Shafranov factor (referred in [1] as esh)
             also known as outward radial displacement of magnetic surfaces
-            (m)
+            (cm)
         angles (iterable of floats): the start and stop angles of the ring in
             radians
         sample_size (int, optional): number of neutron sources. Defaults
