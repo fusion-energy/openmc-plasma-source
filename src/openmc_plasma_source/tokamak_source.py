@@ -48,6 +48,7 @@ class TokamakSource:
             radians
         sample_size (int, optional): number of neutron sources. Defaults
             to 1000.
+        fuel (dict): Isotopes as keys and atom fractions as values
     """
 
     def __init__(

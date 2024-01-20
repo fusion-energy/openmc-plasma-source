@@ -14,7 +14,7 @@ class FusionPointSource(openmc.IndependentSource):
         coordinate (tuple[float,float,float]): Location of the point source.
             Each component is measured in metres.
         temperature (float): Temperature of the source (eV).
-        fuel_type (str): The fusion fuel mix. Either 'DT' or 'DD'.
+        fuel (dict): Isotopes as keys and atom fractions as values
     """
 
     def __init__(

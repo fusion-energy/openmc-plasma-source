@@ -8,15 +8,15 @@ from .fuel_types import get_neutron_energy_distribution
 class FusionRingSource(openmc.IndependentSource):
     """An openmc.Source object with some presets to make it more convenient
     for fusion simulations using a ring source. All attributes can be changed
-    after initialization if required. Default isotropic ring source with a Muir
-    energy distribution.
+    after initialization if required. Default isotropic ring source with a
+    realistic energy distribution.
 
     Args:
         radius (float): the inner radius of the ring source, in metres
         angles (iterable of floats): the start and stop angles of the ring in radians
         z_placement (float): Location of the ring source (m). Defaults to 0.
         temperature (float): the temperature to use in the Muir distribution in eV,
-        fuel_type (str): The fusion fuel mix. Either 'DT' or 'DD'.
+        fuel (dict): Isotopes as keys and atom fractions as values
     """
 
     def __init__(
