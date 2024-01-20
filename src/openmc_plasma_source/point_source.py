@@ -1,7 +1,7 @@
 import openmc
 from typing import Tuple
 
-from .fuel_types import fuel_types
+from .fuel_types import get_neutron_energy_distribution
 
 
 class FusionPointSource(openmc.IndependentSource):
@@ -21,7 +21,7 @@ class FusionPointSource(openmc.IndependentSource):
         self,
         coordinate: Tuple[float, float, float] = (0.0, 0.0, 0.0),
         temperature: float = 20000.0,
-        fuel: str = "DT",
+        fuel: dict = {"D": 0.5, "T": 0.5},
     ):
         # Set local attributes
         self.coordinate = coordinate
@@ -35,11 +35,7 @@ class FusionPointSource(openmc.IndependentSource):
         # performed after the super init as these are Source attributes
         self.space = openmc.stats.Point(self.coordinate)
         self.angle = openmc.stats.Isotropic()
-        self.energy = openmc.stats.muir(
-            e0=self.fuel.mean_energy,
-            m_rat=self.fuel.mass_of_reactants,
-            kt=self.temperature,
-        )
+        self.energy = get_neutron_energy_distribution(ion_temperature=temperature, fuel=fuel)
 
     @property
     def coordinate(self):

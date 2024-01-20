@@ -2,7 +2,7 @@ import openmc
 import numpy as np
 from typing import Tuple
 
-from .fuel_types import fuel_types
+from .fuel_types import get_neutron_energy_distribution
 
 
 class FusionRingSource(openmc.IndependentSource):
@@ -25,15 +25,14 @@ class FusionRingSource(openmc.IndependentSource):
         angles: Tuple[float, float] = (0, 2 * np.pi),
         z_placement: float = 0,
         temperature: float = 20000.0,
-        fuel: str = "DT",
+        fuel: dict = {"D": 0.5, "T": 0.5},
     ):
         # Set local attributes
         self.radius = radius
         self.angles = angles
         self.z_placement = z_placement
         self.temperature = temperature
-        self.fuel_type = fuel
-        self.fuel = fuel_types[self.fuel_type]
+        self.fuel = fuel
 
         # Call init for openmc.Source
         super().__init__()
@@ -46,11 +45,7 @@ class FusionRingSource(openmc.IndependentSource):
             origin=(0.0, 0.0, 0.0),
         )
         self.angle = openmc.stats.Isotropic()
-        self.energy = openmc.stats.muir(
-            e0=self.fuel.mean_energy,
-            m_rat=self.fuel.mass_of_reactants,
-            kt=self.temperature,
-        )
+        self.energy = get_neutron_energy_distribution(ion_temperature=temperature, fuel=fuel)
 
     @property
     def radius(self):
