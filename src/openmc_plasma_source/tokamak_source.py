@@ -390,7 +390,9 @@ class TokamakSource:
             )
 
             my_source.angle = openmc.stats.Isotropic()
-            my_source.energy = get_neutron_energy_distribution(ion_temperature=self.temperature[i], fuel=self.fuel)
+            my_source.energy = get_neutron_energy_distribution(
+                ion_temperature=self.temperature[i], fuel=self.fuel
+            )
 
             # the strength of the source (its probability) is given by
             # self.strengths

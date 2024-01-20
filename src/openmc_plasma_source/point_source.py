@@ -35,7 +35,9 @@ class FusionPointSource(openmc.IndependentSource):
         # performed after the super init as these are Source attributes
         self.space = openmc.stats.Point(self.coordinate)
         self.angle = openmc.stats.Isotropic()
-        self.energy = get_neutron_energy_distribution(ion_temperature=temperature, fuel=fuel)
+        self.energy = get_neutron_energy_distribution(
+            ion_temperature=temperature, fuel=fuel
+        )
 
     @property
     def coordinate(self):

@@ -45,7 +45,9 @@ class FusionRingSource(openmc.IndependentSource):
             origin=(0.0, 0.0, 0.0),
         )
         self.angle = openmc.stats.Isotropic()
-        self.energy = get_neutron_energy_distribution(ion_temperature=temperature, fuel=fuel)
+        self.energy = get_neutron_energy_distribution(
+            ion_temperature=temperature, fuel=fuel
+        )
 
     @property
     def radius(self):
