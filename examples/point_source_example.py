@@ -11,7 +11,7 @@ cell = openmc.Cell(region=-sphere_surface)
 geometry = openmc.Geometry([cell])
 
 # define the source
-my_source = FusionPointSource(coordinate=(0, 0, 0), temperature=20000.0, fuel="DT")
+my_source = FusionPointSource(coordinate=(0, 0, 0), temperature=20000.0, fuel={"D":0.5, "T":0.5})
 
 # Tell OpenMC we're going to use our custom source
 settings = openmc.Settings()

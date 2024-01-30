@@ -26,8 +26,7 @@ class FusionPointSource(openmc.IndependentSource):
         # Set local attributes
         self.coordinate = coordinate
         self.temperature = temperature
-        self.fuel_type = fuel
-        self.fuel = fuel_types[self.fuel_type]
+        self.fuel = fuel
 
         # Call init for openmc.Source
         super().__init__()
@@ -64,14 +63,3 @@ class FusionPointSource(openmc.IndependentSource):
             self._temperature = value
         else:
             raise ValueError("Temperature must be strictly positive float.")
-
-    @property
-    def fuel_type(self):
-        return self._fuel_type
-
-    @fuel_type.setter
-    def fuel_type(self, value):
-        if value in fuel_types:
-            self._fuel_type = value
-        else:
-            raise KeyError("Invalid fuel type")
