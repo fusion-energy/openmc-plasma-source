@@ -29,22 +29,32 @@ def fusion_point_source(
     else:
         raise ValueError("coordinate must be a tuple of three floats.")
 
-    if isinstance(temperature, (int, float)) and temperature > 0:
+    if not isinstance(temperature, (int, float)):
         raise ValueError("Temperature must be a float.")
-    if temperature > 0:
+    if temperature <= 0:
         raise ValueError("Temperature must be positive float.")
 
 
     sources = []
 
-    energy_distributions = get_neutron_energy_distribution(
+    energy_distributions, strengths = get_neutron_energy_distribution(
         ion_temperature=temperature, fuel=fuel
     )
-    for energy_distribution in energy_distributions:
+    
+    # if isinstance(energy_distributions, openmc.stats.Normal) or isinstance(energy_distributions, openmc.stats.Discrete) or isinstance(energy_distributions, openmc.stats.Tabular):
+    #     source = openmc.Source()
+    #     source.energy = energy_distributions
+    #     source.space = openmc.stats.Point(coordinate)
+    #     source.angle = openmc.stats.Isotropic()
+    #     return source
+
+    # else:
+    for energy_distribution, strength in zip(energy_distributions, strengths):
         source = openmc.Source()
         source.energy = energy_distribution
         source.space = openmc.stats.Point(coordinate)
         source.angle = openmc.stats.Isotropic()
+        source.strength = strength
         sources.append(source)
 
     return sources
