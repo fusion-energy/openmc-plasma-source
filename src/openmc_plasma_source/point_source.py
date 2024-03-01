@@ -3,6 +3,7 @@ from typing import Tuple
 
 from .fuel_types import get_neutron_energy_distribution
 
+
 def fusion_point_source(
     coordinate: Tuple[float, float, float] = (0.0, 0.0, 0.0),
     temperature: float = 20000.0,
@@ -34,13 +35,12 @@ def fusion_point_source(
     if temperature <= 0:
         raise ValueError("Temperature must be positive float.")
 
-
     sources = []
 
     energy_distributions, strengths = get_neutron_energy_distribution(
         ion_temperature=temperature, fuel=fuel
     )
-    
+
     # if isinstance(energy_distributions, openmc.stats.Normal) or isinstance(energy_distributions, openmc.stats.Discrete) or isinstance(energy_distributions, openmc.stats.Tabular):
     #     source = openmc.Source()
     #     source.energy = energy_distributions
