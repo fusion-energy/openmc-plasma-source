@@ -6,7 +6,13 @@ import openmc
 from .fuel_types import get_neutron_energy_distribution
 
 
-class FusionRingSource(openmc.IndependentSource):
+def fusion_ring_source(
+    radius: float,
+    angles: Tuple[float, float] = (0, 2 * np.pi),
+    z_placement: float = 0,
+    temperature: float = 20000.0,
+    fuel: dict = {"D": 0.5, "T": 0.5},
+):
     """An openmc.Source object with some presets to make it more convenient
     for fusion simulations using a ring source. All attributes can be changed
     after initialization if required. Default isotropic ring source with a
@@ -20,96 +26,47 @@ class FusionRingSource(openmc.IndependentSource):
         fuel (dict): Isotopes as keys and atom fractions as values
     """
 
-    def __init__(
-        self,
-        radius: float,
-        angles: Tuple[float, float] = (0, 2 * np.pi),
-        z_placement: float = 0,
-        temperature: float = 20000.0,
-        fuel: dict = {"D": 0.5, "T": 0.5},
+    if isinstance(radius, (int, float)) and radius > 0:
+        pass
+    else:
+        raise ValueError("Radius must be a float strictly greater than 0.")
+
+    if (
+        isinstance(angles, tuple)
+        and len(angles) == 2
+        and all(
+            isinstance(angle, (int, float)) and -2 * np.pi <= angle <= 2 * np.pi
+            for angle in angles
+        )
     ):
-        # Set local attributes
-        self.radius = radius
-        self.angles = angles
-        self.z_placement = z_placement
-        self.temperature = temperature
-        self.fuel = fuel
-
-        # Call init for openmc.Source
-        super().__init__()
-
-        # performed after the super init as these are Source attributes
-        self.space = openmc.stats.CylindricalIndependent(
-            r=openmc.stats.Discrete([self.radius], [1]),
-            phi=openmc.stats.Uniform(a=self.angles[0], b=self.angles[1]),
-            z=openmc.stats.Discrete([self.z_placement], [1]),
-            origin=(0.0, 0.0, 0.0),
-        )
-        self.angle = openmc.stats.Isotropic()
-        self.energy = get_neutron_energy_distribution(
-            ion_temperature=temperature, fuel=fuel
+        pass
+    else:
+        raise ValueError(
+            "Angles must be a tuple of floats between zero and 2 * np.pi"
         )
 
-    @property
-    def radius(self):
-        return self._radius
+    if isinstance(z_placement, (int, float)):
+        pass
+    else:
+        raise TypeError("Z placement must be a float.")
 
-    @radius.setter
-    def radius(self, value):
-        if isinstance(value, (int, float)) and value > 0:
-            self._radius = value
-        else:
-            raise ValueError("Radius must be a float strictly greater than 0.")
+    if isinstance(temperature, (int, float)) and temperature > 0:
+        pass
+    else:
+        raise ValueError("Temperature must be a float strictly greater than 0.")
 
-    @property
-    def angles(self):
-        return self._angles
+    source = openmc.IndependentSource()
 
-    @angles.setter
-    def angles(self, value):
-        if (
-            isinstance(value, tuple)
-            and len(value) == 2
-            and all(
-                isinstance(angle, (int, float)) and -2 * np.pi <= angle <= 2 * np.pi
-                for angle in value
-            )
-        ):
-            self._angles = value
-        else:
-            raise ValueError(
-                "Angles must be a tuple of floats between zero and 2 * np.pi"
-            )
+    # performed after the super init as these are Source attributes
+    source.space = openmc.stats.CylindricalIndependent(
+        r=openmc.stats.Discrete([radius], [1]),
+        phi=openmc.stats.Uniform(a=angles[0], b=angles[1]),
+        z=openmc.stats.Discrete([z_placement], [1]),
+        origin=(0.0, 0.0, 0.0),
+    )
+    source.angle = openmc.stats.Isotropic()
+    source.energy = get_neutron_energy_distribution(
+        ion_temperature=temperature, fuel=fuel
+    )
 
-    @property
-    def z_placement(self):
-        return self._z_placement
-
-    @z_placement.setter
-    def z_placement(self, value):
-        if isinstance(value, (int, float)):
-            self._z_placement = value
-        else:
-            raise TypeError("Z placement must be a float.")
-
-    @property
-    def temperature(self):
-        return self._temperature
-
-    @temperature.setter
-    def temperature(self, value):
-        if isinstance(value, (int, float)) and value > 0:
-            self._temperature = value
-        else:
-            raise ValueError("Temperature must be a float strictly greater than 0.")
-
-    @property
-    def fuel_type(self):
-        return self._fuel_type
-
-    @fuel_type.setter
-    def fuel_type(self, value):
-        if value in fuel_types.keys():
-            self._fuel_type = value
-        else:
-            raise KeyError("Invalid fuel type.")
+    return source
