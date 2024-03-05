@@ -6,7 +6,27 @@ import openmc
 from .fuel_types import get_neutron_energy_distribution
 
 
-class TokamakSource:
+def tokamak_source(
+    major_radius: float,
+    minor_radius: float,
+    elongation: float,
+    triangularity: float,
+    mode: str,
+    ion_density_centre: float,
+    ion_density_peaking_factor: float,
+    ion_density_pedestal: float,
+    ion_density_separatrix: float,
+    ion_temperature_centre: float,
+    ion_temperature_peaking_factor: float,
+    ion_temperature_beta: float,
+    ion_temperature_pedestal: float,
+    ion_temperature_separatrix: float,
+    pedestal_radius: float,
+    shafranov_factor: float,
+    angles: Tuple[float, float] = (0, 2 * np.pi),
+    sample_size: int = 1000,
+    fuel: dict = {"D": 0.5, "T": 0.5},
+):
     """Plasma neutron source sampling.
     This class greatly relies on models described in [1]
 
@@ -52,62 +72,20 @@ class TokamakSource:
         fuel (dict): Isotopes as keys and atom fractions as values
     """
 
-    def __init__(
-        self,
-        major_radius: float,
-        minor_radius: float,
-        elongation: float,
-        triangularity: float,
-        mode: str,
-        ion_density_centre: float,
-        ion_density_peaking_factor: float,
-        ion_density_pedestal: float,
-        ion_density_separatrix: float,
-        ion_temperature_centre: float,
-        ion_temperature_peaking_factor: float,
-        ion_temperature_beta: float,
-        ion_temperature_pedestal: float,
-        ion_temperature_separatrix: float,
-        pedestal_radius: float,
-        shafranov_factor: float,
-        angles: Tuple[float, float] = (0, 2 * np.pi),
-        sample_size: int = 1000,
-        fuel: dict = {"D": 0.5, "T": 0.5},
-    ) -> None:
-        # Assign attributes
-        self.major_radius = major_radius
-        self.minor_radius = minor_radius
-        self.elongation = elongation
-        self.triangularity = triangularity
-        self.ion_density_centre = ion_density_centre
-        self.ion_density_peaking_factor = ion_density_peaking_factor
-        self.mode = mode
-        self.pedestal_radius = pedestal_radius
-        self.ion_density_pedestal = ion_density_pedestal
-        self.ion_density_separatrix = ion_density_separatrix
-        self.ion_temperature_centre = ion_temperature_centre
-        self.ion_temperature_peaking_factor = ion_temperature_peaking_factor
-        self.ion_temperature_pedestal = ion_temperature_pedestal
-        self.ion_temperature_separatrix = ion_temperature_separatrix
-        self.ion_temperature_beta = ion_temperature_beta
-        self.shafranov_factor = shafranov_factor
-        self.angles = angles
-        self.sample_size = sample_size
-        self.fuel = fuel
 
-        # Perform sanity checks for inputs not caught by properties
-        if self.minor_radius >= self.major_radius:
-            raise ValueError("Minor radius must be smaller than major radius")
+    # Perform sanity checks for inputs not caught by properties
+    if minor_radius >= major_radius:
+        raise ValueError("Minor radius must be smaller than major radius")
 
-        if self.pedestal_radius >= self.minor_radius:
-            raise ValueError("Pedestal radius must be smaller than minor radius")
+    if pedestal_radius >= minor_radius:
+        raise ValueError("Pedestal radius must be smaller than minor radius")
 
-        if abs(self.shafranov_factor) >= 0.5 * minor_radius:
-            raise ValueError("Shafranov factor must be smaller than 0.5*minor radius")
+    if abs(shafranov_factor) >= 0.5 * minor_radius:
+        raise ValueError("Shafranov factor must be smaller than 0.5*minor radius")
 
-        # Create a list of souces
-        self.sample_sources()
-        self.sources = self.make_openmc_sources()
+    # Create a list of souces
+    self.sample_sources()
+    self.sources = self.make_openmc_sources()
 
     @property
     def major_radius(self):
