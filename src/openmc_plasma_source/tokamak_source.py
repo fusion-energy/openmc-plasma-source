@@ -72,7 +72,6 @@ def tokamak_source(
         fuel (dict): Isotopes as keys and atom fractions as values
     """
 
-
     # Perform sanity checks for inputs not caught by properties
     if minor_radius >= major_radius:
         raise ValueError("Minor radius must be smaller than major radius")

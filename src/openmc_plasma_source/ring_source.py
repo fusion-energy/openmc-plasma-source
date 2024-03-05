@@ -41,9 +41,7 @@ def fusion_ring_source(
     ):
         pass
     else:
-        raise ValueError(
-            "Angles must be a tuple of floats between zero and 2 * np.pi"
-        )
+        raise ValueError("Angles must be a tuple of floats between zero and 2 * np.pi")
 
     if isinstance(z_placement, (int, float)):
         pass
