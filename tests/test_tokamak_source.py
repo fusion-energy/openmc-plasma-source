@@ -1,9 +1,10 @@
-from openmc_plasma_source import TokamakSource
-from openmc import IndependentSource
 import numpy as np
-
 import pytest
-from hypothesis import given, settings, assume, strategies as st
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
+from openmc import IndependentSource
+
+from openmc_plasma_source import TokamakSource
 
 
 @pytest.fixture

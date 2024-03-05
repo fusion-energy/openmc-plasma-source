@@ -1,7 +1,9 @@
-import openmc
-from openmc_plasma_source import FusionRingSource
 import math
 from pathlib import Path
+
+import openmc
+
+from openmc_plasma_source import FusionRingSource
 
 # just making use of a local cross section xml file, replace with your own cross sections or comment out
 openmc.config["cross_sections"] = Path(__file__).parent.resolve() / "cross_sections.xml"

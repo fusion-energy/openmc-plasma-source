@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-from matplotlib import cm
 import numpy as np
+from matplotlib import cm
 
 
 def scatter_tokamak_source(source, ax=None, quantity=None, aspect="equal", **kwargs):

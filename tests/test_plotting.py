@@ -1,10 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from openmc_plasma_source import (
-    TokamakSource,
-    plotting as ops_plt,
-)
 import pytest
+
+from openmc_plasma_source import TokamakSource
+from openmc_plasma_source import plotting as ops_plt
 
 
 @pytest.fixture

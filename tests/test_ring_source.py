@@ -1,8 +1,8 @@
-from openmc_plasma_source import FusionRingSource
-
+import numpy as np
 import openmc
 import pytest
-import numpy as np
+
+from openmc_plasma_source import FusionRingSource
 
 
 def test_creation():

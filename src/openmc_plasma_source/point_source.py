@@ -1,5 +1,6 @@
-import openmc
 from typing import Tuple
+
+import openmc
 
 from .fuel_types import get_neutron_energy_distribution
 

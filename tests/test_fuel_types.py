@@ -1,5 +1,6 @@
-from openmc_plasma_source.fuel_types import Fuel, fuel_types
 import pytest
+
+from openmc_plasma_source.fuel_types import Fuel, fuel_types
 
 
 @pytest.mark.parametrize("energy,mass", [(2.5e7, 5), (15, 30)])

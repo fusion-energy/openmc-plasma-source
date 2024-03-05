@@ -43,60 +43,42 @@ def get_neutron_energy_distribution(
         if v > 1:
             raise ValueError(f'Fuel dictionary values must be below 1 not "{k}".')
 
-    # if ["D"] == sorted(set(fuel.keys())):
-    #     max_energy_mev = 5
-    # elif ["T"] == sorted(set(fuel.keys())):
-    #     max_energy_mev = 12
-    # elif ["D", "T"] == sorted(set(fuel.keys())):
-    #     max_energy_mev = 20
-
-    # print(max_energy_mev, "MeV")
-
     # 1.0 neutron yield, all reactions scaled by this value
     num_of_vals = 100
-    # single grid for DT, DD and TT grid
+    # single grid for TT neutrons
     E_pspec = np.linspace(0, 12, num_of_vals)  # E_pspec is exspected in MeV units
 
-    dNdE_DT_DD_TT = np.zeros(num_of_vals)
+    DTmean, DTvar = nst.DTprimspecmoments(ion_temperature_kev)
+    print('DTmean', DTmean)
+    DDmean, DDvar = nst.DDprimspecmoments(ion_temperature_kev)
+
     if ["D", "T"] == sorted(set(fuel.keys())):
-        # DTmean, DTvar = nst.DTprimspecmoments(ion_temperature_kev)
-        # DDmean, DDvar = nst.DDprimspecmoments(ion_temperature_kev)
 
-        Y_DT = 1.0
-        Y_DD = nst.yield_from_dt_yield_ratio(
-            "dd", Y_DT, ion_temperature_kev, fuel["D"], fuel["T"]
+        strength_DT = 1.0
+        strength_DD = nst.yield_from_dt_yield_ratio(
+            "dd", strength_DT, ion_temperature_kev, fuel["D"], fuel["T"]
         )
-        Y_TT = nst.yield_from_dt_yield_ratio(
-            "tt", Y_DT, ion_temperature_kev, fuel["D"], fuel["T"]
+        strength_TT = nst.yield_from_dt_yield_ratio(
+            "tt", strength_DT, ion_temperature_kev, fuel["D"], fuel["T"]
         )
 
-        # dNdE_DT = Y_DT * nst.Qb(E_pspec, DTmean, DTvar)  # Brysk shape i.e. Gaussian
-        # dNdE_DD = Y_DD * nst.Qb(E_pspec, DDmean, DDvar)  # Brysk shape i.e. Gaussian
-        dNdE_TT = Y_TT * nst.dNdE_TT(E_pspec, ion_temperature_kev)
-        # dNdE_DT_DD_TT = dNdE_DT + dNdE_DD + dNdE_TT
-        dNdE_DT_DD_TT = dNdE_TT
-        print("dt")
-        # tt_source = openmc.stats.Discrete(E_pspec * 1e6, dNdE_DT_DD_TT)
-        tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_DT_DD_TT)
+        dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature_kev)
+        tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
         dd_source = openmc.stats.muir(e0=2.5e6, m_rat=4, kt=ion_temperature)
         dt_source = openmc.stats.muir(e0=14.06e6, m_rat=5, kt=ion_temperature)
         # todo look into combining distributions openmc.data.combine_distributions()
-        return [tt_source, dd_source, dt_source], [Y_TT, Y_DD, Y_DT]
+        return [tt_source, dd_source, dt_source], [strength_TT, strength_DD, strength_DT]
+
     elif ["D"] == sorted(set(fuel.keys())):
-        DTmean, DTvar = nst.DTprimspecmoments(ion_temperature_kev)
-        DDmean, DDvar = nst.DDprimspecmoments(ion_temperature_kev)
 
-        print("d")
-        Y_DD = 1.0
-
-        dNdE_DD = Y_DD * nst.Qb(E_pspec, DDmean, DDvar)  # Brysk shape i.e. Gaussian
-        # return openmc.stats.Discrete(E_pspec * 1e6, dNdE_DD)
-        return openmc.stats.muir(e0=2.5e6, m_rat=4, kt=ion_temperature)
+        strength_DD = 1.0
+        dd_source = openmc.stats.muir(e0=2.5e6, m_rat=4, kt=ion_temperature)
+        return [dd_source], [strength_DD]
 
     elif ["T"] == sorted(set(fuel.keys())):
-        Y_TT = 1.0
 
-        print("t")
-        dNdE_TT = Y_TT * nst.dNdE_TT(E_pspec, ion_temperature_kev)
-        return openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
-        # return openmc.stats.Discrete(E_pspec * 1e6, dNdE_TT)
+        strength_TT = 1.0
+        dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature_kev)
+        tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
+        return [tt_source], [strength_TT]
+
