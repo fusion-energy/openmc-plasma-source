@@ -53,7 +53,6 @@ def fusion_ring_source(
     else:
         raise ValueError("Temperature must be a float strictly greater than 0.")
 
-
     sources = []
 
     energy_distributions, strengths = get_neutron_energy_distribution(
@@ -77,4 +76,3 @@ def fusion_ring_source(
         sources.append(source)
 
     return sources
-
