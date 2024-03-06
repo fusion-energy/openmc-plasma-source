@@ -85,16 +85,12 @@ def tokamak_source(
     if isinstance(major_radius, (int, float)) and major_radius > 0:
         pass
     else:
-        raise ValueError(
-            "Major radius must be a number within the specified bounds"
-        )
+        raise ValueError("Major radius must be a number within the specified bounds")
 
     if isinstance(minor_radius, (int, float)) and minor_radius > 0:
         self._minor_radius = minor_radius
     else:
-        raise ValueError(
-            "Minor radius must be a number within the specified bounds"
-        )
+        raise ValueError("Minor radius must be a number within the specified bounds")
 
     if isinstance(elongation, (int, float)) and elongation > 0:
         pass
@@ -104,9 +100,7 @@ def tokamak_source(
     if isinstance(triangularity, (int, float)) and -1.0 <= value <= 1.0:
         pass
     else:
-        raise ValueError(
-            "Triangularity must be a number within the specified bounds"
-        )
+        raise ValueError("Triangularity must be a number within the specified bounds")
 
     if mode not in ["H", "L", "A"]:
         raise ValueError("Mode must be one of the following: ['H', 'L', 'A']")
@@ -141,14 +135,11 @@ def tokamak_source(
     ):
         pass
     else:
-        raise ValueError(
-            "Angles must be a tuple of floats between zero and 2 * np.pi"
-        )
+        raise ValueError("Angles must be a tuple of floats between zero and 2 * np.pi")
 
     # Create a list of souces
     sources = sample_sources()
     self.sources = self.make_openmc_sources()
-
 
 
 def _ion_density(
@@ -159,7 +150,7 @@ def _ion_density(
     major_radius,
     pedestal_radius,
     ion_density_separatrix,
-    r
+    r,
 ):
     """Computes the ion density at a given position. The ion density is
     only dependent on the minor radius.
@@ -185,8 +176,7 @@ def _ion_density(
             r < pedestal_radius,
             (
                 (ion_density_centre - ion_density_pedestal)
-                * (1 - (r / pedestal_radius) ** 2)
-                ** ion_density_peaking_factor
+                * (1 - (r / pedestal_radius) ** 2) ** ion_density_peaking_factor
                 + ion_density_pedestal
             ),
             (
@@ -197,6 +187,7 @@ def _ion_density(
             ),
         )
     return density
+
 
 def _ion_temperature(self, r):
     """Computes the ion temperature at a given position. The ion
@@ -216,8 +207,7 @@ def _ion_temperature(self, r):
     if self.mode == "L":
         temperature = (
             self.ion_temperature_centre
-            * (1 - (r / self.major_radius) ** 2)
-            ** self.ion_temperature_peaking_factor
+            * (1 - (r / self.major_radius) ** 2) ** self.ion_temperature_peaking_factor
         )
     elif self.mode in ["H", "A"]:
         temperature = np.where(
@@ -236,6 +226,7 @@ def _ion_temperature(self, r):
             ),
         )
     return temperature
+
 
 def _convert_a_alpha_to_R_Z(self, a, alpha):
     """Converts (r, alpha) cylindrical coordinates to (R, Z) cartesian
@@ -262,6 +253,7 @@ def _convert_a_alpha_to_R_Z(self, a, alpha):
     Z = self.elongation * a * np.sin(alpha)
     return (R, Z)
 
+
 def _sample_sources(sample_size, minor_radius):
     """Samples self.sample_size neutrons and creates attributes .densities
     (ion density), .temperatures (ion temperature), .strengths
@@ -281,7 +273,7 @@ def _sample_sources(sample_size, minor_radius):
         major_radius=major_radius,
         pedestal_radius=pedestal_radius,
         ion_density_separatrix=ion_density_separatrix,
-        r=a
+        r=a,
     )
     self.temperatures = self.ion_temperature(a)
     self.neutron_source_density = neutron_source_density(
@@ -289,6 +281,7 @@ def _sample_sources(sample_size, minor_radius):
     )
     self.strengths = self.neutron_source_density / sum(self.neutron_source_density)
     self.RZ = self.convert_a_alpha_to_R_Z(a, alpha)
+
 
 def _make_openmc_sources(self):
     """Creates a list of OpenMC Sources() objects. The created sources are
