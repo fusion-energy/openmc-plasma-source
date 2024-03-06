@@ -2,7 +2,7 @@ from pathlib import Path
 
 import openmc
 
-from openmc_plasma_source import TokamakSource
+from openmc_plasma_source import tokamak_source
 
 # just making use of a local cross section xml file, replace with your own cross sections or comment out
 openmc.config["cross_sections"] = Path(__file__).parent.resolve() / "cross_sections.xml"
@@ -14,7 +14,7 @@ cell = openmc.Cell(region=-sphere_surface)
 geometry = openmc.Geometry([cell])
 
 # create a plasma source
-my_plasma = TokamakSource(
+my_plasma = tokamak_source(
     elongation=1.557,
     ion_density_centre=1.09e20,
     ion_density_peaking_factor=1,
