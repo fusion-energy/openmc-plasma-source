@@ -13,5 +13,5 @@ __all__ = ["__version__"]
 
 from .fuel_types import get_neutron_energy_distribution
 from .point_source import fusion_point_source
-from .ring_source import FusionRingSource
-from .tokamak_source import TokamakSource
+from .ring_source import fusion_ring_source
+from .tokamak_source import tokamak_source

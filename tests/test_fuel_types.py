@@ -1,33 +1,38 @@
 import pytest
 
-from openmc_plasma_source.fuel_types import Fuel, fuel_types
+from openmc_plasma_source import get_neutron_energy_distribution
 
 
-@pytest.mark.parametrize("energy,mass", [(2.5e7, 5), (15, 30)])
-def test_fuel_with_correct_inputs(energy, mass):
+@pytest.mark.parametrize("temperature, fuel", [
+    (2e3, {'D': 1.}),
+    (2e3, {'T': 1.}),
+    (2e3, {'T': 0.5, 'D': 0.5}),
+    (2e3, {'T': 0.2, 'D': 0.8}),
+])
+def test_fuel_with_correct_inputs(temperature, fuel):
     # Should accept any non-zero positive inputs to either variable
-    fuel = Fuel(energy, mass)
-    assert fuel.mean_energy == energy
-    assert fuel.mass_of_reactants == mass
+    get_neutron_energy_distribution(temperature, fuel)
 
 
-@pytest.mark.parametrize(
-    "energy,mass", [(2.5e7, -5), (-12, 30), (1e7, 0), (0, 4), (-12, -12)]
-)
-def test_fuel_with_bad_inputs(energy, mass):
+@pytest.mark.parametrize("temperature, fuel", [
+    (2e3, {'D': 1.1}),
+    (2e3, {'T': 0.9}),
+    (2e3, {'T': -0.5, 'D': 0.5}),
+    (2e3, {'T': -0.2, 'D': -0.8}),
+])
+def test_fuel_with_bad_inputs(temperature, fuel):
     # Should reject any negative numbers and zeros.
     with pytest.raises(ValueError):
-        fuel = Fuel(energy, mass)
+        get_neutron_energy_distribution(temperature, fuel)
 
 
-@pytest.mark.parametrize("fuel_type", ["DT", "DD"])
-def test_fuel_types(fuel_type):
-    # Should accept 'DD' and 'DT'
-    assert isinstance(fuel_types[fuel_type], Fuel)
-
-
-@pytest.mark.parametrize("fuel_type", ["dt", "dd", "Dt", "dD", "hello world", 5])
-def test_incorrect_fuel_types(fuel_type):
-    # Should reject everything except 'DT' and 'DD'
-    with pytest.raises(KeyError):
-        my_fuel = fuel_types[fuel_type]
+@pytest.mark.parametrize("temperature, fuel", [
+    (2e3, {'DD': 1.1}),
+    (2e3, {'DT': 0.9}),
+    (2e3, {'He3': -0.5, 'D': 0.5}),
+    (2e3, {1: -0.2, 'D': -0.8}),
+])
+def test_fuel_with_incorrect_isotopese(temperature, fuel):
+    # Should reject anything which is not 'D' or 'T'.
+    with pytest.raises(ValueError):
+        get_neutron_energy_distribution(temperature, fuel)

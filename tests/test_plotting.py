@@ -2,13 +2,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from openmc_plasma_source import TokamakSource
+from openmc_plasma_source import tokamak_source
 from openmc_plasma_source import plotting as ops_plt
 
 
 @pytest.fixture
 def tokamak_source():
-    return TokamakSource(
+    return tokamak_source(
         elongation=1.557,
         ion_density_centre=1.09e20,
         ion_density_peaking_factor=1,
@@ -128,13 +128,13 @@ def test_scatter_tokamak_source_kwargs(tokamak_source, kwargs):
 
 
 def test_scatter_tokamak_not_source():
-    """Ensure failure when given non-TokamakSource to plot"""
+    """Ensure failure when given non-tokamak_source to plot"""
     with pytest.raises(ValueError) as excinfo:
         fig = plt.figure()
         ax = fig.gca()
         ops_plt.scatter_tokamak_source("hello world", ax=ax)
     plt.close()
-    assert "TokamakSource" in str(excinfo.value)
+    assert "tokamak_source" in str(excinfo.value)
 
 
 @pytest.mark.parametrize("quantity", ["coucou", "ion_density", 17])
@@ -241,13 +241,13 @@ def test_plot_tokamak_source_3D_kwargs(tokamak_source, kwargs):
 
 
 def test_plot_tokamak_source_3D_not_source():
-    """Ensure failure when given non-TokamakSource to plot"""
+    """Ensure failure when given non-tokamak_source to plot"""
     with pytest.raises(ValueError) as excinfo:
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1, projection="3d")
         ops_plt.plot_tokamak_source_3D("hello world", ax=ax)
     plt.close()
-    assert "TokamakSource" in str(excinfo.value)
+    assert "tokamak_source" in str(excinfo.value)
 
 
 @pytest.mark.parametrize("quantity", ["coucou", "ion_density", 17])

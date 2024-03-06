@@ -49,8 +49,10 @@ def get_neutron_energy_distribution(
     E_pspec = np.linspace(0, 12, num_of_vals)  # E_pspec is exspected in MeV units
 
     DTmean, DTvar = nst.DTprimspecmoments(ion_temperature_kev)
-    print("DTmean", DTmean)
+    # print("DTmean", DTmean)
     DDmean, DDvar = nst.DDprimspecmoments(ion_temperature_kev)
+    # print("DDmean", DDmean)
+    #todo make use of these DTvar and DDvar values in muir or gaussian distribution
 
     if ["D", "T"] == sorted(set(fuel.keys())):
 
@@ -64,8 +66,8 @@ def get_neutron_energy_distribution(
 
         dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature_kev)
         tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
-        dd_source = openmc.stats.muir(e0=2.5e6, m_rat=4, kt=ion_temperature)
-        dt_source = openmc.stats.muir(e0=14.06e6, m_rat=5, kt=ion_temperature)
+        dd_source = openmc.stats.muir(e0=DDmean*1e6, m_rat=4, kt=ion_temperature)
+        dt_source = openmc.stats.muir(e0=DTmean*1e6, m_rat=5, kt=ion_temperature)
         # todo look into combining distributions openmc.data.combine_distributions()
         return [tt_source, dd_source, dt_source], [
             strength_TT,
@@ -76,7 +78,7 @@ def get_neutron_energy_distribution(
     elif ["D"] == sorted(set(fuel.keys())):
 
         strength_DD = 1.0
-        dd_source = openmc.stats.muir(e0=2.5e6, m_rat=4, kt=ion_temperature)
+        dd_source = openmc.stats.muir(e0=DDmean*1e6, m_rat=4, kt=ion_temperature)
         return [dd_source], [strength_DD]
 
     elif ["T"] == sorted(set(fuel.keys())):
