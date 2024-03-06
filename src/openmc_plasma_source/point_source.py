@@ -51,7 +51,7 @@ def fusion_point_source(
 
     # else:
     for energy_distribution, strength in zip(energy_distributions, strengths):
-        source = openmc.Source()
+        source = openmc.IndependentSource()
         source.energy = energy_distribution
         source.space = openmc.stats.Point(coordinate)
         source.angle = openmc.stats.Isotropic()

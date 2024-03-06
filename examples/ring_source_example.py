@@ -3,7 +3,7 @@ from pathlib import Path
 
 import openmc
 
-from openmc_plasma_source import FusionRingSource
+from openmc_plasma_source import fusion_ring_source
 
 # just making use of a local cross section xml file, replace with your own cross sections or comment out
 openmc.config["cross_sections"] = Path(__file__).parent.resolve() / "cross_sections.xml"
@@ -14,7 +14,7 @@ cell = openmc.Cell(region=-sphere_surface)
 geometry = openmc.Geometry([cell])
 
 # define the source
-my_source = FusionRingSource(
+my_source = fusion_ring_source(
     radius=700,
     angles=(0.0, 2 * math.pi),  # 360deg source
     temperature=20000.0,
