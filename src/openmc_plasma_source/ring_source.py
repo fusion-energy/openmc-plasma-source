@@ -60,7 +60,6 @@ def fusion_ring_source(
     )
 
     for energy_distribution, strength in zip(energy_distributions, strengths):
-
         source = openmc.IndependentSource()
 
         source.space = openmc.stats.CylindricalIndependent(

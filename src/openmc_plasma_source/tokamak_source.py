@@ -136,9 +136,7 @@ def tokamak_source(
     ):
         pass
     else:
-        raise ValueError(
-            "Angles must be a tuple of floats between zero and 2 * np.pi"
-        )
+        raise ValueError("Angles must be a tuple of floats between zero and 2 * np.pi")
 
     # Create a list of sources
     """Samples sample_size neutrons and creates attributes .densities
@@ -159,7 +157,7 @@ def tokamak_source(
         major_radius=major_radius,
         pedestal_radius=pedestal_radius,
         ion_density_separatrix=ion_density_separatrix,
-        r=a
+        r=a,
     )
     temperatures = _ion_temperature(
         r=a,
@@ -197,7 +195,6 @@ def tokamak_source(
     return sources
 
 
-
 def _ion_density(
     mode,
     ion_density_centre,
@@ -206,7 +203,7 @@ def _ion_density(
     major_radius,
     pedestal_radius,
     ion_density_separatrix,
-    r
+    r,
 ):
     """Computes the ion density at a given position. The ion density is
     only dependent on the minor radius.
@@ -232,8 +229,7 @@ def _ion_density(
             r < pedestal_radius,
             (
                 (ion_density_centre - ion_density_pedestal)
-                * (1 - (r / pedestal_radius) ** 2)
-                ** ion_density_peaking_factor
+                * (1 - (r / pedestal_radius) ** 2) ** ion_density_peaking_factor
                 + ion_density_pedestal
             ),
             (
@@ -245,17 +241,18 @@ def _ion_density(
         )
     return density
 
+
 def _ion_temperature(
-        r,
-        mode,
-        pedestal_radius,
-        ion_temperature_pedestal,
-        ion_temperature_centre,
-        ion_temperature_beta,
-        ion_temperature_peaking_factor,
-        ion_temperature_separatrix,
-        major_radius,
-    ):
+    r,
+    mode,
+    pedestal_radius,
+    ion_temperature_pedestal,
+    ion_temperature_centre,
+    ion_temperature_beta,
+    ion_temperature_peaking_factor,
+    ion_temperature_separatrix,
+    major_radius,
+):
     """Computes the ion temperature at a given position. The ion
     temperature is only dependent on the minor radius.
 
@@ -273,8 +270,7 @@ def _ion_temperature(
     if mode == "L":
         temperature = (
             ion_temperature_centre
-            * (1 - (r / major_radius) ** 2)
-            ** ion_temperature_peaking_factor
+            * (1 - (r / major_radius) ** 2) ** ion_temperature_peaking_factor
         )
     elif mode in ["H", "A"]:
         temperature = np.where(
@@ -293,6 +289,7 @@ def _ion_temperature(
             ),
         )
     return temperature
+
 
 def _convert_a_alpha_to_R_Z(
     a,
@@ -330,6 +327,7 @@ def _convert_a_alpha_to_R_Z(
     Z = elongation * a * np.sin(alpha)
     return (R, Z)
 
+
 def _sample_sources(sample_size, minor_radius):
     """Samples sample_size neutrons and creates attributes .densities
     (ion density), .temperatures (ion temperature), .strengths
@@ -349,21 +347,20 @@ def _sample_sources(sample_size, minor_radius):
         major_radius=major_radius,
         pedestal_radius=pedestal_radius,
         ion_density_separatrix=ion_density_separatrix,
-        r=a
+        r=a,
     )
     temperatures = ion_temperature(a)
-    neutron_source_density = neutron_source_density(
-        densities, temperatures
-    )
+    neutron_source_density = neutron_source_density(densities, temperatures)
     strengths = neutron_source_density / sum(neutron_source_density)
     RZ = _convert_a_alpha_to_R_Z(a, alpha)
 
+
 def _make_openmc_sources(
-        strengths,
-        angles,
-        temperatures,
-        fuel,
-        RZ,
+    strengths,
+    angles,
+    temperatures,
+    fuel,
+    RZ,
 ):
     """Creates a list of OpenMC Sources() objects. The created sources are
     ring sources based on the .RZ coordinates between two angles. The
@@ -394,8 +391,9 @@ def _make_openmc_sources(
         )
 
         # now we have potentially 3 distributions (DT, DD, TT)
-        for energy_distribution, dist_strength in zip(energy_distributions, dist_strengths):
-
+        for energy_distribution, dist_strength in zip(
+            energy_distributions, dist_strengths
+        ):
             my_source = openmc.IndependentSource()
 
             # create a ring source

@@ -31,9 +31,11 @@ def get_neutron_energy_distribution(
         )
 
     if sum_fuel_isotopes < 0.0:
-        raise ValueError(f"isotope fractions must sum to be above 0. Not {sum_fuel_isotopes}")
+        raise ValueError(
+            f"isotope fractions must sum to be above 0. Not {sum_fuel_isotopes}"
+        )
 
-    if sum_fuel_isotopes != 1.:
+    if sum_fuel_isotopes != 1.0:
         raise ValueError(f"isotope fractions must sum to 1. Not {sum_fuel_isotopes}")
 
     for k, v in fuel.items():
@@ -55,7 +57,6 @@ def get_neutron_energy_distribution(
     DDmean, DDvar = nst.DDprimspecmoments(ion_temperature_kev)
 
     if ["D", "T"] == sorted(set(fuel.keys())):
-
         strength_DT = 1.0
         strength_DD = nst.yield_from_dt_yield_ratio(
             "dd", strength_DT, ion_temperature_kev, fuel["D"], fuel["T"]
@@ -69,31 +70,33 @@ def get_neutron_energy_distribution(
         dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature_kev)
         tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
 
-        DD_std_dev = np.sqrt(DDvar* 1e12) # power 12 as this is in MeV^2 and we need eV
+        DD_std_dev = np.sqrt(
+            DDvar * 1e12
+        )  # power 12 as this is in MeV^2 and we need eV
         dd_source = openmc.stats.Normal(mean_value=DDmean * 1e6, std_dev=DD_std_dev)
         # normal could be done with Muir but in this case we have the mean and std dev from NeSST
         # dd_source = openmc.stats.muir(e0=DDmean * 1e6, m_rat=4, kt=ion_temperature)
 
-        DT_std_dev = np.sqrt(DTvar* 1e12) # power 12 as this is in MeV^2 and we need eV
+        DT_std_dev = np.sqrt(
+            DTvar * 1e12
+        )  # power 12 as this is in MeV^2 and we need eV
         dt_source = openmc.stats.Normal(mean_value=DTmean * 1e6, std_dev=DT_std_dev)
         # normal could be done with Muir but in this case we have the mean and std dev from NeSST
         # dt_source = openmc.stats.muir(e0=DTmean * 1e6, m_rat=5, kt=ion_temperature)
-        
+
         # todo look into combining distributions openmc.data.combine_distributions()
         return [tt_source, dd_source, dt_source], [
-            strength_TT/total_strength,
-            strength_DD/total_strength,
-            strength_DT/total_strength,
+            strength_TT / total_strength,
+            strength_DD / total_strength,
+            strength_DT / total_strength,
         ]
 
     elif ["D"] == sorted(set(fuel.keys())):
-
         strength_DD = 1.0
         dd_source = openmc.stats.muir(e0=DDmean * 1e6, m_rat=4, kt=ion_temperature)
         return [dd_source], [strength_DD]
 
     elif ["T"] == sorted(set(fuel.keys())):
-
         strength_TT = 1.0
         dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature_kev)
         tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
