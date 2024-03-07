@@ -9,12 +9,13 @@ def test_creation():
     my_source = fusion_point_source()
 
     # Ensure it is of type openmc.IndependentSource
-    assert isinstance(my_source, openmc.IndependentSource)
+    for source in my_source:
+        assert isinstance(source, openmc.IndependentSource)
 
-    # Ensure it has space, angle, and energy set
-    assert isinstance(my_source.space, openmc.stats.Point)
-    assert isinstance(my_source.angle, openmc.stats.Isotropic)
-    assert isinstance(my_source.energy, openmc.stats.univariate.Normal)
+        # Ensure it has space, angle, and energy set
+        assert isinstance(source.space, openmc.stats.Point)
+        assert isinstance(source.angle, openmc.stats.Isotropic)
+        assert isinstance(source.energy, openmc.stats.univariate.Normal) or isinstance(source.energy, openmc.stats.univariate.Tabular)
 
 
 @pytest.mark.parametrize(
@@ -53,8 +54,8 @@ def test_fuel(fuel):
     fusion_point_source(fuel=fuel)
 
 
-@pytest.mark.parametrize("fuel", ["топливо", 5])
+@pytest.mark.parametrize("fuel", [{"топливо": 1.}])
 def test_wrong_fuel(fuel):
     # Should reject fuel types besides those listed in fuel_types.py
-    with pytest.raises((KeyError, TypeError)):
+    with pytest.raises(ValueError):
         fusion_point_source(fuel=fuel)
