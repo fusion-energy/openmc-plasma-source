@@ -7,7 +7,7 @@ def get_neutron_energy_distribution(
     ion_temperature: float,
     fuel: dict,
 ) -> openmc.stats.Discrete:
-    """Finds the energy distribution
+    """Finds the energy distribution and their relative strengths.
 
     Parameters
     ----------
@@ -49,11 +49,7 @@ def get_neutron_energy_distribution(
     E_pspec = np.linspace(0, 12, num_of_vals)  # E_pspec is exspected in MeV units
 
     DTmean, DTvar = nst.DTprimspecmoments(ion_temperature_kev)
-    # print("DTmean", DTmean)
     DDmean, DDvar = nst.DDprimspecmoments(ion_temperature_kev)
-    print("DDmean", DDmean)
-    print("DDvar", DDvar)
-    # todo make use of these DTvar and DDvar values in muir or gaussian distribution
 
     if ["D", "T"] == sorted(set(fuel.keys())):
 
@@ -64,6 +60,8 @@ def get_neutron_energy_distribution(
         strength_TT = nst.yield_from_dt_yield_ratio(
             "tt", strength_DT, ion_temperature_kev, fuel["D"], fuel["T"]
         )
+
+        total_strength = sum([strength_DT, strength_DD, strength_TT])
 
         dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature_kev)
         tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
@@ -80,9 +78,9 @@ def get_neutron_energy_distribution(
         
         # todo look into combining distributions openmc.data.combine_distributions()
         return [tt_source, dd_source, dt_source], [
-            strength_TT,
-            strength_DD,
-            strength_DT,
+            strength_TT/total_strength,
+            strength_DD/total_strength,
+            strength_DT/total_strength,
         ]
 
     elif ["D"] == sorted(set(fuel.keys())):

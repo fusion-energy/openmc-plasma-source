@@ -14,7 +14,7 @@ cell = openmc.Cell(region=-sphere_surface)
 geometry = openmc.Geometry([cell])
 
 # create a plasma source
-my_plasma = tokamak_source(
+my_sources = tokamak_source(
     elongation=1.557,
     ion_density_centre=1.09e20,
     ion_density_peaking_factor=1,
@@ -39,7 +39,7 @@ settings = openmc.Settings()
 settings.run_mode = "fixed source"
 settings.batches = 10
 settings.particles = 1000
-settings.source = my_plasma.sources
+settings.source = my_sources
 
 
 model = openmc.model.Model(materials=None, geometry=geometry, settings=settings)
