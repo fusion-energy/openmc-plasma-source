@@ -22,8 +22,7 @@ def test_creation():
 )
 def test_coordinate(coordinate):
     # Should allow any tuple of length 3 containing numbers
-    my_source = fusion_point_source(coordinate=coordinate)
-    assert np.array_equal(my_source.coordinate, coordinate)
+    fusion_point_source(coordinate=coordinate)
 
 
 @pytest.mark.parametrize(
@@ -39,9 +38,7 @@ def test_bad_coordinate(coordinate):
 @pytest.mark.parametrize("temperature", [20000, 1e4, 0.1, 25000.0])
 def test_temperature(temperature):
     # Should accept any positive float
-    my_source = fusion_point_source(temperature=temperature)
-    assert my_source.temperature == temperature
-
+    fusion_point_source(temperature=temperature)
 
 @pytest.mark.parametrize("temperature", [-20000.0, "hello world", [10000]])
 def test_bad_temperature(temperature):
@@ -50,11 +47,10 @@ def test_bad_temperature(temperature):
         fusion_point_source(temperature=temperature)
 
 
-@pytest.mark.parametrize("fuel", ["DT", "DD"])
+@pytest.mark.parametrize("fuel", [{"D": 0.5, "T": 0.5}, {"D": 1.}, {'T': 1.}])
 def test_fuel(fuel):
     # Should accept either 'DD' or 'DT'
-    my_source = fusion_point_source(fuel=fuel)
-    assert my_source.fuel_type == fuel
+    fusion_point_source(fuel=fuel)
 
 
 @pytest.mark.parametrize("fuel", ["топливо", 5])

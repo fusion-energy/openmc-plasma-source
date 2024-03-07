@@ -31,7 +31,10 @@ def get_neutron_energy_distribution(
         )
 
     if sum_fuel_isotopes < 0.0:
-        raise ValueError(f"isotope must sum to be above 0. Not {sum_fuel_isotopes}")
+        raise ValueError(f"isotope fractions must sum to be above 0. Not {sum_fuel_isotopes}")
+
+    if sum_fuel_isotopes != 1.:
+        raise ValueError(f"isotope fractions must sum to 1. Not {sum_fuel_isotopes}")
 
     for k, v in fuel.items():
         if k not in ["D", "T"]:
