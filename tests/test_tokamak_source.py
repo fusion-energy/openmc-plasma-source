@@ -3,7 +3,12 @@ import pytest
 from hypothesis import given, settings, HealthCheck
 from hypothesis import strategies as st
 import openmc
-from openmc_plasma_source import tokamak_source, tokamak_ion_density, tokamak_ion_temperature, tokamak_convert_a_alpha_to_R_Z
+from openmc_plasma_source import (
+    tokamak_source,
+    tokamak_ion_density,
+    tokamak_ion_temperature,
+    tokamak_convert_a_alpha_to_R_Z,
+)
 
 
 @pytest.fixture
@@ -185,16 +190,16 @@ def test_bad_angles(tokamak_args_dict, angles):
 
 def test_ion_density(tokamak_args_dict, tokamak_source_example):
     # test with values of r that are within acceptable ranges.
-    r = np.linspace(0.0, tokamak_args_dict['minor_radius'], 100)
+    r = np.linspace(0.0, tokamak_args_dict["minor_radius"], 100)
     density = tokamak_ion_density(
         r=r,
-        mode='L',
-        ion_density_centre=tokamak_args_dict['ion_density_centre'], 
-        ion_density_peaking_factor=tokamak_args_dict['ion_density_peaking_factor'], 
-        ion_density_pedestal=tokamak_args_dict['ion_density_pedestal'], 
-        major_radius=tokamak_args_dict['major_radius'], 
-        pedestal_radius=tokamak_args_dict['pedestal_radius'], 
-        ion_density_separatrix=tokamak_args_dict['ion_density_separatrix'],
+        mode="L",
+        ion_density_centre=tokamak_args_dict["ion_density_centre"],
+        ion_density_peaking_factor=tokamak_args_dict["ion_density_peaking_factor"],
+        ion_density_pedestal=tokamak_args_dict["ion_density_pedestal"],
+        major_radius=tokamak_args_dict["major_radius"],
+        pedestal_radius=tokamak_args_dict["pedestal_radius"],
+        ion_density_separatrix=tokamak_args_dict["ion_density_separatrix"],
     )
     assert isinstance(r, np.ndarray)
     assert len(density) == len(r)
@@ -204,16 +209,16 @@ def test_ion_density(tokamak_args_dict, tokamak_source_example):
 def test_bad_ion_density(tokamak_args_dict, tokamak_source_example):
     # It should fail if given a negative r
     with pytest.raises(ValueError) as excinfo:
-        r=[0, 5, -6]
+        r = [0, 5, -6]
         tokamak_ion_density(
             r=r,
-            mode='L',
-            ion_density_centre=tokamak_args_dict['ion_density_centre'], 
-            ion_density_peaking_factor=tokamak_args_dict['ion_density_peaking_factor'], 
-            ion_density_pedestal=tokamak_args_dict['ion_density_pedestal'], 
-            major_radius=tokamak_args_dict['major_radius'], 
-            pedestal_radius=tokamak_args_dict['pedestal_radius'], 
-            ion_density_separatrix=tokamak_args_dict['ion_density_separatrix'],
+            mode="L",
+            ion_density_centre=tokamak_args_dict["ion_density_centre"],
+            ion_density_peaking_factor=tokamak_args_dict["ion_density_peaking_factor"],
+            ion_density_pedestal=tokamak_args_dict["ion_density_pedestal"],
+            major_radius=tokamak_args_dict["major_radius"],
+            pedestal_radius=tokamak_args_dict["pedestal_radius"],
+            ion_density_separatrix=tokamak_args_dict["ion_density_separatrix"],
         )
     assert "must not be negative" in str(excinfo.value)
 
@@ -223,14 +228,16 @@ def test_ion_temperature(tokamak_args_dict, tokamak_source_example):
     r = np.linspace(0.0, 2.9, 100)
     temperature = tokamak_ion_temperature(
         r=r,
-        mode=tokamak_args_dict['mode'],
-        pedestal_radius=tokamak_args_dict['pedestal_radius'],
-        ion_temperature_pedestal=tokamak_args_dict['ion_temperature_pedestal'],
-        ion_temperature_centre=tokamak_args_dict['ion_temperature_centre'],
-        ion_temperature_beta=tokamak_args_dict['ion_temperature_beta'],
-        ion_temperature_peaking_factor=tokamak_args_dict['ion_temperature_peaking_factor'],
-        ion_temperature_separatrix=tokamak_args_dict['ion_temperature_separatrix'],
-        major_radius=tokamak_args_dict['major_radius'],
+        mode=tokamak_args_dict["mode"],
+        pedestal_radius=tokamak_args_dict["pedestal_radius"],
+        ion_temperature_pedestal=tokamak_args_dict["ion_temperature_pedestal"],
+        ion_temperature_centre=tokamak_args_dict["ion_temperature_centre"],
+        ion_temperature_beta=tokamak_args_dict["ion_temperature_beta"],
+        ion_temperature_peaking_factor=tokamak_args_dict[
+            "ion_temperature_peaking_factor"
+        ],
+        ion_temperature_separatrix=tokamak_args_dict["ion_temperature_separatrix"],
+        major_radius=tokamak_args_dict["major_radius"],
     )
     assert isinstance(temperature, np.ndarray)
     assert len(temperature) == len(r)
@@ -240,17 +247,19 @@ def test_ion_temperature(tokamak_args_dict, tokamak_source_example):
 def test_bad_ion_temperature(tokamak_args_dict):
     # It should fail if given a negative r
     with pytest.raises(ValueError) as excinfo:
-        r=[0, 5, -6]
+        r = [0, 5, -6]
         tokamak_ion_temperature(
             r=r,
-            mode=tokamak_args_dict['mode'],
-            pedestal_radius=tokamak_args_dict['pedestal_radius'],
-            ion_temperature_pedestal=tokamak_args_dict['ion_temperature_pedestal'],
-            ion_temperature_centre=tokamak_args_dict['ion_temperature_centre'],
-            ion_temperature_beta=tokamak_args_dict['ion_temperature_beta'],
-            ion_temperature_peaking_factor=tokamak_args_dict['ion_temperature_peaking_factor'],
-            ion_temperature_separatrix=tokamak_args_dict['ion_temperature_separatrix'],
-            major_radius=tokamak_args_dict['major_radius'],
+            mode=tokamak_args_dict["mode"],
+            pedestal_radius=tokamak_args_dict["pedestal_radius"],
+            ion_temperature_pedestal=tokamak_args_dict["ion_temperature_pedestal"],
+            ion_temperature_centre=tokamak_args_dict["ion_temperature_centre"],
+            ion_temperature_beta=tokamak_args_dict["ion_temperature_beta"],
+            ion_temperature_peaking_factor=tokamak_args_dict[
+                "ion_temperature_peaking_factor"
+            ],
+            ion_temperature_separatrix=tokamak_args_dict["ion_temperature_separatrix"],
+            major_radius=tokamak_args_dict["major_radius"],
         )
     assert "must not be negative" in str(excinfo.value)
 
@@ -264,11 +273,11 @@ def test_convert_a_alpha_to_R_Z(tokamak_args_dict):
     R, Z = tokamak_convert_a_alpha_to_R_Z(
         a=a,
         alpha=alpha,
-        shafranov_factor=tokamak_args_dict['shafranov_factor'], 
-        minor_radius=tokamak_args_dict['minor_radius'], 
-        major_radius=tokamak_args_dict['major_radius'], 
-        triangularity=tokamak_args_dict['triangularity'], 
-        elongation=tokamak_args_dict['elongation'],
+        shafranov_factor=tokamak_args_dict["shafranov_factor"],
+        minor_radius=tokamak_args_dict["minor_radius"],
+        major_radius=tokamak_args_dict["major_radius"],
+        triangularity=tokamak_args_dict["triangularity"],
+        elongation=tokamak_args_dict["elongation"],
     )
     assert isinstance(R, np.ndarray)
     assert isinstance(Z, np.ndarray)
@@ -286,11 +295,11 @@ def test_bad_convert_a_alpha_to_R_Z(tokamak_args_dict):
         tokamak_convert_a_alpha_to_R_Z(
             a=-a,
             alpha=alpha,
-            shafranov_factor=tokamak_args_dict['shafranov_factor'], 
-            minor_radius=tokamak_args_dict['minor_radius'], 
-            major_radius=tokamak_args_dict['major_radius'], 
-            triangularity=tokamak_args_dict['triangularity'], 
-            elongation=tokamak_args_dict['elongation'],
+            shafranov_factor=tokamak_args_dict["shafranov_factor"],
+            minor_radius=tokamak_args_dict["minor_radius"],
+            major_radius=tokamak_args_dict["major_radius"],
+            triangularity=tokamak_args_dict["triangularity"],
+            elongation=tokamak_args_dict["elongation"],
         )
     assert "must not be negative" in str(excinfo.value)
 
@@ -360,10 +369,10 @@ def tokamak_source_strategy(draw):
         mode="H",
         ion_temperature_beta=6,
     ), {
-        'major_radius':major_radius,
-        'minor_radius':minor_radius,
-        'elongation':elongation,
-        'triangularity':triangularity,
+        "major_radius": major_radius,
+        "minor_radius": minor_radius,
+        "elongation": elongation,
+        "triangularity": triangularity,
     }
 
 
@@ -390,10 +399,10 @@ def test_source_locations_are_within_correct_range(tokamak_source):
     for different plasma physics confinement modes", C. Fausser et al., Fusion
     Engineering and Design, 2012 for more info.
     """
-    R_0 = tokamak_source[1]['major_radius']
-    A = tokamak_source[1]['minor_radius']
-    El = tokamak_source[1]['elongation']
-    delta = tokamak_source[1]['triangularity']
+    R_0 = tokamak_source[1]["major_radius"]
+    A = tokamak_source[1]["minor_radius"]
+    El = tokamak_source[1]["elongation"]
+    delta = tokamak_source[1]["triangularity"]
 
     def get_R_on_LCMS(alpha):
         """Gets R on the last closed magnetic surface for a given alpha"""

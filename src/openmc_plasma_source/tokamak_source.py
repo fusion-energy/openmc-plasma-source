@@ -127,7 +127,6 @@ def tokamak_source(
     if ion_density_centre < 0:
         raise ValueError("ion_density_centre must greater than 0")
 
-
     if ion_density_pedestal < 0:
         raise ValueError("ion_density_pedestal must greater than 0")
 
