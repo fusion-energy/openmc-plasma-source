@@ -25,6 +25,7 @@ def test_radius(radius):
     # should allow any positive float
     fusion_ring_source(radius=radius)
 
+
 @pytest.mark.parametrize("radius", [-1.0, "hello world", [1e5]])
 def test_bad_radius(radius):
     # should reject any negative float or anything not convertible to float
@@ -51,6 +52,7 @@ def test_temperature(temperature):
     # Should accept any positive float
     fusion_ring_source(radius=1.0, temperature=temperature)
 
+
 @pytest.mark.parametrize("temperature", [-20000.0, "hello world", [10000]])
 def test_bad_temperature(temperature):
     # Should reject negative floats and anything that isn't convertible to float
@@ -58,12 +60,13 @@ def test_bad_temperature(temperature):
         fusion_ring_source(radius=1.0, temperature=temperature)
 
 
-@pytest.mark.parametrize("fuel", [{'D':0.5,'T':0.5}, {"D":1.}])
+@pytest.mark.parametrize("fuel", [{"D": 0.5, "T": 0.5}, {"D": 1.0}])
 def test_fuel(fuel):
     # Should accept either 'DD' or 'DT'
     fusion_ring_source(radius=1.0, fuel=fuel)
 
-@pytest.mark.parametrize("fuel", [{"топливо": 1.}])
+
+@pytest.mark.parametrize("fuel", [{"топливо": 1.0}])
 def test_wrong_fuel(fuel):
     # Should reject fuel types besides those listed in fuel_types.py
     with pytest.raises(ValueError):
