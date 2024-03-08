@@ -12,7 +12,7 @@ def fusion_ring_source(
     z_placement: float = 0,
     temperature: float = 20000.0,
     fuel: dict = {"D": 0.5, "T": 0.5},
-)-> list[openmc.IndependentSource]:
+) -> list[openmc.IndependentSource]:
     """Creates a list of openmc.IndependentSource objects in a ring shape.
 
     Useful for simulations where all the plasma parameters are not known and
