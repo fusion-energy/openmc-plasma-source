@@ -73,6 +73,31 @@ def tokamak_source(
     """
 
     # Perform sanity checks for inputs not caught by properties
+
+    if not isinstance(major_radius, (int, float)):
+        raise ValueError("Major radius must be a number")
+
+    if not isinstance(minor_radius, (int, float)):
+        raise ValueError("Minor radius must be a number")
+
+    if not isinstance(elongation, (int, float)):
+        raise ValueError("Elongation must be a number")
+
+    if not isinstance(triangularity, (int, float)):
+        raise ValueError("Triangularity must be a number")
+
+    if not isinstance(ion_density_centre, (int, float)):
+        raise ValueError("ion_density_centre must be a number")
+
+    if not isinstance(ion_density_peaking_factor, (int, float)):
+        raise ValueError("ion_density_peaking_factor must be a number")
+
+    if not isinstance(ion_density_pedestal, (int, float)):
+        raise ValueError("ion_density_pedestal must be a number")
+
+    if not isinstance(ion_density_separatrix, (int, float)):
+        raise ValueError("ion_density_separatrix must be a number")
+
     if minor_radius >= major_radius:
         raise ValueError("Minor radius must be smaller than major radius")
 
@@ -82,24 +107,15 @@ def tokamak_source(
     if abs(shafranov_factor) >= 0.5 * minor_radius:
         raise ValueError("Shafranov factor must be smaller than 0.5*minor radius")
 
-    if not isinstance(major_radius, (int, float)):
-        raise ValueError("Major radius must be a number")
-
     if major_radius < 0:
         raise ValueError("Major radius must greater than 0")
 
-    if not isinstance(minor_radius, (int, float)):
-        raise ValueError("Minor radius must be a number")
     if minor_radius < 0:
         raise ValueError("Minor radius must greater than 0")
 
-    if not isinstance(elongation, (int, float)):
-        raise ValueError("Elongation must be a number")
-    if elongation < 0:
+    if elongation <= 0:
         raise ValueError("Elongation must greater than 0")
 
-    if not isinstance(triangularity, (int, float)):
-        raise ValueError("Triangularity must be a number")
     if not triangularity <= 1.0:
         raise ValueError("Triangularity must less than or equal to 1.")
     if not triangularity >= -1.0:
@@ -108,21 +124,13 @@ def tokamak_source(
     if mode not in ["H", "L", "A"]:
         raise ValueError("Mode must be one of the following: ['H', 'L', 'A']")
 
-    if not isinstance(ion_density_centre, (int, float)):
-        raise ValueError("ion_density_centre must be a number")
     if ion_density_centre < 0:
         raise ValueError("ion_density_centre must greater than 0")
 
-    if not isinstance(ion_density_peaking_factor, (int, float)):
-        raise ValueError("ion_density_peaking_factor must be a number")
 
-    if not isinstance(ion_density_pedestal, (int, float)):
-        raise ValueError("ion_density_pedestal must be a number")
     if ion_density_pedestal < 0:
         raise ValueError("ion_density_pedestal must greater than 0")
 
-    if not isinstance(ion_density_separatrix, (int, float)):
-        raise ValueError("ion_density_separatrix must be a number")
     if ion_density_separatrix < 0:
         raise ValueError("ion_density_separatrix must greater than 0")
 
@@ -278,7 +286,7 @@ def tokamak_ion_temperature(
             (
                 ion_temperature_pedestal
                 + (ion_temperature_centre - ion_temperature_pedestal)
-                * (1 - (r / pedestal_radius) ** ion_temperature_beta)
+                * (1 - (np.abs(r / pedestal_radius)) ** ion_temperature_beta)
                 ** ion_temperature_peaking_factor
             ),
             (
