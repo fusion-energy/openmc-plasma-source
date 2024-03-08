@@ -379,7 +379,7 @@ def test_strengths_are_normalised(tokamak_source):
 
 
 @given(tokamak_source=tokamak_source_strategy())
-@settings(max_examples=2)
+@settings(max_examples=50, suppress_health_check=(HealthCheck.too_slow,))
 def test_source_locations_are_within_correct_range(tokamak_source):
     """Tests that each source has RZ locations within the expected range.
 
