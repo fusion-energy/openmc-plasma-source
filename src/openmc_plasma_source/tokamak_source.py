@@ -149,7 +149,7 @@ def tokamak_source(
 
     # compute densities, temperatures, neutron source densities and
     # convert coordinates
-    densities = _ion_density(
+    densities = tokamak_ion_density(
         mode=mode,
         ion_density_centre=ion_density_centre,
         ion_density_peaking_factor=ion_density_peaking_factor,
@@ -159,7 +159,7 @@ def tokamak_source(
         ion_density_separatrix=ion_density_separatrix,
         r=a,
     )
-    temperatures = _ion_temperature(
+    temperatures = tokamak_ion_temperature(
         r=a,
         mode=mode,
         pedestal_radius=pedestal_radius,
@@ -171,11 +171,11 @@ def tokamak_source(
         major_radius=major_radius,
     )
 
-    neutron_source_density = _neutron_source_density(densities, temperatures)
+    neutron_source_density = tokamak_neutron_source_density(densities, temperatures)
 
     strengths = neutron_source_density / sum(neutron_source_density)
 
-    RZ = _convert_a_alpha_to_R_Z(
+    RZ = tokamak_convert_a_alpha_to_R_Z(
         a=a,
         alpha=alpha,
         shafranov_factor=shafranov_factor,
@@ -185,7 +185,7 @@ def tokamak_source(
         elongation=elongation,
     )
 
-    sources = _make_openmc_sources(
+    sources = tokamak_make_openmc_sources(
         strengths=strengths,
         angles=angles,
         temperatures=temperatures,
@@ -195,7 +195,7 @@ def tokamak_source(
     return sources
 
 
-def _ion_density(
+def tokamak_ion_density(
     mode,
     ion_density_centre,
     ion_density_peaking_factor,
@@ -242,7 +242,7 @@ def _ion_density(
     return density
 
 
-def _ion_temperature(
+def tokamak_ion_temperature(
     r,
     mode,
     pedestal_radius,
@@ -291,7 +291,7 @@ def _ion_temperature(
     return temperature
 
 
-def _convert_a_alpha_to_R_Z(
+def tokamak_convert_a_alpha_to_R_Z(
     a,
     alpha,
     shafranov_factor,
@@ -328,34 +328,7 @@ def _convert_a_alpha_to_R_Z(
     return (R, Z)
 
 
-def _sample_sources(sample_size, minor_radius):
-    """Samples sample_size neutrons and creates attributes .densities
-    (ion density), .temperatures (ion temperature), .strengths
-    (neutron source density) and .RZ (coordinates)
-    """
-    # create a sample of (a, alpha) coordinates
-    a = np.random.random(sample_size) * minor_radius
-    alpha = np.random.random(sample_size) * 2 * np.pi
-
-    # compute densities, temperatures, neutron source densities and
-    # convert coordinates
-    densities = _ion_density(
-        mode=mode,
-        ion_density_centre=ion_density_centre,
-        ion_density_peaking_factor=ion_density_peaking_factor,
-        ion_density_pedestal=ion_density_pedestal,
-        major_radius=major_radius,
-        pedestal_radius=pedestal_radius,
-        ion_density_separatrix=ion_density_separatrix,
-        r=a,
-    )
-    temperatures = ion_temperature(a)
-    neutron_source_density = neutron_source_density(densities, temperatures)
-    strengths = neutron_source_density / sum(neutron_source_density)
-    RZ = _convert_a_alpha_to_R_Z(a, alpha)
-
-
-def _make_openmc_sources(
+def tokamak_make_openmc_sources(
     strengths,
     angles,
     temperatures,
@@ -413,7 +386,7 @@ def _make_openmc_sources(
     return sources
 
 
-def _neutron_source_density(ion_density, ion_temperature):
+def tokamak_neutron_source_density(ion_density, ion_temperature):
     """Computes the neutron source density given ion density and ion
     temperature.
 

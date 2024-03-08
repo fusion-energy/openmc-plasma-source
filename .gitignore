@@ -135,8 +135,9 @@ dmypy.json
 # vim swap files
 *.swp
 
-# image files created by tests
+# image files created by tests and examples
 tests/*.png
+*.png
 
 # openmc output files
 *.h5
