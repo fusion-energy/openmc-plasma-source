@@ -2,6 +2,7 @@ from typing import Tuple
 
 import numpy as np
 import openmc
+import openmc.checkvalue as cv
 
 from .fuel_types import get_neutron_energy_distribution
 
@@ -26,20 +27,20 @@ def tokamak_source(
     angles: Tuple[float, float] = (0, 2 * np.pi),
     sample_size: int = 1000,
     fuel: dict = {"D": 0.5, "T": 0.5},
-):
-    """Plasma neutron source sampling.
-    This class greatly relies on models described in [1]
+) -> list[openmc.IndependentSource]:
+    """Creates a list of openmc.IndependentSource objects representing a tokamak plasma.
+
+    Resulting sources will have an energy distribution according to the fuel
+    composition.This function greatly relies on models described in [1]
 
     [1] : Fausser et al, 'Tokamak D-T neutron source models for different
     plasma physics confinement modes', Fus. Eng. and Design,
     https://doi.org/10.1016/j.fusengdes.2012.02.025
 
     Usage:
-        my_plasma = Plasma(**plasma_prms)
-        my_plasma.sample_sources()
-        print(my_plasma.RZ)
-        print(my_plasma.temperatures)
-        openmc_sources = my_plasma.make_openmc_sources()
+        my_source = tokamak_source(**plasma_prms)
+        my_settings = openmc.Settings()
+        my_settings.source = my_source
 
     Args:
         major_radius (float): Plasma major radius (cm)
@@ -73,65 +74,26 @@ def tokamak_source(
     """
 
     # Perform sanity checks for inputs not caught by properties
-
-    if not isinstance(major_radius, (int, float)):
-        raise ValueError("Major radius must be a number")
-
-    if not isinstance(minor_radius, (int, float)):
-        raise ValueError("Minor radius must be a number")
-
-    if not isinstance(elongation, (int, float)):
-        raise ValueError("Elongation must be a number")
-
-    if not isinstance(triangularity, (int, float)):
-        raise ValueError("Triangularity must be a number")
-
-    if not isinstance(ion_density_centre, (int, float)):
-        raise ValueError("ion_density_centre must be a number")
-
-    if not isinstance(ion_density_peaking_factor, (int, float)):
-        raise ValueError("ion_density_peaking_factor must be a number")
-
-    if not isinstance(ion_density_pedestal, (int, float)):
-        raise ValueError("ion_density_pedestal must be a number")
-
-    if not isinstance(ion_density_separatrix, (int, float)):
-        raise ValueError("ion_density_separatrix must be a number")
-
-    if minor_radius >= major_radius:
-        raise ValueError("Minor radius must be smaller than major radius")
-
-    if pedestal_radius >= minor_radius:
-        raise ValueError("Pedestal radius must be smaller than minor radius")
-
-    if abs(shafranov_factor) >= 0.5 * minor_radius:
-        raise ValueError("Shafranov factor must be smaller than 0.5*minor radius")
-
-    if major_radius < 0:
-        raise ValueError("Major radius must greater than 0")
-
-    if minor_radius < 0:
-        raise ValueError("Minor radius must greater than 0")
-
-    if elongation <= 0:
-        raise ValueError("Elongation must greater than 0")
-
-    if not triangularity <= 1.0:
-        raise ValueError("Triangularity must less than or equal to 1.")
-    if not triangularity >= -1.0:
-        raise ValueError("Triangularity must greater than or equal to -1.")
-
-    if mode not in ["H", "L", "A"]:
-        raise ValueError("Mode must be one of the following: ['H', 'L', 'A']")
-
-    if ion_density_centre < 0:
-        raise ValueError("ion_density_centre must greater than 0")
-
-    if ion_density_pedestal < 0:
-        raise ValueError("ion_density_pedestal must greater than 0")
-
-    if ion_density_separatrix < 0:
-        raise ValueError("ion_density_separatrix must greater than 0")
+    cv.check_type('major_radius', major_radius, (int, float))
+    cv.check_type('minor_radius', minor_radius, (int, float))
+    cv.check_type('elongation', elongation, (int, float))
+    cv.check_type('triangularity', triangularity, (int, float))
+    cv.check_type('ion_density_centre', ion_density_centre, (int, float))
+    cv.check_type('ion_density_peaking_factor', ion_density_peaking_factor, (int, float))
+    cv.check_type('ion_density_pedestal', ion_density_pedestal, (int, float))
+    cv.check_type('ion_density_separatrix', ion_density_separatrix, (int, float))
+    cv.check_less_than('minor_radius', minor_radius, major_radius)
+    cv.check_less_than('pedestal_radius', pedestal_radius, minor_radius)
+    cv.check_less_than('shafranov_factor', abs(shafranov_factor), 0.5 * minor_radius)
+    cv.check_greater_than('major_radius', major_radius, 0)
+    cv.check_greater_than('minor_radius', minor_radius, 0)
+    cv.check_greater_than('elongation', elongation, 0)
+    cv.check_less_than('triangularity', triangularity, 1., True)
+    cv.check_greater_than('triangularity', triangularity, -1., True)
+    cv.check_value('mode', mode, ["H", "L", "A"])
+    cv.check_greater_than('ion_density_centre', ion_density_centre, 0)
+    cv.check_greater_than('ion_density_pedestal', ion_density_pedestal, 0)
+    cv.check_greater_than('ion_density_separatrix', ion_density_separatrix, 0)
 
     if (
         isinstance(angles, tuple)

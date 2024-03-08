@@ -12,11 +12,12 @@ def fusion_ring_source(
     z_placement: float = 0,
     temperature: float = 20000.0,
     fuel: dict = {"D": 0.5, "T": 0.5},
-):
-    """An openmc.Source object with some presets to make it more convenient
-    for fusion simulations using a ring source. All attributes can be changed
-    after initialization if required. Default isotropic ring source with a
-    realistic energy distribution.
+)-> list[openmc.IndependentSource]:
+    """Creates a list of openmc.IndependentSource objects in a ring shape.
+
+    Useful for simulations where all the plasma parameters are not known and
+    this simplified geometry will suffice. Resulting ring source will have an
+    energy distribution according to the fuel composition.
 
     Args:
         radius (float): the inner radius of the ring source, in metres

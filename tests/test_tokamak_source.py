@@ -65,7 +65,7 @@ def test_bad_major_radius(tokamak_args_dict, minor_radius, major_radius):
     """Checks that tokamak_source creation rejects invalid major radius"""
     tokamak_args_dict["minor_radius"] = minor_radius
     tokamak_args_dict["major_radius"] = major_radius
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, TypeError)):
         tokamak_source(**tokamak_args_dict)
 
 
@@ -90,7 +90,7 @@ def test_bad_minor_radius(tokamak_args_dict, major_radius, minor_radius):
     """Checks that tokamak_source creation rejects invalid minor radius"""
     tokamak_args_dict["major_radius"] = major_radius
     tokamak_args_dict["minor_radius"] = minor_radius
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, TypeError)):
         tokamak_source(**tokamak_args_dict)
 
 
@@ -105,7 +105,7 @@ def test_elongation(tokamak_args_dict, elongation):
 def test_bad_elongation(tokamak_args_dict, elongation):
     """Checks that tokamak_source creation rejects invalid elongation"""
     tokamak_args_dict["elongation"] = elongation
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, TypeError)):
         tokamak_source(**tokamak_args_dict)
 
 
@@ -120,7 +120,7 @@ def test_triangularity(tokamak_args_dict, triangularity):
 def test_bad_triangularity(tokamak_args_dict, triangularity):
     """Checks that tokamak_source creation rejects invalid triangularity"""
     tokamak_args_dict["triangularity"] = triangularity
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, TypeError)):
         tokamak_source(**tokamak_args_dict)
 
 
@@ -184,11 +184,11 @@ def test_bad_angles(tokamak_args_dict, angles):
     # It should fail when given something that isn't a 2-tuple or similar
     # Contents should convert to float
     tokamak_args_dict["angles"] = angles
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises((ValueError, TypeError)):
         tokamak_source(**tokamak_args_dict)
 
 
-def test_ion_density(tokamak_args_dict, tokamak_source_example):
+def test_ion_density(tokamak_args_dict):
     # test with values of r that are within acceptable ranges.
     r = np.linspace(0.0, tokamak_args_dict["minor_radius"], 100)
     density = tokamak_ion_density(
@@ -206,7 +206,7 @@ def test_ion_density(tokamak_args_dict, tokamak_source_example):
     assert np.all(np.isfinite(density))
 
 
-def test_bad_ion_density(tokamak_args_dict, tokamak_source_example):
+def test_bad_ion_density(tokamak_args_dict):
     # It should fail if given a negative r
     with pytest.raises(ValueError) as excinfo:
         r = [0, 5, -6]

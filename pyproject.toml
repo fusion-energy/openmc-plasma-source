@@ -18,7 +18,7 @@ classifiers = [
 authors = [
   { name="Rémi Delaporte-Mathurin" },
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = ["python", "neutron", "fusion", "source", "openmc", "energy", "tokamak"]
 dependencies = [
     "numpy>=1.9",

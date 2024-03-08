@@ -10,10 +10,10 @@ def fusion_point_source(
     temperature: float = 20000.0,
     fuel: dict = {"D": 0.5, "T": 0.5},
 ):
-    """An openmc.Source object with some presets to make it more convenient
-    for fusion simulations using a point source. All attributes can be changed
-    after initialization if required. Default isotropic point source at the
-    origin with a Muir energy distribution.
+    """Creates a list of openmc.IndependentSource objects representing an ICF source.
+
+    Resulting ICF (Inertial Confinement Fusion) source will have an energy
+    distribution according to the fuel composition.
 
     Args:
         coordinate (tuple[float,float,float]): Location of the point source.
