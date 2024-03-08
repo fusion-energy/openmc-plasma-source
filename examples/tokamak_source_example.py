@@ -9,7 +9,7 @@ openmc.config["cross_sections"] = Path(__file__).parent.resolve() / "cross_secti
 
 
 # minimal geometry
-sphere_surface = openmc.Sphere(r=1000.0, boundary_type="vacuum")
+sphere_surface = openmc.Sphere(r=100000.0, boundary_type="vacuum")
 cell = openmc.Cell(region=-sphere_surface)
 geometry = openmc.Geometry([cell])
 
@@ -24,9 +24,9 @@ my_sources = tokamak_source(
     ion_temperature_peaking_factor=8.06,
     ion_temperature_pedestal=6.09,
     ion_temperature_separatrix=0.1,
-    major_radius=9.06,
-    minor_radius=2.92258,
-    pedestal_radius=0.8 * 2.92258,
+    major_radius=906,
+    minor_radius=292.258,
+    pedestal_radius=0.8 * 292.258,
     mode="H",
     shafranov_factor=0.44789,
     triangularity=0.270,
@@ -45,3 +45,16 @@ settings.source = my_sources
 model = openmc.model.Model(materials=None, geometry=geometry, settings=settings)
 
 model.run()
+
+
+# optionally if you would like to plot the direction of particles then another package can be used
+# https://github.com/fusion-energy/openmc_source_plotter
+
+# from openmc_source_plotter import plot_source_direction
+
+# plot = plot_source_direction(
+#     this=settings,
+#     n_samples=200
+# )
+
+# plot.show()
