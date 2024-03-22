@@ -3,6 +3,96 @@ import numpy as np
 import openmc
 
 
+def neutron_energy_mean(ion_temperature: float, reaction: str) -> float:
+    """Calculates the mean energy of the neutron emitted during DD or DT
+    fusion accounting for temperature of the incident ions. Based on Ballabio
+    fits, see Table III of L. Ballabio et al 1998 Nucl. Fusion 38 1723
+
+    Args:
+        ion_temperature (float): the temperature of the ions in eV
+        reaction (str): the two isotope that fuse, can be either 'DD' or 'DT'
+
+    Raises:
+        ValueError: if the reaction is not 'DD' or 'DT' then a ValueError is raised
+
+    Returns:
+        float: the mean neutron energy in eV
+    """
+
+    # values from Ballabio paper
+    if reaction == "DD":
+        a_1 = 4.69515
+        a_2 = -0.040729
+        a_3 = 0.47
+        a_4 = 0.81844
+        mean = 2.4495e6  # in units of eV
+    elif reaction == "DT":
+        a_1 = 5.30509
+        a_2 = 2.4736e-3
+        a_3 = 1.84
+        a_4 = 1.3818
+        mean = 14.021e6  # in units of eV
+    else:
+        raise ValueError(f'reaction must be either "DD" or "DT" not {reaction}')
+
+    ion_temperature_kev = ion_temperature / 1e3  # Ballabio equation accepts KeV units
+    mean_delta = (
+        a_1
+        * ion_temperature_kev ** (2./3.)
+        / (1. + a_2 * ion_temperature_kev**a_3)
+        + a_4 * ion_temperature_kev
+    )
+    mean_delta *= 1e3  # converting back to eV
+    return mean + mean_delta
+
+
+def neutron_energy_std_dev(ion_temperature: float, reaction: str) -> float:
+    """Calculates the standard deviation of the neutron energy emitted during DD
+     or DT fusion accounting for temperature of the incident ions. Based on
+    Ballabio fits, see Table III of L. Ballabio et al 1998 Nucl. Fusion 38 1723
+
+    Args:
+        ion_temperature (float): the temperature of the ions in eV
+        reaction (str): the two isotope that fuse, can be either 'DD' or 'DT'
+
+    Raises:
+        ValueError: if the reaction is not 'DD' or 'DT' then a ValueError is raised
+
+    Returns:
+        float: the mean neutron energy in eV
+    """
+
+    # values from Ballabio paper
+    if reaction == "DD":
+        w_0 = 82.542
+        a_1 = 1.7013e-3
+        a_2 = 0.16888
+        a_3 = 0.49
+        a_4 = 7.9460e-4
+    elif reaction == "DT":
+        w_0 = 177.259
+        a_1 = 5.1068e-4
+        a_2 = 7.6223e-3
+        a_3 = 1.78
+        a_4 = 8.7691e-5
+    else:
+        raise ValueError(f'reaction must be either "DD" or "DT" not {reaction}')
+
+    ion_temperature_kev = ion_temperature / 1e3  # Ballabio equation accepts KeV units
+    delta = (
+        a_1
+        * ion_temperature_kev ** (2./3.)
+        / (1. + a_2 * ion_temperature_kev**a_3)
+        + a_4 * ion_temperature_kev
+    )
+
+    # 2.3548200450309493 on the line below comes from equation 2* math.sqrt(math.log(2)*2)
+    variance = ((w_0 * (1 + delta))**2 * ion_temperature_kev) / 2.3548200450309493**2
+    variance *= 1e6  # converting keV^2 back to eV^2
+    std_dev = np.sqrt(variance)
+    return std_dev
+
+
 def get_neutron_energy_distribution(
     ion_temperature: float,
     fuel: dict,
@@ -53,8 +143,10 @@ def get_neutron_energy_distribution(
     # single grid for TT neutrons
     E_pspec = np.linspace(0, 12, num_of_vals)  # E_pspec is exspected in MeV units
 
-    DTmean, DTvar = nst.DTprimspecmoments(ion_temperature_kev)
-    DDmean, DDvar = nst.DDprimspecmoments(ion_temperature_kev)
+    DDmean = neutron_energy_mean(ion_temperature=ion_temperature, reaction="DD")
+    DTmean = neutron_energy_mean(ion_temperature=ion_temperature, reaction="DT")
+    DD_std_dev = neutron_energy_std_dev(ion_temperature=ion_temperature, reaction="DD")
+    DT_std_dev = neutron_energy_std_dev(ion_temperature=ion_temperature, reaction="DT")
 
     if ["D", "T"] == sorted(set(fuel.keys())):
         strength_DT = 1.0
@@ -65,22 +157,16 @@ def get_neutron_energy_distribution(
             "tt", strength_DT, ion_temperature_kev, fuel["D"], fuel["T"]
         )
 
-        total_strength = sum([strength_DT, strength_DD, strength_TT])
+        total_strength = sum([strength_TT, strength_DD, strength_DT])
 
         dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature_kev)
         tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
 
-        DD_std_dev = np.sqrt(
-            DDvar * 1e12
-        )  # power 12 as this is in MeV^2 and we need eV
-        dd_source = openmc.stats.Normal(mean_value=DDmean * 1e6, std_dev=DD_std_dev)
+        dd_source = openmc.stats.Normal(mean_value=DDmean, std_dev=DD_std_dev)
         # normal could be done with Muir but in this case we have the mean and std dev from NeSST
         # dd_source = openmc.stats.muir(e0=DDmean * 1e6, m_rat=4, kt=ion_temperature)
 
-        DT_std_dev = np.sqrt(
-            DTvar * 1e12
-        )  # power 12 as this is in MeV^2 and we need eV
-        dt_source = openmc.stats.Normal(mean_value=DTmean * 1e6, std_dev=DT_std_dev)
+        dt_source = openmc.stats.Normal(mean_value=DTmean, std_dev=DT_std_dev)
         # normal could be done with Muir but in this case we have the mean and std dev from NeSST
         # dt_source = openmc.stats.muir(e0=DTmean * 1e6, m_rat=5, kt=ion_temperature)
 
