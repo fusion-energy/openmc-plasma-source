@@ -38,8 +38,8 @@ def neutron_energy_mean(ion_temperature: float, reaction: str) -> float:
     ion_temperature_kev = ion_temperature / 1e3  # Ballabio equation accepts KeV units
     mean_delta = (
         a_1
-        * ion_temperature_kev ** (2./3.)
-        / (1. + a_2 * ion_temperature_kev**a_3)
+        * ion_temperature_kev ** (2.0 / 3.0)
+        / (1.0 + a_2 * ion_temperature_kev**a_3)
         + a_4 * ion_temperature_kev
     )
     mean_delta *= 1e3  # converting back to eV
@@ -81,13 +81,13 @@ def neutron_energy_std_dev(ion_temperature: float, reaction: str) -> float:
     ion_temperature_kev = ion_temperature / 1e3  # Ballabio equation accepts KeV units
     delta = (
         a_1
-        * ion_temperature_kev ** (2./3.)
-        / (1. + a_2 * ion_temperature_kev**a_3)
+        * ion_temperature_kev ** (2.0 / 3.0)
+        / (1.0 + a_2 * ion_temperature_kev**a_3)
         + a_4 * ion_temperature_kev
     )
 
     # 2.3548200450309493 on the line below comes from equation 2* math.sqrt(math.log(2)*2)
-    variance = ((w_0 * (1 + delta))**2 * ion_temperature_kev) / 2.3548200450309493**2
+    variance = ((w_0 * (1 + delta)) ** 2 * ion_temperature_kev) / 2.3548200450309493**2
     variance *= 1e6  # converting keV^2 back to eV^2
     std_dev = np.sqrt(variance)
     return std_dev
