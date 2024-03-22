@@ -1,20 +1,23 @@
-from openmc_plasma_source import FusionPointSource
-
+import numpy as np
 import openmc
 import pytest
-import numpy as np
+
+from openmc_plasma_source import fusion_point_source
 
 
 def test_creation():
-    my_source = FusionPointSource()
+    my_source = fusion_point_source()
 
     # Ensure it is of type openmc.IndependentSource
-    assert isinstance(my_source, openmc.IndependentSource)
+    for source in my_source:
+        assert isinstance(source, openmc.IndependentSource)
 
-    # Ensure it has space, angle, and energy set
-    assert isinstance(my_source.space, openmc.stats.Point)
-    assert isinstance(my_source.angle, openmc.stats.Isotropic)
-    assert isinstance(my_source.energy, openmc.stats.univariate.Normal)
+        # Ensure it has space, angle, and energy set
+        assert isinstance(source.space, openmc.stats.Point)
+        assert isinstance(source.angle, openmc.stats.Isotropic)
+        assert isinstance(source.energy, openmc.stats.univariate.Normal) or isinstance(
+            source.energy, openmc.stats.univariate.Tabular
+        )
 
 
 @pytest.mark.parametrize(
@@ -22,8 +25,7 @@ def test_creation():
 )
 def test_coordinate(coordinate):
     # Should allow any tuple of length 3 containing numbers
-    my_source = FusionPointSource(coordinate=coordinate)
-    assert np.array_equal(my_source.coordinate, coordinate)
+    fusion_point_source(coordinate=coordinate)
 
 
 @pytest.mark.parametrize(
@@ -33,32 +35,30 @@ def test_bad_coordinate(coordinate):
     # Should reject iterables of length != 3, anything non-tuple, and anything
     # that can't convert to float
     with pytest.raises(ValueError):
-        FusionPointSource(coordinate=coordinate)
+        fusion_point_source(coordinate=coordinate)
 
 
 @pytest.mark.parametrize("temperature", [20000, 1e4, 0.1, 25000.0])
 def test_temperature(temperature):
     # Should accept any positive float
-    my_source = FusionPointSource(temperature=temperature)
-    assert my_source.temperature == temperature
+    fusion_point_source(temperature=temperature)
 
 
 @pytest.mark.parametrize("temperature", [-20000.0, "hello world", [10000]])
 def test_bad_temperature(temperature):
     # Should reject negative floats and anything that isn't convertible to float
     with pytest.raises(ValueError):
-        FusionPointSource(temperature=temperature)
+        fusion_point_source(temperature=temperature)
 
 
-@pytest.mark.parametrize("fuel", ["DT", "DD"])
+@pytest.mark.parametrize("fuel", [{"D": 0.5, "T": 0.5}, {"D": 1.0}, {"T": 1.0}])
 def test_fuel(fuel):
     # Should accept either 'DD' or 'DT'
-    my_source = FusionPointSource(fuel=fuel)
-    assert my_source.fuel_type == fuel
+    fusion_point_source(fuel=fuel)
 
 
-@pytest.mark.parametrize("fuel", ["топливо", 5])
+@pytest.mark.parametrize("fuel", [{"топливо": 1.0}])
 def test_wrong_fuel(fuel):
     # Should reject fuel types besides those listed in fuel_types.py
-    with pytest.raises((KeyError, TypeError)):
-        FusionPointSource(fuel=fuel)
+    with pytest.raises(ValueError):
+        fusion_point_source(fuel=fuel)

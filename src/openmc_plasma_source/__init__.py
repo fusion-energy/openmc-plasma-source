@@ -1,7 +1,7 @@
 try:
-    from importlib.metadata import version, PackageNotFoundError
+    from importlib.metadata import PackageNotFoundError, version
 except (ModuleNotFoundError, ImportError):
-    from importlib_metadata import version, PackageNotFoundError
+    from importlib_metadata import PackageNotFoundError, version
 try:
     __version__ = version("openmc_plasma_source")
 except PackageNotFoundError:
@@ -11,6 +11,7 @@ except PackageNotFoundError:
 
 __all__ = ["__version__"]
 
-from .tokamak_source import TokamakSource
-from .ring_source import FusionRingSource
-from .point_source import FusionPointSource
+from .fuel_types import get_neutron_energy_distribution
+from .point_source import fusion_point_source
+from .ring_source import fusion_ring_source
+from .tokamak_source import *

@@ -1,22 +1,46 @@
-import openmc
-import numpy as np
 from typing import Tuple
 
+import numpy as np
+import openmc
+import openmc.checkvalue as cv
 
-class TokamakSource:
-    """Plasma neutron source sampling.
-    This class greatly relies on models described in [1]
+from .fuel_types import get_neutron_energy_distribution
+
+
+def tokamak_source(
+    major_radius: float,
+    minor_radius: float,
+    elongation: float,
+    triangularity: float,
+    mode: str,
+    ion_density_centre: float,
+    ion_density_peaking_factor: float,
+    ion_density_pedestal: float,
+    ion_density_separatrix: float,
+    ion_temperature_centre: float,
+    ion_temperature_peaking_factor: float,
+    ion_temperature_beta: float,
+    ion_temperature_pedestal: float,
+    ion_temperature_separatrix: float,
+    pedestal_radius: float,
+    shafranov_factor: float,
+    angles: Tuple[float, float] = (0, 2 * np.pi),
+    sample_size: int = 1000,
+    fuel: dict = {"D": 0.5, "T": 0.5},
+) -> list[openmc.IndependentSource]:
+    """Creates a list of openmc.IndependentSource objects representing a tokamak plasma.
+
+    Resulting sources will have an energy distribution according to the fuel
+    composition.This function greatly relies on models described in [1]
 
     [1] : Fausser et al, 'Tokamak D-T neutron source models for different
     plasma physics confinement modes', Fus. Eng. and Design,
     https://doi.org/10.1016/j.fusengdes.2012.02.025
 
     Usage:
-        my_plasma = Plasma(**plasma_prms)
-        my_plasma.sample_sources()
-        print(my_plasma.RZ)
-        print(my_plasma.temperatures)
-        openmc_sources = my_plasma.make_openmc_sources()
+        my_source = tokamak_source(**plasma_prms)
+        my_settings = openmc.Settings()
+        my_settings.source = my_source
 
     Args:
         major_radius (float): Plasma major radius (cm)
@@ -46,359 +70,294 @@ class TokamakSource:
             radians
         sample_size (int, optional): number of neutron sources. Defaults
             to 1000.
+        fuel (dict): Isotopes as keys and atom fractions as values
     """
 
-    def __init__(
-        self,
-        major_radius: float,
-        minor_radius: float,
-        elongation: float,
-        triangularity: float,
-        mode: str,
-        ion_density_centre: float,
-        ion_density_peaking_factor: float,
-        ion_density_pedestal: float,
-        ion_density_separatrix: float,
-        ion_temperature_centre: float,
-        ion_temperature_peaking_factor: float,
-        ion_temperature_beta: float,
-        ion_temperature_pedestal: float,
-        ion_temperature_separatrix: float,
-        pedestal_radius: float,
-        shafranov_factor: float,
-        angles: Tuple[float, float] = (0, 2 * np.pi),
-        sample_size: int = 1000,
-    ) -> None:
-        # Assign attributes
-        self.major_radius = major_radius
-        self.minor_radius = minor_radius
-        self.elongation = elongation
-        self.triangularity = triangularity
-        self.ion_density_centre = ion_density_centre
-        self.ion_density_peaking_factor = ion_density_peaking_factor
-        self.mode = mode
-        self.pedestal_radius = pedestal_radius
-        self.ion_density_pedestal = ion_density_pedestal
-        self.ion_density_separatrix = ion_density_separatrix
-        self.ion_temperature_centre = ion_temperature_centre
-        self.ion_temperature_peaking_factor = ion_temperature_peaking_factor
-        self.ion_temperature_pedestal = ion_temperature_pedestal
-        self.ion_temperature_separatrix = ion_temperature_separatrix
-        self.ion_temperature_beta = ion_temperature_beta
-        self.shafranov_factor = shafranov_factor
-        self.angles = angles
-        self.sample_size = sample_size
+    # Perform sanity checks for inputs not caught by properties
+    cv.check_type("major_radius", major_radius, (int, float))
+    cv.check_type("minor_radius", minor_radius, (int, float))
+    cv.check_type("elongation", elongation, (int, float))
+    cv.check_type("triangularity", triangularity, (int, float))
+    cv.check_type("ion_density_centre", ion_density_centre, (int, float))
+    cv.check_type(
+        "ion_density_peaking_factor", ion_density_peaking_factor, (int, float)
+    )
+    cv.check_type("ion_density_pedestal", ion_density_pedestal, (int, float))
+    cv.check_type("ion_density_separatrix", ion_density_separatrix, (int, float))
+    cv.check_less_than("minor_radius", minor_radius, major_radius)
+    cv.check_less_than("pedestal_radius", pedestal_radius, minor_radius)
+    cv.check_less_than("shafranov_factor", abs(shafranov_factor), 0.5 * minor_radius)
+    cv.check_greater_than("major_radius", major_radius, 0)
+    cv.check_greater_than("minor_radius", minor_radius, 0)
+    cv.check_greater_than("elongation", elongation, 0)
+    cv.check_less_than("triangularity", triangularity, 1.0, True)
+    cv.check_greater_than("triangularity", triangularity, -1.0, True)
+    cv.check_value("mode", mode, ["H", "L", "A"])
+    cv.check_greater_than("ion_density_centre", ion_density_centre, 0)
+    cv.check_greater_than("ion_density_pedestal", ion_density_pedestal, 0)
+    cv.check_greater_than("ion_density_separatrix", ion_density_separatrix, 0)
 
-        # Perform sanity checks for inputs not caught by properties
-        if self.minor_radius >= self.major_radius:
-            raise ValueError("Minor radius must be smaller than major radius")
+    if (
+        isinstance(angles, tuple)
+        and len(angles) == 2
+        and all(
+            isinstance(angle, (int, float)) and -2 * np.pi <= angle <= 2 * np.pi
+            for angle in angles
+        )
+    ):
+        pass
+    else:
+        raise ValueError("Angles must be a tuple of floats between zero and 2 * np.pi")
 
-        if self.pedestal_radius >= self.minor_radius:
-            raise ValueError("Pedestal radius must be smaller than minor radius")
+    # Create a list of sources
+    """Samples sample_size neutrons and creates attributes .densities
+    (ion density), .temperatures (ion temperature), .strengths
+    (neutron source density) and .RZ (coordinates)
+    """
+    # create a sample of (a, alpha) coordinates
+    a = np.random.random(sample_size) * minor_radius
+    alpha = np.random.random(sample_size) * 2 * np.pi
 
-        if abs(self.shafranov_factor) >= 0.5 * minor_radius:
-            raise ValueError("Shafranov factor must be smaller than 0.5*minor radius")
+    # compute densities, temperatures, neutron source densities and
+    # convert coordinates
+    densities = tokamak_ion_density(
+        mode=mode,
+        ion_density_centre=ion_density_centre,
+        ion_density_peaking_factor=ion_density_peaking_factor,
+        ion_density_pedestal=ion_density_pedestal,
+        major_radius=major_radius,
+        pedestal_radius=pedestal_radius,
+        ion_density_separatrix=ion_density_separatrix,
+        r=a,
+    )
+    temperatures = tokamak_ion_temperature(
+        r=a,
+        mode=mode,
+        pedestal_radius=pedestal_radius,
+        ion_temperature_pedestal=ion_temperature_pedestal,
+        ion_temperature_centre=ion_temperature_centre,
+        ion_temperature_beta=ion_temperature_beta,
+        ion_temperature_peaking_factor=ion_temperature_peaking_factor,
+        ion_temperature_separatrix=ion_temperature_separatrix,
+        major_radius=major_radius,
+    )
 
-        # Create a list of souces
-        self.sample_sources()
-        self.sources = self.make_openmc_sources()
+    neutron_source_density = tokamak_neutron_source_density(densities, temperatures)
 
-    @property
-    def major_radius(self):
-        return self._major_radius
+    strengths = neutron_source_density / sum(neutron_source_density)
 
-    @major_radius.setter
-    def major_radius(self, value):
-        if isinstance(value, (int, float)) and value > 0:
-            self._major_radius = value
-        else:
-            raise ValueError(
-                "Major radius must be a number within the specified bounds"
-            )
+    RZ = tokamak_convert_a_alpha_to_R_Z(
+        a=a,
+        alpha=alpha,
+        shafranov_factor=shafranov_factor,
+        minor_radius=minor_radius,
+        major_radius=major_radius,
+        triangularity=triangularity,
+        elongation=elongation,
+    )
 
-    @property
-    def minor_radius(self):
-        return self._minor_radius
+    sources = tokamak_make_openmc_sources(
+        strengths=strengths,
+        angles=angles,
+        temperatures=temperatures,
+        fuel=fuel,
+        RZ=RZ,
+    )
+    return sources
 
-    @minor_radius.setter
-    def minor_radius(self, value):
-        if isinstance(value, (int, float)) and value > 0:
-            self._minor_radius = value
-        else:
-            raise ValueError(
-                "Minor radius must be a number within the specified bounds"
-            )
 
-    @property
-    def elongation(self):
-        return self._elongation
+def tokamak_ion_density(
+    mode,
+    ion_density_centre,
+    ion_density_peaking_factor,
+    ion_density_pedestal,
+    major_radius,
+    pedestal_radius,
+    ion_density_separatrix,
+    r,
+):
+    """Computes the ion density at a given position. The ion density is
+    only dependent on the minor radius.
 
-    @elongation.setter
-    def elongation(self, value):
-        if isinstance(value, (int, float)) and value > 0:
-            self._elongation = value
-        else:
-            raise ValueError("Elongation must be a number within the specified bounds")
+    Args:
+        r (float, ndarray): the minor radius (cm)
 
-    @property
-    def triangularity(self):
-        return self._triangularity
+    Returns:
+        float, ndarray: ion density in m-3
+    """
 
-    @triangularity.setter
-    def triangularity(self, value):
-        if isinstance(value, (int, float)) and -1.0 <= value <= 1.0:
-            self._triangularity = value
-        else:
-            raise ValueError(
-                "Triangularity must be a number within the specified bounds"
-            )
+    r = np.asarray(r)
+    if np.any(r < 0):
+        raise ValueError("Minor radius must not be negative")
 
-    @property
-    def mode(self):
-        return self._mode
+    if mode == "L":
+        density = (
+            ion_density_centre
+            * (1 - (r / major_radius) ** 2) ** ion_density_peaking_factor
+        )
+    elif mode in ["H", "A"]:
+        density = np.where(
+            r < pedestal_radius,
+            (
+                (ion_density_centre - ion_density_pedestal)
+                * (1 - (r / pedestal_radius) ** 2) ** ion_density_peaking_factor
+                + ion_density_pedestal
+            ),
+            (
+                (ion_density_pedestal - ion_density_separatrix)
+                * (major_radius - r)
+                / (major_radius - pedestal_radius)
+                + ion_density_separatrix
+            ),
+        )
+    return density
 
-    @mode.setter
-    def mode(self, value):
-        if value in ["H", "L", "A"]:
-            self._mode = value
-        else:
-            raise ValueError("Mode must be one of the following: ['H', 'L', 'A']")
 
-    @property
-    def ion_density_centre(self):
-        return self._ion_density_centre
+def tokamak_ion_temperature(
+    r,
+    mode,
+    pedestal_radius,
+    ion_temperature_pedestal,
+    ion_temperature_centre,
+    ion_temperature_beta,
+    ion_temperature_peaking_factor,
+    ion_temperature_separatrix,
+    major_radius,
+):
+    """Computes the ion temperature at a given position. The ion
+    temperature is only dependent on the minor radius.
 
-    @ion_density_centre.setter
-    def ion_density_centre(self, value):
-        if isinstance(value, (int, float)) and value > 0:
-            self._ion_density_centre = value
-        else:
-            raise ValueError("Ion density centre must be a number greater than 0")
+    Args:
+        r (float, ndarray): minor radius (cm)
 
-    @property
-    def ion_density_peaking_factor(self):
-        return self._ion_density_peaking_factor
+    Returns:
+        float, ndarray: ion temperature (keV)
+    """
 
-    @ion_density_peaking_factor.setter
-    def ion_density_peaking_factor(self, value):
-        if isinstance(value, (int, float)):
-            self._ion_density_peaking_factor = value
-        else:
-            raise ValueError("Ion density peaking factor must be a number")
+    r = np.asarray(r)
+    if np.any(r < 0):
+        raise ValueError("Minor radius must not be negative")
 
-    @property
-    def ion_density_pedestal(self):
-        return self._ion_density_pedestal
+    if mode == "L":
+        temperature = (
+            ion_temperature_centre
+            * (1 - (r / major_radius) ** 2) ** ion_temperature_peaking_factor
+        )
+    elif mode in ["H", "A"]:
+        temperature = np.where(
+            r < pedestal_radius,
+            (
+                ion_temperature_pedestal
+                + (ion_temperature_centre - ion_temperature_pedestal)
+                * (1 - (np.abs(r / pedestal_radius)) ** ion_temperature_beta)
+                ** ion_temperature_peaking_factor
+            ),
+            (
+                ion_temperature_separatrix
+                + (ion_temperature_pedestal - ion_temperature_separatrix)
+                * (major_radius - r)
+                / (major_radius - pedestal_radius)
+            ),
+        )
+    return temperature
 
-    @ion_density_pedestal.setter
-    def ion_density_pedestal(self, value):
-        if isinstance(value, (int, float)) and value > 0:
-            self._ion_density_pedestal = value
-        else:
-            raise ValueError("Ion density pedestal must be a number greater than 0")
 
-    @property
-    def ion_density_separatrix(self):
-        return self._ion_density_separatrix
+def tokamak_convert_a_alpha_to_R_Z(
+    a,
+    alpha,
+    shafranov_factor,
+    minor_radius,
+    major_radius,
+    triangularity,
+    elongation,
+):
+    """Converts (r, alpha) cylindrical coordinates to (R, Z) cartesian
+    coordinates.
 
-    @ion_density_separatrix.setter
-    def ion_density_separatrix(self, value):
-        if isinstance(value, (int, float)) and value > 0:
-            self._ion_density_separatrix = value
-        else:
-            raise ValueError("Ion density separatrix must be a number greater than 0")
+    Args:
+        a (float, ndarray): minor radius (cm)
+        alpha (float, ndarray): angle (rad)
+        shafranov_factor:
+        minor_radius:
+        major_radius:
 
-    @property
-    def angles(self):
-        return self._angles
+    Returns:
+        ((float, ndarray), (float, ndarray)): (R, Z) coordinates
+    """
+    a = np.asarray(a)
+    alpha = np.asarray(alpha)
+    if np.any(a < 0):
+        raise ValueError("Radius 'a'  must not be negative")
 
-    @angles.setter
-    def angles(self, value):
-        if (
-            isinstance(value, tuple)
-            and len(value) == 2
-            and all(
-                isinstance(angle, (int, float)) and -2 * np.pi <= angle <= 2 * np.pi
-                for angle in value
-            )
+    shafranov_shift = shafranov_factor * (1.0 - (a / minor_radius) ** 2)
+    R = (
+        major_radius
+        + a * np.cos(alpha + (triangularity * np.sin(alpha)))
+        + shafranov_shift
+    )
+    Z = elongation * a * np.sin(alpha)
+    return (R, Z)
+
+
+def tokamak_make_openmc_sources(
+    strengths,
+    angles,
+    temperatures,
+    fuel,
+    RZ,
+):
+    """Creates a list of OpenMC Sources() objects. The created sources are
+    ring sources based on the .RZ coordinates between two angles. The
+    energy of the sources are Muir energy spectra with ion temperatures
+    based on .temperatures. The strength of the sources (their probability)
+    is based on .strengths.
+
+    Args:
+        angles ((float, float), optional): rotation of the ring source.
+        Defaults to (0, 2*np.pi).
+
+    Returns:
+        list: list of openmc.IndependentSource()
+    """
+
+    sources = []
+    # create a ring source for each sample in the plasma source
+    for i in range(len(strengths)):
+        # extract the RZ values accordingly
+        radius = openmc.stats.Discrete([RZ[0][i]], [1])
+        z_values = openmc.stats.Discrete([RZ[1][i]], [1])
+        angle = openmc.stats.Uniform(a=angles[0], b=angles[1])
+        strength = strengths[i]
+
+        energy_distributions, dist_strengths = get_neutron_energy_distribution(
+            ion_temperature=temperatures[i],
+            fuel=fuel,
+        )
+
+        # now we have potentially 3 distributions (DT, DD, TT)
+        for energy_distribution, dist_strength in zip(
+            energy_distributions, dist_strengths
         ):
-            self._angles = value
-        else:
-            raise ValueError(
-                "Angles must be a tuple of floats between zero and 2 * np.pi"
-            )
-
-    # TODO setters and getters for the rest
-
-    def _bounds_check(value, bounds):
-        return bounds[0] < value
-
-    def ion_density(self, r):
-        """Computes the ion density at a given position. The ion density is
-        only dependent on the minor radius.
-
-        Args:
-            r (float, ndarray): the minor radius (cm)
-
-        Returns:
-            float, ndarray: ion density in m-3
-        """
-
-        r = np.asarray(r)
-        if np.any(r < 0):
-            raise ValueError("Minor radius must not be negative")
-
-        if self.mode == "L":
-            density = (
-                self.ion_density_centre
-                * (1 - (r / self.major_radius) ** 2) ** self.ion_density_peaking_factor
-            )
-        elif self.mode in ["H", "A"]:
-            density = np.where(
-                r < self.pedestal_radius,
-                (
-                    (self.ion_density_centre - self.ion_density_pedestal)
-                    * (1 - (r / self.pedestal_radius) ** 2)
-                    ** self.ion_density_peaking_factor
-                    + self.ion_density_pedestal
-                ),
-                (
-                    (self.ion_density_pedestal - self.ion_density_separatrix)
-                    * (self.major_radius - r)
-                    / (self.major_radius - self.pedestal_radius)
-                    + self.ion_density_separatrix
-                ),
-            )
-        return density
-
-    def ion_temperature(self, r):
-        """Computes the ion temperature at a given position. The ion
-        temperature is only dependent on the minor radius.
-
-        Args:
-            r (float, ndarray): minor radius (cm)
-
-        Returns:
-            float, ndarray: ion temperature (keV)
-        """
-
-        r = np.asarray(r)
-        if np.any(r < 0):
-            raise ValueError("Minor radius must not be negative")
-
-        if self.mode == "L":
-            temperature = (
-                self.ion_temperature_centre
-                * (1 - (r / self.major_radius) ** 2)
-                ** self.ion_temperature_peaking_factor
-            )
-        elif self.mode in ["H", "A"]:
-            temperature = np.where(
-                r < self.pedestal_radius,
-                (
-                    self.ion_temperature_pedestal
-                    + (self.ion_temperature_centre - self.ion_temperature_pedestal)
-                    * (1 - (r / self.pedestal_radius) ** self.ion_temperature_beta)
-                    ** self.ion_temperature_peaking_factor
-                ),
-                (
-                    self.ion_temperature_separatrix
-                    + (self.ion_temperature_pedestal - self.ion_temperature_separatrix)
-                    * (self.major_radius - r)
-                    / (self.major_radius - self.pedestal_radius)
-                ),
-            )
-        return temperature
-
-    def convert_a_alpha_to_R_Z(self, a, alpha):
-        """Converts (r, alpha) cylindrical coordinates to (R, Z) cartesian
-        coordinates.
-
-        Args:
-            a (float, ndarray): minor radius (cm)
-            alpha (float, ndarray): angle (rad)
-
-        Returns:
-            ((float, ndarray), (float, ndarray)): (R, Z) coordinates
-        """
-        a = np.asarray(a)
-        alpha = np.asarray(alpha)
-        if np.any(a < 0):
-            raise ValueError("Radius 'a'  must not be negative")
-
-        shafranov_shift = self.shafranov_factor * (1.0 - (a / self.minor_radius) ** 2)
-        R = (
-            self.major_radius
-            + a * np.cos(alpha + (self.triangularity * np.sin(alpha)))
-            + shafranov_shift
-        )
-        Z = self.elongation * a * np.sin(alpha)
-        return (R, Z)
-
-    def sample_sources(self):
-        """Samples self.sample_size neutrons and creates attributes .densities
-        (ion density), .temperatures (ion temperature), .strengths
-        (neutron source density) and .RZ (coordinates)
-        """
-        # create a sample of (a, alpha) coordinates
-        a = np.random.random(self.sample_size) * self.minor_radius
-        alpha = np.random.random(self.sample_size) * 2 * np.pi
-
-        # compute densities, temperatures, neutron source densities and
-        # convert coordinates
-        self.densities = self.ion_density(a)
-        self.temperatures = self.ion_temperature(a)
-        self.neutron_source_density = neutron_source_density(
-            self.densities, self.temperatures
-        )
-        self.strengths = self.neutron_source_density / sum(self.neutron_source_density)
-        self.RZ = self.convert_a_alpha_to_R_Z(a, alpha)
-
-    def make_openmc_sources(self):
-        """Creates a list of OpenMC Sources() objects. The created sources are
-        ring sources based on the .RZ coordinates between two angles. The
-        energy of the sources are Muir energy spectra with ion temperatures
-        based on .temperatures. The strength of the sources (their probability)
-        is based on .strengths.
-
-        Args:
-            angles ((float, float), optional): rotation of the ring source.
-            Defaults to (0, 2*np.pi).
-
-        Returns:
-            list: list of openmc.IndependentSource()
-        """
-
-        sources = []
-        # create a ring source for each sample in the plasma source
-        for i in range(len(self.strengths)):
             my_source = openmc.IndependentSource()
-
-            # extract the RZ values accordingly
-            radius = openmc.stats.Discrete([self.RZ[0][i]], [1])
-            z_values = openmc.stats.Discrete([self.RZ[1][i]], [1])
-            angle = openmc.stats.Uniform(a=self.angles[0], b=self.angles[1])
 
             # create a ring source
             my_source.space = openmc.stats.CylindricalIndependent(
                 r=radius, phi=angle, z=z_values, origin=(0.0, 0.0, 0.0)
             )
-
             my_source.angle = openmc.stats.Isotropic()
-            my_source.energy = openmc.stats.muir(
-                e0=14080000.0, m_rat=5.0, kt=self.temperatures[i]
-            )
 
-            # the strength of the source (its probability) is given by
-            # self.strengths
-            my_source.strength = self.strengths[i]
+            my_source.energy = energy_distribution
+
+            # the strength of the source (its probability) is given by the
+            # strength of the energy distribution and the location distribution
+            my_source.strength = dist_strength * strength
 
             # append to the list of sources
             sources.append(my_source)
-        return sources
+    return sources
 
 
-def neutron_source_density(ion_density, ion_temperature):
+def tokamak_neutron_source_density(ion_density, ion_temperature):
     """Computes the neutron source density given ion density and ion
     temperature.
 
@@ -413,10 +372,10 @@ def neutron_source_density(ion_density, ion_temperature):
     ion_density = np.asarray(ion_density)
     ion_temperature = np.asarray(ion_temperature)
 
-    return ion_density**2 * DT_xs(ion_temperature)
+    return ion_density**2 * _DT_xs(ion_temperature)
 
 
-def DT_xs(ion_temperature):
+def _DT_xs(ion_temperature):
     """Sadler–Van Belle formula
     Ref : https://doi.org/10.1016/j.fusengdes.2012.02.025
 
