@@ -42,14 +42,6 @@ def fusion_point_source(
         ion_temperature=temperature, fuel=fuel
     )
 
-    # if isinstance(energy_distributions, openmc.stats.Normal) or isinstance(energy_distributions, openmc.stats.Discrete) or isinstance(energy_distributions, openmc.stats.Tabular):
-    #     source = openmc.Source()
-    #     source.energy = energy_distributions
-    #     source.space = openmc.stats.Point(coordinate)
-    #     source.angle = openmc.stats.Isotropic()
-    #     return source
-
-    # else:
     for energy_distribution, strength in zip(energy_distributions, strengths):
         source = openmc.IndependentSource()
         source.energy = energy_distribution
