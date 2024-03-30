@@ -112,8 +112,6 @@ def get_neutron_energy_distribution(
         energy distribution
     """
 
-    ion_temperature_kev = ion_temperature / 1e3  # convert eV to keV
-
     sum_fuel_isotopes = sum(fuel.values())
     if sum_fuel_isotopes > 1.0:
         raise ValueError(
@@ -151,15 +149,15 @@ def get_neutron_energy_distribution(
     if ["D", "T"] == sorted(set(fuel.keys())):
         strength_DT = 1.0
         strength_DD = nst.yield_from_dt_yield_ratio(
-            "dd", strength_DT, ion_temperature_kev, fuel["D"], fuel["T"]
+            "dd", strength_DT, ion_temperature, fuel["D"], fuel["T"]
         )
         strength_TT = nst.yield_from_dt_yield_ratio(
-            "tt", strength_DT, ion_temperature_kev, fuel["D"], fuel["T"]
+            "tt", strength_DT, ion_temperature, fuel["D"], fuel["T"]
         )
 
         total_strength = sum([strength_TT, strength_DD, strength_DT])
 
-        dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature_kev)
+        dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature)
         tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
 
         dd_source = openmc.stats.Normal(mean_value=DDmean, std_dev=DD_std_dev)
@@ -184,6 +182,6 @@ def get_neutron_energy_distribution(
 
     elif ["T"] == sorted(set(fuel.keys())):
         strength_TT = 1.0
-        dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature_kev)
+        dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature)
         tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
         return [tt_source], [strength_TT]

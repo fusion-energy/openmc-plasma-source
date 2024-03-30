@@ -9,7 +9,7 @@ def fusion_point_source(
     coordinate: Tuple[float, float, float] = (0.0, 0.0, 0.0),
     temperature: float = 20000.0,
     fuel: dict = {"D": 0.5, "T": 0.5},
-):
+) -> list[openmc.IndependentSource]:
     """Creates a list of openmc.IndependentSource objects representing an ICF source.
 
     Resulting ICF (Inertial Confinement Fusion) source will have an energy

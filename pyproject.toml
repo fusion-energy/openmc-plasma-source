@@ -23,7 +23,7 @@ keywords = ["python", "neutron", "fusion", "source", "openmc", "energy", "tokama
 dependencies = [
     "numpy>=1.9",
     "matplotlib>=3.2.2",
-    "NeSST"
+    "NeSST@git+https://github.com/aidancrilly/NeSST",
 ]
 
 [project.urls]
