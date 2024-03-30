@@ -157,19 +157,23 @@ def tokamak_source(
     #TODO loop through the fuel reactions
 
     # compute neutron source densities
-    neutron_source_density = tokamak_neutron_source_density(densities, temperatures)
+    # loop through each reaction in the fuel
+    # could introduce a species density
 
-    strengths = neutron_source_density / sum(neutron_source_density)
+    for 
+        neutron_source_density = tokamak_neutron_source_density(densities, temperatures, reaction=, fuel)
+
+        strengths = neutron_source_density / sum(neutron_source_density)
 
 
-    sources = tokamak_make_openmc_sources(
-        strengths=strengths,
-        angles=angles,
-        temperatures=temperatures,
-        fuel=fuel,
-        RZ=RZ,
-    )
-    return sources
+        sources = tokamak_make_openmc_sources(
+            strengths=strengths,
+            angles=angles,
+            temperatures=temperatures,
+            fuel=fuel,
+            RZ=RZ,
+        )
+        return sources
 
 
 def tokamak_ion_density(
@@ -383,12 +387,13 @@ def tokamak_neutron_source_density(ion_density, ion_temperature, reaction='DT'):
     ion_temperature = np.asarray(ion_temperature)
     return ion_density**2 * _DT_xs(ion_temperature)
     #TODO account for reaction
+    #TODO get a fuel fraction from fuel va
     if reaction == 'DT':
-        nst.reac_DT(ion_temperature)
-    if reaction == 'DD'
-        nst.reac_DD(ion_temperature)
-    if reaction == 'TT'
-        nst.reac_TT(ion_temperature)
+        ion_density**2 * nst.reac_DT(ion_temperature) # could use _DT_xs instead
+    if reaction == 'DD':
+        ion_density**2 * nst.reac_DD(ion_temperature)
+    if reaction == 'TT':
+        ion_density**2 * nst.reac_TT(ion_temperature)
 
 
 #TODO consider replace with NeSST or getting DD version as well
