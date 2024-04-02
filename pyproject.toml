@@ -23,7 +23,7 @@ keywords = ["python", "neutron", "fusion", "source", "openmc", "energy", "tokama
 dependencies = [
     "numpy>=1.9",
     "matplotlib>=3.2.2",
-    
+    "NeSST>=1.0.0"
 ]
 
 [project.urls]
@@ -37,7 +37,7 @@ write_to = "src/_version.py"
 tests = [
     "pytest>=5.4.3",
     "hypothesis",
-    "NeSST"
+    "NeSST>=1.0.0"
 ]
 
 [tool.setuptools]

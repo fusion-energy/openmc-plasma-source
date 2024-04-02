@@ -3,7 +3,7 @@ from typing import Tuple
 import numpy as np
 import openmc
 import openmc.checkvalue as cv
-
+import NeSST as nst
 from .fuel_types import get_neutron_energy_distribution
 
 
@@ -118,8 +118,7 @@ def tokamak_source(
     a = np.random.random(sample_size) * minor_radius
     alpha = np.random.random(sample_size) * 2 * np.pi
 
-    # compute densities, temperatures, neutron source densities and
-    # convert coordinates
+    # compute densities, temperatures
     densities = tokamak_ion_density(
         mode=mode,
         ion_density_centre=ion_density_centre,
@@ -130,6 +129,12 @@ def tokamak_source(
         ion_density_separatrix=ion_density_separatrix,
         r=a,
     )
+
+    fuel_densities = {}
+    for key, value in fuel.items():
+        fuel_densities[key] = densities*value
+
+    # compute temperatures
     temperatures = tokamak_ion_temperature(
         r=a,
         mode=mode,
@@ -142,10 +147,7 @@ def tokamak_source(
         major_radius=major_radius,
     )
 
-    neutron_source_density = tokamak_neutron_source_density(densities, temperatures)
-
-    strengths = neutron_source_density / sum(neutron_source_density)
-
+    # convert coordinates
     RZ = tokamak_convert_a_alpha_to_R_Z(
         a=a,
         alpha=alpha,
@@ -155,6 +157,11 @@ def tokamak_source(
         triangularity=triangularity,
         elongation=elongation,
     )
+
+    neutron_source_density = tokamak_neutron_source_density(fuel_densities, temperatures, reaction)
+
+    strengths = neutron_source_density / sum(neutron_source_density)
+
 
     sources = tokamak_make_openmc_sources(
         strengths=strengths,
@@ -313,8 +320,12 @@ def tokamak_make_openmc_sources(
     is based on .strengths.
 
     Args:
+        strengths
         angles ((float, float), optional): rotation of the ring source.
-        Defaults to (0, 2*np.pi).
+            Defaults to (0, 2*np.pi).
+        temperatures
+        fuel
+        RZ
 
     Returns:
         list: list of openmc.IndependentSource()
@@ -357,7 +368,7 @@ def tokamak_make_openmc_sources(
     return sources
 
 
-def tokamak_neutron_source_density(ion_density, ion_temperature):
+def tokamak_neutron_source_density(ion_density, ion_temperature, reaction):
     """Computes the neutron source density given ion density and ion
     temperature.
 
@@ -369,25 +380,27 @@ def tokamak_neutron_source_density(ion_density, ion_temperature):
         float, ndarray: Neutron source density (neutron/s/m3)
     """
 
-    ion_density = np.asarray(ion_density)
+    ion_density = np.asarray(ion_density[reaction[0]]) * np.asarray(ion_density[reaction[1]])
     ion_temperature = np.asarray(ion_temperature)
 
-    return ion_density**2 * _DT_xs(ion_temperature)
+    if reaction == 'DT':
+        return ion_density * nst.reac_DT(ion_temperature) # could use _DT_xs instead
+    if reaction == 'DD':
+        return ion_density * nst.reac_DD(ion_temperature)
+    if reaction == 'TT':
+        return ion_density * nst.reac_TT(ion_temperature)
 
 
+#TODO consider replace with NeSST or getting DD version as well
 def _DT_xs(ion_temperature):
     """Sadler–Van Belle formula
     Ref : https://doi.org/10.1016/j.fusengdes.2012.02.025
-
     Args:
-        ion_temperature (float, ndarray): ion temperature in keV
-
+        ion_temperature (float, ndarray): ion temperature in eV
     Returns:
         float, ndarray: the DT cross section at the given temperature
     """
-
-    ion_temperature = np.asarray(ion_temperature)
-
+    ion_temperature_kev = np.asarray(ion_temperature/1e3)
     c = [
         2.5663271e-18,
         19.983026,
@@ -397,14 +410,12 @@ def _DT_xs(ion_temperature):
         6.6024089e-2,
         8.1215505e-3,
     ]
-
-    U = 1 - ion_temperature * (
-        c[2] + ion_temperature * (c[3] - c[4] * ion_temperature)
-    ) / (1.0 + ion_temperature * (c[5] + c[6] * ion_temperature))
-
+    U = 1 - ion_temperature_kev * (
+        c[2] + ion_temperature_kev * (c[3] - c[4] * ion_temperature_kev)
+    ) / (1.0 + ion_temperature_kev * (c[5] + c[6] * ion_temperature_kev))
     val = (
         c[0]
-        * np.exp(-c[1] * (U / ion_temperature) ** (1 / 3))
-        / (U ** (5 / 6) * ion_temperature ** (2 / 3))
+        * np.exp(-c[1] * (U / ion_temperature_kev) ** (1 / 3))
+        / (U ** (5 / 6) * ion_temperature_kev ** (2 / 3))
     )
     return val
