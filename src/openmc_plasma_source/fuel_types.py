@@ -164,12 +164,12 @@ def get_neutron_energy_distribution(
         strength_TT = 1.0
         dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature)
         tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
-        return [tt_source], [strength_TT]
+        return {'TT': tt_source}, {'TT': strength_TT}
 
     elif reactions == ["DD"]:
         strength_DD = 1.0
         dd_source = openmc.stats.Normal(mean_value=DDmean, std_dev=DD_std_dev)
-        return [dd_source], [strength_DD]
+        return {'DD': dd_source}, {'DD' :strength_DD}
 
     # DT, DD and TT reaction
     else:
@@ -201,8 +201,8 @@ def get_neutron_energy_distribution(
         # dt_source = openmc.stats.muir(e0=DTmean * 1e6, m_rat=5, kt=ion_temperature)
 
         # todo look into combining distributions openmc.data.combine_distributions()
-        return [tt_source, dd_source, dt_source], [
-            strength_TT / total_strength,
-            strength_DD / total_strength,
-            strength_DT / total_strength,
-        ]
+        return {
+            'TT': [tt_source, strength_TT / total_strength],
+            'DD': [dd_source, strength_DD / total_strength],
+            'DT': [dt_source, strength_DT / total_strength],
+        }

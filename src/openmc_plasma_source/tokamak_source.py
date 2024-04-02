@@ -4,8 +4,8 @@ import numpy as np
 import openmc
 import openmc.checkvalue as cv
 import NeSST as nst
-from .fuel_types import get_neutron_energy_distribution
-
+from .fuel_types import get_neutron_energy_distribution, get_reactions_from_fuel
+from NeSST.spectral_model import reac_DD, reac_TT, reac_DT
 
 def tokamak_source(
     major_radius: float,
@@ -54,14 +54,14 @@ def tokamak_source(
         ion_density_pedestal (float): Ion density at pedestal (m-3)
         ion_density_separatrix (float): Ion density at separatrix (m-3)
         ion_temperature_centre (float): Ion temperature at the plasma
-            centre (keV)
+            centre (eV)
         ion_temperature_peaking_factor (float): Ion temperature peaking
             factor (referred in [1] as ion temperature exponent alpha_T)
         ion_temperature_beta (float): Ion temperature beta exponent
             (referred in [1] as ion temperature exponent beta_T)
-        ion_temperature_pedestal (float): Ion temperature at pedestal (keV)
+        ion_temperature_pedestal (float): Ion temperature at pedestal (eV)
         ion_temperature_separatrix (float): Ion temperature at separatrix
-            (keV)
+            (eV)
         pedestal_radius (float): Minor radius at pedestal (cm)
         shafranov_factor (float): Shafranov factor (referred in [1] as esh)
             also known as outward radial displacement of magnetic surfaces
@@ -139,11 +139,11 @@ def tokamak_source(
         r=a,
         mode=mode,
         pedestal_radius=pedestal_radius,
-        ion_temperature_pedestal=ion_temperature_pedestal,
-        ion_temperature_centre=ion_temperature_centre,
+        ion_temperature_pedestal=ion_temperature_pedestal/1e3,
+        ion_temperature_centre=ion_temperature_centre/1e3,
         ion_temperature_beta=ion_temperature_beta,
         ion_temperature_peaking_factor=ion_temperature_peaking_factor,
-        ion_temperature_separatrix=ion_temperature_separatrix,
+        ion_temperature_separatrix=ion_temperature_separatrix/1e3,
         major_radius=major_radius,
     )
 
@@ -158,19 +158,27 @@ def tokamak_source(
         elongation=elongation,
     )
 
-    neutron_source_density = tokamak_neutron_source_density(fuel_densities, temperatures, reaction)
+    reactions = get_reactions_from_fuel(fuel)
+    
+    neutron_source_density={}
+    total_source_density = 0
+    for reaction in reactions:
+        neutron_source_density[reaction] = tokamak_neutron_source_density(fuel_densities, temperatures, reaction)
+        total_source_density += sum(neutron_source_density[reaction])
+    
+    all_sources = []
+    for reaction in reactions:
+        neutron_source_density[reaction] = neutron_source_density[reaction]/total_source_density
 
-    strengths = neutron_source_density / sum(neutron_source_density)
-
-
-    sources = tokamak_make_openmc_sources(
-        strengths=strengths,
-        angles=angles,
-        temperatures=temperatures,
-        fuel=fuel,
-        RZ=RZ,
-    )
-    return sources
+        sources = tokamak_make_openmc_sources(
+            strengths=neutron_source_density,
+            angles=angles,
+            temperatures=temperatures,
+            fuel=fuel,
+            RZ=RZ,
+        )
+        all_sources = all_sources + sources
+    return all_sources
 
 
 def tokamak_ion_density(
@@ -333,38 +341,37 @@ def tokamak_make_openmc_sources(
 
     sources = []
     # create a ring source for each sample in the plasma source
-    for i in range(len(strengths)):
+    for i, (RZ_val, temperature) in enumerate(zip(RZ, temperatures)):
         # extract the RZ values accordingly
-        radius = openmc.stats.Discrete([RZ[0][i]], [1])
-        z_values = openmc.stats.Discrete([RZ[1][i]], [1])
+        radius = openmc.stats.Discrete([RZ_val[0]], [1])
+        z_values = openmc.stats.Discrete([RZ_val[1]], [1])
         angle = openmc.stats.Uniform(a=angles[0], b=angles[1])
-        strength = strengths[i]
 
-        energy_distributions, dist_strengths = get_neutron_energy_distribution(
-            ion_temperature=temperatures[i],
+        energy_distributions_and_dist_strengths = get_neutron_energy_distribution(
+            ion_temperature=temperature,
             fuel=fuel,
         )
 
         # now we have potentially 3 distributions (DT, DD, TT)
-        for energy_distribution, dist_strength in zip(
-            energy_distributions, dist_strengths
-        ):
-            my_source = openmc.IndependentSource()
+        for reaction, (energy_distribution, dist_strength) in energy_distributions_and_dist_strengths.items():
 
-            # create a ring source
-            my_source.space = openmc.stats.CylindricalIndependent(
-                r=radius, phi=angle, z=z_values, origin=(0.0, 0.0, 0.0)
-            )
-            my_source.angle = openmc.stats.Isotropic()
+            if dist_strength * strengths[reaction][i] > 0.:
+                my_source = openmc.IndependentSource()
 
-            my_source.energy = energy_distribution
+                # create a ring source
+                my_source.space = openmc.stats.CylindricalIndependent(
+                    r=radius, phi=angle, z=z_values, origin=(0.0, 0.0, 0.0)
+                )
+                my_source.angle = openmc.stats.Isotropic()
 
-            # the strength of the source (its probability) is given by the
-            # strength of the energy distribution and the location distribution
-            my_source.strength = dist_strength * strength
+                my_source.energy = energy_distribution
 
-            # append to the list of sources
-            sources.append(my_source)
+                # the strength of the source (its probability) is given by the
+                # strength of the energy distribution and the location distribution
+                my_source.strength = dist_strength * strengths[reaction][i]
+
+                # append to the list of sources
+                sources.append(my_source)
     return sources
 
 
@@ -383,12 +390,13 @@ def tokamak_neutron_source_density(ion_density, ion_temperature, reaction):
     ion_density = np.asarray(ion_density[reaction[0]]) * np.asarray(ion_density[reaction[1]])
     ion_temperature = np.asarray(ion_temperature)
 
-    if reaction == 'DT':
-        return ion_density * nst.reac_DT(ion_temperature) # could use _DT_xs instead
-    if reaction == 'DD':
-        return ion_density * nst.reac_DD(ion_temperature)
-    if reaction == 'TT':
-        return ion_density * nst.reac_TT(ion_temperature)
+    if reaction == ['DD']:
+        return ion_density * reac_DD(ion_temperature)
+    elif reaction == ['TT']:
+        return ion_density * reac_TT(ion_temperature)
+    # ['DT', 'DD', 'TT']
+    else:
+        return ion_density * reac_DT(ion_temperature) # could use _DT_xs instead
 
 
 #TODO consider replace with NeSST or getting DD version as well
