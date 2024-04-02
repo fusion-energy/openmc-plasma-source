@@ -120,7 +120,7 @@ def tokamak_source(
 
     cylindrical_mesh = openmc.CylindricalMesh(
         r_grid=np.linspace(0, major_radius + minor_radius, 3),
-        phi_grid=np.linspace(0, 2*np.pi, 2),
+        phi_grid=np.linspace(angles[0], angles[1], 2),
         z_grid=np.linspace(- 1 * elongation * minor_radius , elongation * minor_radius, 4),
     )
     r_vals = []
@@ -181,16 +181,17 @@ def tokamak_source(
 
         sources = tokamak_make_openmc_sources(
             strengths=neutron_source_density,
-            angles=angles,
             temperatures=temperatures,
             fuel=fuel,
         )
         all_sources = all_sources + sources
+
+    
     mesh_source = openmc.MeshSource(
         mesh=cylindrical_mesh,
         sources=np.array(all_sources).reshape(cylindrical_mesh.dimension)
     )
-    return all_sources
+    return mesh_source
 
 
 def tokamak_ion_density(
@@ -359,24 +360,28 @@ def tokamak_make_openmc_sources(
         )
 
         # now we have potentially 3 distributions (DT, DD, TT)
+        dists_for_mesh_voxel = []
+        probs_for_mesh_voxel = []
         for reaction, (
             energy_distribution,
             dist_strength,
         ) in energy_distributions_and_dist_strengths.items():
 
-            if reaction == 'DT':
-                my_source = openmc.IndependentSource()
+            # the strength of the source (its probability) is given by the
+            # strength of the energy distribution and the location distribution
+            probs_for_mesh_voxel.append(dist_strength * strengths[reaction][i]) #todo check that prob of 1 and set strength gives right answer in combined distribution
 
-                my_source.angle = openmc.stats.Isotropic()
+            dists_for_mesh_voxel.append(energy_distribution)
 
-                my_source.energy = energy_distribution
+        source_for_mesh_voxel = openmc.data.combine_distributions(
+            dists_for_mesh_voxel, probs_for_mesh_voxel
+        )
+        my_source = openmc.IndependentSource()
 
-                # the strength of the source (its probability) is given by the
-                # strength of the energy distribution and the location distribution
-                my_source.strength = dist_strength * strengths[reaction][i]
+        my_source.angle = openmc.stats.Isotropic()
 
-                # append to the list of sources
-                sources.append(my_source)
+        my_source.energy = source_for_mesh_voxel
+        sources.append(source_for_mesh_voxel)
     return sources
 
 
