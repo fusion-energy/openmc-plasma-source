@@ -120,18 +120,22 @@ def tokamak_source(
 
     cylindrical_mesh = openmc.CylindricalMesh(
         r_grid=np.linspace(0, major_radius + minor_radius, 3),
-        phi_grid=np.linspace(0, 2*np.pi, 2),
-        z_grid=np.linspace(- 1 * elongation * minor_radius , elongation * minor_radius, 4),
+        phi_grid=np.linspace(0, 2 * np.pi, 2),
+        z_grid=np.linspace(
+            -1 * elongation * minor_radius, elongation * minor_radius, 4
+        ),
     )
     r_vals = []
     z_vals = []
     a_vals = []
-    for coords in cylindrical_mesh.centroids.reshape(np.prod(cylindrical_mesh.dimension),3):
+    for coords in cylindrical_mesh.centroids.reshape(
+        np.prod(cylindrical_mesh.dimension), 3
+    ):
         print(coords)
-        radial = math.sqrt(coords[0]**2+coords[1]**2)
+        radial = math.sqrt(coords[0] ** 2 + coords[1] ** 2)
         r_vals.append(radial)
         z_vals.append(coords[2])
-        a_vals.append(abs(radial-major_radius))
+        a_vals.append(abs(radial - major_radius))
 
     a = np.array(a_vals)
     # compute densities, temperatures
@@ -188,7 +192,7 @@ def tokamak_source(
         all_sources = all_sources + sources
     mesh_source = openmc.MeshSource(
         mesh=cylindrical_mesh,
-        sources=np.array(all_sources).reshape(cylindrical_mesh.dimension)
+        sources=np.array(all_sources).reshape(cylindrical_mesh.dimension),
     )
     return all_sources
 
@@ -364,7 +368,7 @@ def tokamak_make_openmc_sources(
             dist_strength,
         ) in energy_distributions_and_dist_strengths.items():
 
-            if reaction == 'DT':
+            if reaction == "DT":
                 my_source = openmc.IndependentSource()
 
                 my_source.angle = openmc.stats.Isotropic()
