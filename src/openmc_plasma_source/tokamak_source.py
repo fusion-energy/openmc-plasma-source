@@ -116,7 +116,7 @@ def tokamak_source(
     (neutron source density) and .RZ (coordinates)
     """
     # create a sample of (a, alpha) coordinates
-    a = np.random.random(sample_size) * minor_radius
+    a = np.linspace(0, minor_radius)
     alpha = np.random.random(sample_size) * 2 * np.pi
 
 cylindrical_mesh = openmc.CylindricalMesh(
@@ -126,11 +126,15 @@ cylindrical_mesh = openmc.CylindricalMesh(
 )
 r_vals = []
 z_vals = []
+a_vals = []
+alpha_vals = []
 for coords in cylindrical_mesh.centroids.reshape(np.prod(cylindrical_mesh.dimension),3):
     print(coords)
     radial = math.sqrt(coords[0]**2+coords[1]**2)
     r_vals.append(radial)
     z_vals.append(coords[2])
+    a_vals.append(abs(radial-major_radius))
+    alpha_vals.append(math.arcsin((coords[2]/radial)))
 
     # compute densities, temperatures
     densities = tokamak_ion_density(
