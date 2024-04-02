@@ -121,17 +121,21 @@ def tokamak_source(
     cylindrical_mesh = openmc.CylindricalMesh(
         r_grid=np.linspace(0, major_radius + minor_radius, 3),
         phi_grid=np.linspace(angles[0], angles[1], 2),
-        z_grid=np.linspace(- 1 * elongation * minor_radius , elongation * minor_radius, 4),
+        z_grid=np.linspace(
+            -1 * elongation * minor_radius, elongation * minor_radius, 4
+        ),
     )
     r_vals = []
     z_vals = []
     a_vals = []
-    for coords in cylindrical_mesh.centroids.reshape(np.prod(cylindrical_mesh.dimension),3):
+    for coords in cylindrical_mesh.centroids.reshape(
+        np.prod(cylindrical_mesh.dimension), 3
+    ):
         print(coords)
-        radial = math.sqrt(coords[0]**2+coords[1]**2)
+        radial = math.sqrt(coords[0] ** 2 + coords[1] ** 2)
         r_vals.append(radial)
         z_vals.append(coords[2])
-        a_vals.append(abs(radial-major_radius))
+        a_vals.append(abs(radial - major_radius))
 
     a = np.array(a_vals)
     # compute densities, temperatures
@@ -186,10 +190,9 @@ def tokamak_source(
         )
         all_sources = all_sources + sources
 
-    
     mesh_source = openmc.MeshSource(
         mesh=cylindrical_mesh,
-        sources=np.array(all_sources).reshape(cylindrical_mesh.dimension)
+        sources=np.array(all_sources).reshape(cylindrical_mesh.dimension),
     )
     return mesh_source
 
@@ -369,7 +372,9 @@ def tokamak_make_openmc_sources(
 
             # the strength of the source (its probability) is given by the
             # strength of the energy distribution and the location distribution
-            probs_for_mesh_voxel.append(dist_strength * strengths[reaction][i]) #todo check that prob of 1 and set strength gives right answer in combined distribution
+            probs_for_mesh_voxel.append(
+                dist_strength * strengths[reaction][i]
+            )  # todo check that prob of 1 and set strength gives right answer in combined distribution
 
             dists_for_mesh_voxel.append(energy_distribution)
 
