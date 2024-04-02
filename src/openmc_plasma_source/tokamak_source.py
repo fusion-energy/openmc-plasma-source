@@ -117,25 +117,23 @@ def tokamak_source(
     """
     # create a sample of (a, alpha) coordinates
     a = np.linspace(0, minor_radius)
-    alpha = np.random.random(sample_size) * 2 * np.pi
 
-cylindrical_mesh = openmc.CylindricalMesh(
-    r_grid=np.linspace(0, major_radius + minor_radius, 3),
-    phi_grid=np.linspace(0, 2*np.pi, 2),
-    z_grid=np.linspace(- 1 * elongation * minor_radius , elongation * minor_radius, 4),
-)
-r_vals = []
-z_vals = []
-a_vals = []
-alpha_vals = []
-for coords in cylindrical_mesh.centroids.reshape(np.prod(cylindrical_mesh.dimension),3):
-    print(coords)
-    radial = math.sqrt(coords[0]**2+coords[1]**2)
-    r_vals.append(radial)
-    z_vals.append(coords[2])
-    a_vals.append(abs(radial-major_radius))
-    alpha_vals.append(math.arcsin((coords[2]/radial)))
+    cylindrical_mesh = openmc.CylindricalMesh(
+        r_grid=np.linspace(0, major_radius + minor_radius, 3),
+        phi_grid=np.linspace(0, 2*np.pi, 2),
+        z_grid=np.linspace(- 1 * elongation * minor_radius , elongation * minor_radius, 4),
+    )
+    r_vals = []
+    z_vals = []
+    a_vals = []
+    for coords in cylindrical_mesh.centroids.reshape(np.prod(cylindrical_mesh.dimension),3):
+        print(coords)
+        radial = math.sqrt(coords[0]**2+coords[1]**2)
+        r_vals.append(radial)
+        z_vals.append(coords[2])
+        a_vals.append(abs(radial-major_radius))
 
+    a = np.array(a_vals)
     # compute densities, temperatures
     densities = tokamak_ion_density(
         mode=mode,
@@ -165,17 +163,6 @@ for coords in cylindrical_mesh.centroids.reshape(np.prod(cylindrical_mesh.dimens
         major_radius=major_radius,
     )
 
-    # convert coordinates
-    RZ = tokamak_convert_a_alpha_to_R_Z(
-        a=a,
-        alpha=alpha,
-        shafranov_factor=shafranov_factor,
-        minor_radius=minor_radius,
-        major_radius=major_radius,
-        triangularity=triangularity,
-        elongation=elongation,
-    )
-
     reactions = get_reactions_from_fuel(fuel)
 
     neutron_source_density = {}
@@ -197,9 +184,12 @@ for coords in cylindrical_mesh.centroids.reshape(np.prod(cylindrical_mesh.dimens
             angles=angles,
             temperatures=temperatures,
             fuel=fuel,
-            RZ=RZ,
         )
         all_sources = all_sources + sources
+    mesh_source = openmc.MeshSource(
+        mesh=cylindrical_mesh,
+        sources=np.array(all_sources).reshape(cylindrical_mesh.dimension)
+    )
     return all_sources
 
 
@@ -298,32 +288,6 @@ def tokamak_ion_temperature(
         )
     return temperature
 
-convert_R_Z_to_a_alpha(
-    R=100,
-    Z=50,
-    shafranov_factor=10,
-    minor_radius=150,
-    major_radius=800,
-    triangularity=1.2,
-    elongation=1.3,
-)
-
-def convert_R_Z_to_a_alpha(
-    R,
-    Z,
-    shafranov_factor,
-    minor_radius,
-    major_radius,
-    triangularity,
-    elongation,
-):
-    
-    a = 
-    shafranov_shift = shafranov_factor * (1.0 - (a / minor_radius) ** 2)
-    alpha = np.arcsin(Z/ (elongation * a))
-    a= (R - major_radius - shafranov_shift) / np.cos(alpha + (triangularity * np.sin(alpha)))
-    return a, alpha
-
 
 def tokamak_convert_a_alpha_to_R_Z(
     a,
@@ -363,10 +327,8 @@ def tokamak_convert_a_alpha_to_R_Z(
 
 def tokamak_make_openmc_sources(
     strengths,
-    angles,
     temperatures,
     fuel,
-    RZ,
 ):
     """Creates a list of OpenMC Sources() objects. The created sources are
     ring sources based on the .RZ coordinates between two angles. The
@@ -388,11 +350,8 @@ def tokamak_make_openmc_sources(
 
     sources = []
     # create a ring source for each sample in the plasma source
-    for i, (RZ_val, temperature) in enumerate(zip(RZ, temperatures)):
+    for i, temperature in enumerate(temperatures):
         # extract the RZ values accordingly
-        radius = openmc.stats.Discrete([RZ_val[0]], [1])
-        z_values = openmc.stats.Discrete([RZ_val[1]], [1])
-        angle = openmc.stats.Uniform(a=angles[0], b=angles[1])
 
         energy_distributions_and_dist_strengths = get_neutron_energy_distribution(
             ion_temperature=temperature,
@@ -405,13 +364,9 @@ def tokamak_make_openmc_sources(
             dist_strength,
         ) in energy_distributions_and_dist_strengths.items():
 
-            if dist_strength * strengths[reaction][i] > 0.0:
+            if reaction == 'DT':
                 my_source = openmc.IndependentSource()
 
-                # create a ring source
-                my_source.space = openmc.stats.CylindricalIndependent(
-                    r=radius, phi=angle, z=z_values, origin=(0.0, 0.0, 0.0)
-                )
                 my_source.angle = openmc.stats.Isotropic()
 
                 my_source.energy = energy_distribution
