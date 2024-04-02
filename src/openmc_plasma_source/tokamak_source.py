@@ -1,5 +1,5 @@
 from typing import Tuple
-
+import math
 import numpy as np
 import openmc
 import openmc.checkvalue as cv
@@ -118,6 +118,19 @@ def tokamak_source(
     # create a sample of (a, alpha) coordinates
     a = np.random.random(sample_size) * minor_radius
     alpha = np.random.random(sample_size) * 2 * np.pi
+
+cylindrical_mesh = openmc.CylindricalMesh(
+    r_grid=np.linspace(0, major_radius + minor_radius, 3),
+    phi_grid=np.linspace(0, 2*np.pi, 2),
+    z_grid=np.linspace(- 1 * elongation * minor_radius , elongation * minor_radius, 4),
+)
+r_vals = []
+z_vals = []
+for coords in cylindrical_mesh.centroids.reshape(np.prod(cylindrical_mesh.dimension),3):
+    print(coords)
+    radial = math.sqrt(coords[0]**2+coords[1]**2)
+    r_vals.append(radial)
+    z_vals.append(coords[2])
 
     # compute densities, temperatures
     densities = tokamak_ion_density(
@@ -281,6 +294,32 @@ def tokamak_ion_temperature(
         )
     return temperature
 
+convert_R_Z_to_a_alpha(
+    R=100,
+    Z=50,
+    shafranov_factor=10,
+    minor_radius=150,
+    major_radius=800,
+    triangularity=1.2,
+    elongation=1.3,
+)
+
+def convert_R_Z_to_a_alpha(
+    R,
+    Z,
+    shafranov_factor,
+    minor_radius,
+    major_radius,
+    triangularity,
+    elongation,
+):
+    
+    a = 
+    shafranov_shift = shafranov_factor * (1.0 - (a / minor_radius) ** 2)
+    alpha = np.arcsin(Z/ (elongation * a))
+    a= (R - major_radius - shafranov_shift) / np.cos(alpha + (triangularity * np.sin(alpha)))
+    return a, alpha
+
 
 def tokamak_convert_a_alpha_to_R_Z(
     a,
@@ -308,7 +347,6 @@ def tokamak_convert_a_alpha_to_R_Z(
     alpha = np.asarray(alpha)
     if np.any(a < 0):
         raise ValueError("Radius 'a'  must not be negative")
-
     shafranov_shift = shafranov_factor * (1.0 - (a / minor_radius) ** 2)
     R = (
         major_radius
