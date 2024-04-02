@@ -7,6 +7,7 @@ import NeSST as nst
 from .fuel_types import get_neutron_energy_distribution, get_reactions_from_fuel
 from NeSST.spectral_model import reac_DD, reac_TT, reac_DT
 
+
 def tokamak_source(
     major_radius: float,
     minor_radius: float,
@@ -132,18 +133,18 @@ def tokamak_source(
 
     fuel_densities = {}
     for key, value in fuel.items():
-        fuel_densities[key] = densities*value
+        fuel_densities[key] = densities * value
 
     # compute temperatures
     temperatures = tokamak_ion_temperature(
         r=a,
         mode=mode,
         pedestal_radius=pedestal_radius,
-        ion_temperature_pedestal=ion_temperature_pedestal/1e3,
-        ion_temperature_centre=ion_temperature_centre/1e3,
+        ion_temperature_pedestal=ion_temperature_pedestal / 1e3,
+        ion_temperature_centre=ion_temperature_centre / 1e3,
         ion_temperature_beta=ion_temperature_beta,
         ion_temperature_peaking_factor=ion_temperature_peaking_factor,
-        ion_temperature_separatrix=ion_temperature_separatrix/1e3,
+        ion_temperature_separatrix=ion_temperature_separatrix / 1e3,
         major_radius=major_radius,
     )
 
@@ -159,16 +160,20 @@ def tokamak_source(
     )
 
     reactions = get_reactions_from_fuel(fuel)
-    
-    neutron_source_density={}
+
+    neutron_source_density = {}
     total_source_density = 0
     for reaction in reactions:
-        neutron_source_density[reaction] = tokamak_neutron_source_density(fuel_densities, temperatures, reaction)
+        neutron_source_density[reaction] = tokamak_neutron_source_density(
+            fuel_densities, temperatures, reaction
+        )
         total_source_density += sum(neutron_source_density[reaction])
-    
+
     all_sources = []
     for reaction in reactions:
-        neutron_source_density[reaction] = neutron_source_density[reaction]/total_source_density
+        neutron_source_density[reaction] = (
+            neutron_source_density[reaction] / total_source_density
+        )
 
         sources = tokamak_make_openmc_sources(
             strengths=neutron_source_density,
@@ -353,9 +358,12 @@ def tokamak_make_openmc_sources(
         )
 
         # now we have potentially 3 distributions (DT, DD, TT)
-        for reaction, (energy_distribution, dist_strength) in energy_distributions_and_dist_strengths.items():
+        for reaction, (
+            energy_distribution,
+            dist_strength,
+        ) in energy_distributions_and_dist_strengths.items():
 
-            if dist_strength * strengths[reaction][i] > 0.:
+            if dist_strength * strengths[reaction][i] > 0.0:
                 my_source = openmc.IndependentSource()
 
                 # create a ring source
@@ -387,19 +395,21 @@ def tokamak_neutron_source_density(ion_density, ion_temperature, reaction):
         float, ndarray: Neutron source density (neutron/s/m3)
     """
 
-    ion_density = np.asarray(ion_density[reaction[0]]) * np.asarray(ion_density[reaction[1]])
+    ion_density = np.asarray(ion_density[reaction[0]]) * np.asarray(
+        ion_density[reaction[1]]
+    )
     ion_temperature = np.asarray(ion_temperature)
 
-    if reaction == ['DD']:
+    if reaction == ["DD"]:
         return ion_density * reac_DD(ion_temperature)
-    elif reaction == ['TT']:
+    elif reaction == ["TT"]:
         return ion_density * reac_TT(ion_temperature)
     # ['DT', 'DD', 'TT']
     else:
-        return ion_density * reac_DT(ion_temperature) # could use _DT_xs instead
+        return ion_density * reac_DT(ion_temperature)  # could use _DT_xs instead
 
 
-#TODO consider replace with NeSST or getting DD version as well
+# TODO consider replace with NeSST or getting DD version as well
 def _DT_xs(ion_temperature):
     """Sadler–Van Belle formula
     Ref : https://doi.org/10.1016/j.fusengdes.2012.02.025
@@ -408,7 +418,7 @@ def _DT_xs(ion_temperature):
     Returns:
         float, ndarray: the DT cross section at the given temperature
     """
-    ion_temperature_kev = np.asarray(ion_temperature/1e3)
+    ion_temperature_kev = np.asarray(ion_temperature / 1e3)
     c = [
         2.5663271e-18,
         19.983026,

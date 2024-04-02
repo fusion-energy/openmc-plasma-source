@@ -52,9 +52,6 @@ model.run()
 
 from openmc_source_plotter import plot_source_direction
 
-plot = plot_source_direction(
-    this=settings,
-    n_samples=200
-)
+plot = plot_source_direction(this=settings, n_samples=200)
 
 plot.show()

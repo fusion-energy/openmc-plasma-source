@@ -38,7 +38,7 @@ from openmc_source_plotter import plot_source_energy
 
 plot = plot_source_energy(
     this=settings,
-    n_samples=1000000, # increase this value for a smoother plot
+    n_samples=1000000,  # increase this value for a smoother plot
     energy_bins=np.linspace(0, 16e6, 1000),
     yaxis_type="log",
 )
