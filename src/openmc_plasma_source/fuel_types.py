@@ -93,17 +93,17 @@ def neutron_energy_std_dev(ion_temperature: float, reaction: str) -> float:
     return std_dev
 
 
-
 def get_reactions_from_fuel(fuel):
     if ["D", "T"] == sorted(set(fuel.keys())):
-        return ['DT', 'DD', 'TT']
+        return ["DT", "DD", "TT"]
     elif ["D"] == sorted(set(fuel.keys())):
-        return ['DD']
+        return ["DD"]
     elif ["T"] == sorted(set(fuel.keys())):
-        return ['TT']
+        return ["TT"]
     else:
         msg = 'reactions of fuel {fuel} could not be found. Supported fuel keys are "T" and "D"'
         raise ValueError(msg)
+
 
 def get_neutron_energy_distribution(
     ion_temperature: float,
@@ -160,7 +160,7 @@ def get_neutron_energy_distribution(
 
     reactions = get_reactions_from_fuel(fuel)
 
-    if reactions == ['TT']:
+    if reactions == ["TT"]:
         strength_TT = 1.0
         dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature)
         tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
@@ -186,9 +186,9 @@ def get_neutron_energy_distribution(
         dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature)
 
         # removing any zeros from the end of the array
-        dNdE_TT = np.trim_zeros(dNdE_TT, 'b')
+        dNdE_TT = np.trim_zeros(dNdE_TT, "b")
         # making array lengths match
-        E_pspec = E_pspec[:len(dNdE_TT)]
+        E_pspec = E_pspec[: len(dNdE_TT)]
 
         tt_source = openmc.stats.Tabular(E_pspec, dNdE_TT)
 

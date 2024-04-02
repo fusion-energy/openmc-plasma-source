@@ -132,7 +132,7 @@ def tokamak_source(
 
     fuel_densities = {}
     for key, value in fuel.items():
-        fuel_densities[key] = densities*value
+        fuel_densities[key] = densities * value
 
     # compute temperatures
     temperatures = tokamak_ion_temperature(
@@ -158,10 +158,11 @@ def tokamak_source(
         elongation=elongation,
     )
 
-    neutron_source_density = tokamak_neutron_source_density(fuel_densities, temperatures, reaction)
+    neutron_source_density = tokamak_neutron_source_density(
+        fuel_densities, temperatures, reaction
+    )
 
     strengths = neutron_source_density / sum(neutron_source_density)
-
 
     sources = tokamak_make_openmc_sources(
         strengths=strengths,
@@ -380,18 +381,20 @@ def tokamak_neutron_source_density(ion_density, ion_temperature, reaction):
         float, ndarray: Neutron source density (neutron/s/m3)
     """
 
-    ion_density = np.asarray(ion_density[reaction[0]]) * np.asarray(ion_density[reaction[1]])
+    ion_density = np.asarray(ion_density[reaction[0]]) * np.asarray(
+        ion_density[reaction[1]]
+    )
     ion_temperature = np.asarray(ion_temperature)
 
-    if reaction == 'DT':
-        return ion_density * nst.reac_DT(ion_temperature) # could use _DT_xs instead
-    if reaction == 'DD':
+    if reaction == "DT":
+        return ion_density * nst.reac_DT(ion_temperature)  # could use _DT_xs instead
+    if reaction == "DD":
         return ion_density * nst.reac_DD(ion_temperature)
-    if reaction == 'TT':
+    if reaction == "TT":
         return ion_density * nst.reac_TT(ion_temperature)
 
 
-#TODO consider replace with NeSST or getting DD version as well
+# TODO consider replace with NeSST or getting DD version as well
 def _DT_xs(ion_temperature):
     """Sadler–Van Belle formula
     Ref : https://doi.org/10.1016/j.fusengdes.2012.02.025
@@ -400,7 +403,7 @@ def _DT_xs(ion_temperature):
     Returns:
         float, ndarray: the DT cross section at the given temperature
     """
-    ion_temperature_kev = np.asarray(ion_temperature/1e3)
+    ion_temperature_kev = np.asarray(ion_temperature / 1e3)
     c = [
         2.5663271e-18,
         19.983026,
