@@ -44,8 +44,10 @@ class TokamakSource:
             (cm)
         angles (iterable of floats): the start and stop angles of the ring in
             radians
-        sample_size (int, optional): number of neutron sources. Defaults
-            to 1000.
+        sample_size int: number of neutron sources. Defaults to 1000.
+        sample_seed int: the seed passed to numpy.random when sampling source
+            location. Numpy recommend a large int value. Defaults to
+            122807528840384100672342137672332424406
     """
 
     def __init__(
@@ -68,6 +70,7 @@ class TokamakSource:
         shafranov_factor: float,
         angles: Tuple[float, float] = (0, 2 * np.pi),
         sample_size: int = 1000,
+        sample_seed: int = 1,
     ) -> None:
         # Assign attributes
         self.major_radius = major_radius
@@ -88,6 +91,7 @@ class TokamakSource:
         self.shafranov_factor = shafranov_factor
         self.angles = angles
         self.sample_size = sample_size
+        self.sample_seed = sample_seed
 
         # Perform sanity checks for inputs not caught by properties
         if self.minor_radius >= self.major_radius:
@@ -341,8 +345,9 @@ class TokamakSource:
         (neutron source density) and .RZ (coordinates)
         """
         # create a sample of (a, alpha) coordinates
-        a = np.random.random(self.sample_size) * self.minor_radius
-        alpha = np.random.random(self.sample_size) * 2 * np.pi
+        rng  = np.random.default_rng(self.sample_seed)
+        a = rng.random(self.sample_size) * self.minor_radius
+        alpha = rng.random(self.sample_size) * 2 * np.pi
 
         # compute densities, temperatures, neutron source densities and
         # convert coordinates
