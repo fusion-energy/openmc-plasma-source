@@ -70,7 +70,7 @@ class TokamakSource:
         shafranov_factor: float,
         angles: Tuple[float, float] = (0, 2 * np.pi),
         sample_size: int = 1000,
-        sample_seed: int = 1,
+        sample_seed: int = 122807528840384100672342137672332424406,
     ) -> None:
         # Assign attributes
         self.major_radius = major_radius
