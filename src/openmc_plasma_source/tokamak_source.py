@@ -345,7 +345,7 @@ class TokamakSource:
         (neutron source density) and .RZ (coordinates)
         """
         # create a sample of (a, alpha) coordinates
-        rng  = np.random.default_rng(self.sample_seed)
+        rng = np.random.default_rng(self.sample_seed)
         a = rng.random(self.sample_size) * self.minor_radius
         alpha = rng.random(self.sample_size) * 2 * np.pi
 
