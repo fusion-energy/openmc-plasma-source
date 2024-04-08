@@ -26,7 +26,7 @@ def tokamak_source():
         shafranov_factor=0.44789,
         triangularity=0.270,
         ion_temperature_beta=6,
-        sample_size=(10, 10),
+        sample_size=(3, 3),
     )
 
 
