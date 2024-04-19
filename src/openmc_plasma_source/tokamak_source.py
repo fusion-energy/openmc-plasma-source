@@ -28,6 +28,7 @@ def tokamak_source(
     angles: Tuple[float, float] = (0, 2 * np.pi),
     sample_size: int = 1000,
     fuel: dict = {"D": 0.5, "T": 0.5},
+    sample_seed: int = 122807528840384100672342137672332424406,
 ) -> list[openmc.IndependentSource]:
     """Creates a list of openmc.IndependentSource objects representing a tokamak plasma.
 
@@ -69,6 +70,9 @@ def tokamak_source(
             (cm)
         angles (iterable of floats): the start and stop angles of the ring in
             radians
+        sample_seed int: the seed passed to numpy.random when sampling source
+            location. Numpy recommend a large int value. Defaults to
+            122807528840384100672342137672332424406
         sample_size (int, optional): number of neutron sources. Defaults
             to 1000.
         fuel (dict): Isotopes as keys and atom fractions as values
@@ -116,9 +120,10 @@ def tokamak_source(
     (neutron source density) and .RZ (coordinates)
     """
     # create a sample of (a, alpha) coordinates
-    a = np.random.random(sample_size) * minor_radius
-    alpha = np.random.random(sample_size) * 2 * np.pi
-
+    rng = np.random.default_rng(self.sample_seed)
+    a = rng.random(self.sample_size) * self.minor_radius
+    alpha = rng.random(self.sample_size) * 2 * np.pi
+    
     # compute densities, temperatures
     densities = tokamak_ion_density(
         mode=mode,
@@ -277,7 +282,7 @@ def tokamak_ion_temperature(
                 + (ion_temperature_pedestal - ion_temperature_separatrix)
                 * (major_radius - r)
                 / (major_radius - pedestal_radius)
-            ),
+            )
         )
     return temperature
 
