@@ -18,11 +18,12 @@ classifiers = [
 authors = [
   { name="Rémi Delaporte-Mathurin" },
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = ["python", "neutron", "fusion", "source", "openmc", "energy", "tokamak"]
 dependencies = [
     "numpy>=1.9",
     "matplotlib>=3.2.2",
+    "NeSST>=1.0.0"
 ]
 
 [project.urls]
@@ -35,7 +36,8 @@ write_to = "src/_version.py"
 [project.optional-dependencies]
 tests = [
     "pytest>=5.4.3",
-    "hypothesis"
+    "hypothesis",
+    "NeSST>=1.0.0"
 ]
 
 [tool.setuptools]

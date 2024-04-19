@@ -1,79 +1,53 @@
-import openmc
 from typing import Tuple
 
-from .fuel_types import fuel_types
+import openmc
+
+from .fuel_types import get_neutron_energy_distribution
 
 
-class FusionPointSource(openmc.IndependentSource):
-    """An openmc.Source object with some presets to make it more convenient
-    for fusion simulations using a point source. All attributes can be changed
-    after initialization if required. Default isotropic point source at the
-    origin with a Muir energy distribution.
+def fusion_point_source(
+    coordinate: Tuple[float, float, float] = (0.0, 0.0, 0.0),
+    temperature: float = 20000.0,
+    fuel: dict = {"D": 0.5, "T": 0.5},
+) -> list[openmc.IndependentSource]:
+    """Creates a list of openmc.IndependentSource objects representing an ICF source.
+
+    Resulting ICF (Inertial Confinement Fusion) source will have an energy
+    distribution according to the fuel composition.
 
     Args:
         coordinate (tuple[float,float,float]): Location of the point source.
             Each component is measured in metres.
         temperature (float): Temperature of the source (eV).
-        fuel_type (str): The fusion fuel mix. Either 'DT' or 'DD'.
+        fuel (dict): Isotopes as keys and atom fractions as values
     """
 
-    def __init__(
-        self,
-        coordinate: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-        temperature: float = 20000.0,
-        fuel: str = "DT",
+    if (
+        isinstance(coordinate, tuple)
+        and len(coordinate) == 3
+        and all(isinstance(x, (int, float)) for x in coordinate)
     ):
-        # Set local attributes
-        self.coordinate = coordinate
-        self.temperature = temperature
-        self.fuel_type = fuel
-        self.fuel = fuel_types[self.fuel_type]
+        pass
+    else:
+        raise ValueError("coordinate must be a tuple of three floats.")
 
-        # Call init for openmc.Source
-        super().__init__()
+    if not isinstance(temperature, (int, float)):
+        raise ValueError("Temperature must be a float.")
+    if temperature <= 0:
+        raise ValueError("Temperature must be positive float.")
 
-        # performed after the super init as these are Source attributes
-        self.space = openmc.stats.Point(self.coordinate)
-        self.angle = openmc.stats.Isotropic()
-        self.energy = openmc.stats.muir(
-            e0=self.fuel.mean_energy,
-            m_rat=self.fuel.mass_of_reactants,
-            kt=self.temperature,
-        )
+    sources = []
 
-    @property
-    def coordinate(self):
-        return self._coordinate
+    energy_distributions, strengths = get_neutron_energy_distribution(
+        ion_temperature=temperature, fuel=fuel
+    )
 
-    @coordinate.setter
-    def coordinate(self, value):
-        if (
-            isinstance(value, tuple)
-            and len(value) == 3
-            and all(isinstance(x, (int, float)) for x in value)
-        ):
-            self._coordinate = value
-        else:
-            raise ValueError("coordinate must be a tuple of three floats.")
+    for energy_distribution, strength in zip(energy_distributions, strengths):
+        source = openmc.IndependentSource()
+        source.energy = energy_distribution
+        source.space = openmc.stats.Point(coordinate)
+        source.angle = openmc.stats.Isotropic()
+        source.strength = strength
+        sources.append(source)
 
-    @property
-    def temperature(self):
-        return self._temperature
-
-    @temperature.setter
-    def temperature(self, value):
-        if isinstance(value, (int, float)) and value > 0:
-            self._temperature = value
-        else:
-            raise ValueError("Temperature must be strictly positive float.")
-
-    @property
-    def fuel_type(self):
-        return self._fuel_type
-
-    @fuel_type.setter
-    def fuel_type(self, value):
-        if value in fuel_types:
-            self._fuel_type = value
-        else:
-            raise KeyError("Invalid fuel type")
+    return sources
