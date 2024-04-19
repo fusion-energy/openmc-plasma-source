@@ -123,7 +123,7 @@ def tokamak_source(
     rng = np.random.default_rng(self.sample_seed)
     a = rng.random(self.sample_size) * self.minor_radius
     alpha = rng.random(self.sample_size) * 2 * np.pi
-    
+
     # compute densities, temperatures
     densities = tokamak_ion_density(
         mode=mode,
@@ -282,7 +282,7 @@ def tokamak_ion_temperature(
                 + (ion_temperature_pedestal - ion_temperature_separatrix)
                 * (major_radius - r)
                 / (major_radius - pedestal_radius)
-            )
+            ),
         )
     return temperature
 
