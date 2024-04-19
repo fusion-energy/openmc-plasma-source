@@ -28,3 +28,12 @@ settings.source = my_source
 model = openmc.model.Model(materials=None, geometry=geometry, settings=settings)
 
 model.run()
+
+from openmc_source_plotter import plot_source_position
+
+plot = plot_source_position(
+    this=settings,
+    n_samples = 2000,
+)
+
+plot.show()

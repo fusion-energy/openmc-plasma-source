@@ -29,6 +29,7 @@ my_plasma = TokamakSource(
     shafranov_factor=0.44789,
     triangularity=0.270,
     ion_temperature_beta=6,
+    angles=(0, 0.01),
 )
 
 # Tell OpenMC we're going to use our custom source
@@ -42,3 +43,13 @@ settings.source = my_plasma.sources
 model = openmc.model.Model(materials=None, geometry=geometry, settings=settings)
 
 model.run()
+
+
+from openmc_source_plotter import plot_source_position
+
+plot = plot_source_position(
+    this=settings,
+    n_samples = 10,
+)
+
+plot.show()
