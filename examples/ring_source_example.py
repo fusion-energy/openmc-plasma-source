@@ -33,7 +33,7 @@ from openmc_source_plotter import plot_source_position
 
 plot = plot_source_position(
     this=settings,
-    n_samples = 2000,
+    n_samples=2000,
 )
 
 plot.show()
