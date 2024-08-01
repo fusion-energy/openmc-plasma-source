@@ -200,5 +200,9 @@ def get_neutron_energy_distribution(
         # dt_source = openmc.stats.muir(e0=DTmean * 1e6, m_rat=5, kt=ion_temperature)
 
         openmc_univariate = [tt_source, dd_source, dt_source]
-        probabilities = [strength_TT / total_strength, strength_DD / total_strength, 1.0 / total_strength]
+        probabilities = [
+            strength_TT / total_strength,
+            strength_DD / total_strength,
+            1.0 / total_strength,
+        ]
         return openmc.data.combine_distributions(openmc_univariate, probabilities)
