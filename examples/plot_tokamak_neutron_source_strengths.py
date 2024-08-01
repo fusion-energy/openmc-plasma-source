@@ -40,7 +40,7 @@ densities = tokamak_ion_density(
     r=a,
 )
 
-neutron_source_density = tokamak_neutron_source_density(densities, temperatures, 'DD')
+neutron_source_density = tokamak_neutron_source_density(densities, temperatures, "DD")
 
 strengths = neutron_source_density / sum(neutron_source_density)
 
