@@ -163,27 +163,27 @@ def tokamak_source(
     fuel_densities = {}
     for key, value in fuel.items():
         fuel_densities[key] = densities * value
-    print('fuel_densities',fuel_densities.keys())
+    print("fuel_densities", fuel_densities.keys())
     reactions = get_reactions_from_fuel(fuel)
-    print('freactions',reactions)
+    print("freactions", reactions)
 
     neutron_source_density = {}
     total_source_density = 0
     for reaction in reactions:
 
-        if reaction == 'DD':
-            fuel_density=fuel_densities['D']*0.5
-        elif reaction == 'TT':
-            fuel_density=fuel_densities['T']*0.5
-        elif reaction == 'DT':
-            fuel_density=fuel_densities['T']*fuel_densities['D']
-        
+        if reaction == "DD":
+            fuel_density = fuel_densities["D"] * 0.5
+        elif reaction == "TT":
+            fuel_density = fuel_densities["T"] * 0.5
+        elif reaction == "DT":
+            fuel_density = fuel_densities["T"] * fuel_densities["D"]
+
         neutron_source_density[reaction] = tokamak_neutron_source_density(
             fuel_density, temperatures, reaction
         )
-        if reaction == 'TT':
+        if reaction == "TT":
             # TT reaction emits 2 neutrons
-            neutron_source_density[reaction]=neutron_source_density[reaction]*2
+            neutron_source_density[reaction] = neutron_source_density[reaction] * 2
 
         total_source_density += sum(neutron_source_density[reaction])
 
@@ -421,7 +421,9 @@ def tokamak_neutron_source_density(ion_density, ion_temperature, reaction):
     elif reaction == "DT":
         return ion_density * reac_DT(ion_temperature)  # could use _DT_xs instead
     else:
-        raise ValueError('Reaction {reaction} not in available options ["DD", "DT", "TT"]')
+        raise ValueError(
+            'Reaction {reaction} not in available options ["DD", "DT", "TT"]'
+        )
 
 
 # TODO consider replace with NeSST or getting DD version as well
