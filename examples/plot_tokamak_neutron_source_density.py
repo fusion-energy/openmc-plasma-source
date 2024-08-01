@@ -40,7 +40,7 @@ densities = tokamak_ion_density(
     r=a,
 )
 
-neutron_source_density = tokamak_neutron_source_density(densities, temperatures)
+neutron_source_density = tokamak_neutron_source_density(densities, temperatures, 'DD')
 
 RZ = tokamak_convert_a_alpha_to_R_Z(
     a=a,

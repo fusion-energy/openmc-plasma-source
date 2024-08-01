@@ -7,7 +7,7 @@ from openmc_plasma_source import (
     tokamak_ion_density,
 )
 
-sample_size = 2000
+sample_size = 20000
 minor_radius = 292.258
 major_radius = 906
 mode = "L"
@@ -40,7 +40,7 @@ densities = tokamak_ion_density(
     r=a,
 )
 
-neutron_source_density = tokamak_neutron_source_density(densities, temperatures)
+neutron_source_density = tokamak_neutron_source_density(densities, temperatures, 'DD')
 
 strengths = neutron_source_density / sum(neutron_source_density)
 

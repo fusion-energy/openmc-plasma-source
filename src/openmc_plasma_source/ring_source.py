@@ -56,23 +56,21 @@ def fusion_ring_source(
 
     sources = []
 
-    energy_distributions, strengths = get_neutron_energy_distribution(
+    energy_distributions = get_neutron_energy_distribution(
         ion_temperature=temperature, fuel=fuel
     )
 
-    for energy_distribution, strength in zip(energy_distributions, strengths):
-        source = openmc.IndependentSource()
+    source = openmc.IndependentSource()
 
-        source.space = openmc.stats.CylindricalIndependent(
-            r=openmc.stats.Discrete([radius], [1]),
-            phi=openmc.stats.Uniform(a=angles[0], b=angles[1]),
-            z=openmc.stats.Discrete([z_placement], [1]),
-            origin=(0.0, 0.0, 0.0),
-        )
+    source.space = openmc.stats.CylindricalIndependent(
+        r=openmc.stats.Discrete([radius], [1]),
+        phi=openmc.stats.Uniform(a=angles[0], b=angles[1]),
+        z=openmc.stats.Discrete([z_placement], [1]),
+        origin=(0.0, 0.0, 0.0),
+    )
 
-        source.energy = energy_distribution
-        source.angle = openmc.stats.Isotropic()
-        source.strength = strength
-        sources.append(source)
+    source.energy = energy_distributions
+    source.angle = openmc.stats.Isotropic()
+    sources.append(source)
 
     return sources

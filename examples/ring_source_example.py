@@ -27,7 +27,7 @@ settings.particles = 1000
 # tell OpenMC we're going to use our custom source
 settings.source = my_source
 
-model = openmc.model.Model(materials=None, geometry=geometry, settings=settings)
+model = openmc.Model(materials=None, geometry=geometry, settings=settings)
 
 model.run()
 
@@ -35,11 +35,11 @@ model.run()
 # optionally if you would like to plot the location of particles then another package can be used
 # https://github.com/fusion-energy/openmc_source_plotter
 
-# from openmc_source_plotter import plot_source_position
+from openmc_source_plotter import plot_source_position
 
-# plot = plot_source_position(
-#     this=settings,
-#     n_samples = 2000,
-# )
+plot = plot_source_position(
+    this=settings,
+    n_samples = 2000,
+)
 
-# plot.show()
+plot.show()

@@ -174,10 +174,10 @@ def get_neutron_energy_distribution(
     # DT, DD and TT reaction
     else:
         strength_DD = nst.yield_from_dt_yield_ratio(
-            "DD", 1.0, ion_temperature, fuel["D"], fuel["T"]
+            "dd", 1.0, ion_temperature, fuel["D"], fuel["T"]
         )
         strength_TT = nst.yield_from_dt_yield_ratio(
-            "TT", 1.0, ion_temperature, fuel["D"], fuel["T"]
+            "tt", 1.0, ion_temperature, fuel["D"], fuel["T"]
         )
 
         total_strength = sum([strength_TT, strength_DD, 1.0])

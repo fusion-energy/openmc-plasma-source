@@ -120,9 +120,9 @@ def tokamak_source(
     (neutron source density) and .RZ (coordinates)
     """
     # create a sample of (a, alpha) coordinates
-    rng = np.random.default_rng(self.sample_seed)
-    a = rng.random(self.sample_size) * self.minor_radius
-    alpha = rng.random(self.sample_size) * 2 * np.pi
+    rng = np.random.default_rng(sample_seed)
+    a = rng.random(sample_size) * minor_radius
+    alpha = rng.random(sample_size) * 2 * np.pi
 
     # compute densities, temperatures
     densities = tokamak_ion_density(
@@ -135,10 +135,6 @@ def tokamak_source(
         ion_density_separatrix=ion_density_separatrix,
         r=a,
     )
-
-    fuel_densities = {}
-    for key, value in fuel.items():
-        fuel_densities[key] = densities * value
 
     # compute temperatures
     temperatures = tokamak_ion_temperature(
@@ -164,21 +160,36 @@ def tokamak_source(
         elongation=elongation,
     )
 
+    fuel_densities = {}
+    for key, value in fuel.items():
+        fuel_densities[key] = densities * value
+    print('fuel_densities',fuel_densities.keys())
     reactions = get_reactions_from_fuel(fuel)
+    print('freactions',reactions)
 
     neutron_source_density = {}
     total_source_density = 0
     for reaction in reactions:
+
+        if reaction == 'DD':
+            fuel_density=fuel_densities['D']*0.5
+        elif reaction == 'TT':
+            fuel_density=fuel_densities['T']*0.5
+        elif reaction == 'DT':
+            fuel_density=fuel_densities['T']*fuel_densities['D']
+        
         neutron_source_density[reaction] = tokamak_neutron_source_density(
-            fuel_densities, temperatures, reaction
+            fuel_density, temperatures, reaction
         )
+        if reaction == 'TT':
+            # TT reaction emits 2 neutrons
+            neutron_source_density[reaction]=neutron_source_density[reaction]*2
+
         total_source_density += sum(neutron_source_density[reaction])
 
     all_sources = []
     for reaction in reactions:
-        neutron_source_density[reaction] = (
-            neutron_source_density[reaction] / total_source_density
-        )
+        neutron_source_density = neutron_source_density[reaction] / total_source_density
 
         sources = tokamak_make_openmc_sources(
             strengths=neutron_source_density,
@@ -395,23 +406,22 @@ def tokamak_neutron_source_density(ion_density, ion_temperature, reaction):
     Args:
         ion_density (float, ndarray): Ion density (m-3)
         ion_temperature (float, ndarray): Ion temperature (keV)
-
+        reaction (str): The fusion reactions to consider e.g. 'DD'
     Returns:
         float, ndarray: Neutron source density (neutron/s/m3)
     """
 
-    ion_density = np.asarray(ion_density[reaction[0]]) * np.asarray(
-        ion_density[reaction[1]]
-    )
+    ion_density = np.asarray(ion_density)
     ion_temperature = np.asarray(ion_temperature)
 
-    if reaction == ["DD"]:
+    if reaction == "DD":
         return ion_density * reac_DD(ion_temperature)
-    elif reaction == ["TT"]:
+    elif reaction == "TT":
         return ion_density * reac_TT(ion_temperature)
-    # ['DT', 'DD', 'TT']
-    else:
+    elif reaction == "DT":
         return ion_density * reac_DT(ion_temperature)  # could use _DT_xs instead
+    else:
+        raise ValueError('Reaction {reaction} not in available options ["DD", "DT", "TT"]')
 
 
 # TODO consider replace with NeSST or getting DD version as well
