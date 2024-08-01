@@ -198,26 +198,20 @@ def get_neutron_energy_distribution(
         openmc_univariate = [dd_source, dt_source]
 
         # sometimes bins are empty
-        if len(E_pspec) ==0:
+        if len(E_pspec) == 0:
             total_strength = sum([strength_DD, 1.0])
-            probabilities = [
-                strength_DD / total_strength,
-                1.0 / total_strength
-            ]
+            probabilities = [strength_DD / total_strength, 1.0 / total_strength]
         else:
             total_strength = sum([strength_TT, strength_DD, 1.0])
             tt_source = openmc.stats.Tabular(E_pspec[1:], dNdE_TT[1:])
             probabilities = [
                 strength_DD / total_strength,
                 1.0 / total_strength,
-                strength_TT / total_strength
+                strength_TT / total_strength,
             ]
             openmc_univariate.append(tt_source)
 
-
-
-
-        return openmc.stats.Mixture(probabilities,openmc_univariate)
+        return openmc.stats.Mixture(probabilities, openmc_univariate)
         # bug reported for combine_distributions #3105 on openmc
         # return openmc.data.combine_distributions(
         #     dists=openmc_univariate,

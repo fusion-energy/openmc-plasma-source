@@ -16,7 +16,10 @@ geometry = openmc.Geometry([cell])
 my_source = fusion_point_source(
     coordinate=(0, 0, 0),
     temperature=20000.0,
-    fuel={"D": 0.09, "T": 0.91},  # note this is mainly tritium fuel so that TT reactions are more likely
+    fuel={
+        "D": 0.09,
+        "T": 0.91,
+    },  # note this is mainly tritium fuel so that TT reactions are more likely
 )
 
 # Tell OpenMC we're going to use our custom source

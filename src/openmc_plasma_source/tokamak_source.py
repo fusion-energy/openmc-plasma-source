@@ -293,7 +293,7 @@ def tokamak_ion_temperature(
                 / (major_radius - pedestal_radius)
             ),
         )
-    return temperature*1e3
+    return temperature * 1e3
 
 
 def tokamak_convert_a_alpha_to_R_Z(
@@ -360,10 +360,12 @@ def tokamak_make_openmc_sources(
 
     sources = []
     # create a ring source for each sample in the plasma source
-    R_vals= RZ[0]
-    Z_vals=RZ[1]
+    R_vals = RZ[0]
+    Z_vals = RZ[1]
     assert len(Z_vals) == len(R_vals) == len(temperatures) == len(strengths)
-    for (R_val, Z_val, temperature, strength) in zip(R_vals, Z_vals, temperatures, strengths):
+    for R_val, Z_val, temperature, strength in zip(
+        R_vals, Z_vals, temperatures, strengths
+    ):
 
         if strength > 0.0:
             radius = openmc.stats.Discrete([R_val], [1])
@@ -411,4 +413,6 @@ def tokamak_neutron_source_density(ion_density, ion_temperature, reaction):
     elif reaction == "DT":
         return ion_density * reac_DT(ion_temperature)  # could use _DT_xs instead
     else:
-        raise ValueError('Reaction {reaction} not in available options ["DD", "DT", "TT"]')
+        raise ValueError(
+            'Reaction {reaction} not in available options ["DD", "DT", "TT"]'
+        )
