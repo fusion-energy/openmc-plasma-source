@@ -17,7 +17,7 @@ def test_creation():
         assert isinstance(source.angle, openmc.stats.Isotropic)
         assert isinstance(source.energy, openmc.stats.univariate.Normal) or isinstance(
             source.energy, openmc.stats.univariate.Tabular
-        )
+        ) or isinstance(source.energy, openmc.stats.Mixture)
 
 
 @pytest.mark.parametrize(
