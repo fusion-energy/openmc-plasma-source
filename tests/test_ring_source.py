@@ -15,9 +15,11 @@ def test_creation():
         # Ensure it has space, angle, and energy set
         assert isinstance(source.space, openmc.stats.CylindricalIndependent)
         assert isinstance(source.angle, openmc.stats.Isotropic)
-        assert isinstance(source.energy, openmc.stats.univariate.Normal) or isinstance(
-            source.energy, openmc.stats.univariate.Tabular
-        ) or isinstance(source.energy, openmc.stats.Mixture)
+        assert (
+            isinstance(source.energy, openmc.stats.univariate.Normal)
+            or isinstance(source.energy, openmc.stats.univariate.Tabular)
+            or isinstance(source.energy, openmc.stats.Mixture)
+        )
 
 
 @pytest.mark.parametrize("radius", [1, 5.6, 1e5, 7.0])
