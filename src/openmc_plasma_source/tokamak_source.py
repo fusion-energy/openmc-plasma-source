@@ -163,13 +163,7 @@ def tokamak_source(
     fuel_densities = {}
     for key, value in fuel.items():
         fuel_densities[key] = densities * value
-<<<<<<< HEAD
     reactions = get_reactions_from_fuel(fuel)
-=======
-    print("fuel_densities", fuel_densities.keys())
-    reactions = get_reactions_from_fuel(fuel)
-    print("freactions", reactions)
->>>>>>> c4d4e6c26f3252e250336743dd43a41d6dbdc80b
 
     neutron_source_density = {}
     total_source_density = 0
@@ -417,40 +411,4 @@ def tokamak_neutron_source_density(ion_density, ion_temperature, reaction):
     elif reaction == "DT":
         return ion_density * reac_DT(ion_temperature)  # could use _DT_xs instead
     else:
-<<<<<<< HEAD
         raise ValueError('Reaction {reaction} not in available options ["DD", "DT", "TT"]')
-=======
-        raise ValueError(
-            'Reaction {reaction} not in available options ["DD", "DT", "TT"]'
-        )
-
-
-# TODO consider replace with NeSST or getting DD version as well
-def _DT_xs(ion_temperature):
-    """Sadler–Van Belle formula
-    Ref : https://doi.org/10.1016/j.fusengdes.2012.02.025
-    Args:
-        ion_temperature (float, ndarray): ion temperature in eV
-    Returns:
-        float, ndarray: the DT cross section at the given temperature
-    """
-    ion_temperature_kev = np.asarray(ion_temperature / 1e3)
-    c = [
-        2.5663271e-18,
-        19.983026,
-        2.5077133e-2,
-        2.5773408e-3,
-        6.1880463e-5,
-        6.6024089e-2,
-        8.1215505e-3,
-    ]
-    U = 1 - ion_temperature_kev * (
-        c[2] + ion_temperature_kev * (c[3] - c[4] * ion_temperature_kev)
-    ) / (1.0 + ion_temperature_kev * (c[5] + c[6] * ion_temperature_kev))
-    val = (
-        c[0]
-        * np.exp(-c[1] * (U / ion_temperature_kev) ** (1 / 3))
-        / (U ** (5 / 6) * ion_temperature_kev ** (2 / 3))
-    )
-    return val
->>>>>>> c4d4e6c26f3252e250336743dd43a41d6dbdc80b
