@@ -164,12 +164,12 @@ def get_neutron_energy_distribution(
         strength_TT = 1.0
         dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature)
         tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
-        return {"TT": tt_source}, {"TT": strength_TT}
+        return tt_source
 
     elif reactions == ["DD"]:
         strength_DD = 1.0
         dd_source = openmc.stats.Normal(mean_value=DDmean, std_dev=DD_std_dev)
-        return {"DD": dd_source}, {"DD": strength_DD}
+        return dd_source
 
     # DT, DD and TT reaction
     else:
@@ -180,17 +180,6 @@ def get_neutron_energy_distribution(
             "tt", 1.0, ion_temperature, fuel["D"], fuel["T"]
         )
 
-        total_strength = sum([strength_TT, strength_DD, 1.0])
-
-        dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature)
-
-        # removing any zeros from the end of the array
-        dNdE_TT = np.trim_zeros(dNdE_TT, "b")
-        # making array lengths match
-        E_pspec = E_pspec[: len(dNdE_TT)]
-
-        tt_source = openmc.stats.Tabular(E_pspec, dNdE_TT)
-
         dd_source = openmc.stats.Normal(mean_value=DDmean, std_dev=DD_std_dev)
         # normal could be done with Muir but in this case we have the mean and std dev from NeSST
         # dd_source = openmc.stats.muir(e0=DDmean * 1e6, m_rat=4, kt=ion_temperature)
@@ -199,10 +188,38 @@ def get_neutron_energy_distribution(
         # normal could be done with Muir but in this case we have the mean and std dev from NeSST
         # dt_source = openmc.stats.muir(e0=DTmean * 1e6, m_rat=5, kt=ion_temperature)
 
-        openmc_univariate = [tt_source, dd_source, dt_source]
-        probabilities = [
-            strength_TT / total_strength,
-            strength_DD / total_strength,
-            1.0 / total_strength,
-        ]
-        return openmc.data.combine_distributions(openmc_univariate, probabilities)
+        dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature)
+
+        # removing any zeros from the end of the array
+        dNdE_TT = np.trim_zeros(dNdE_TT, "b")
+        # making array lengths match
+        E_pspec = E_pspec[: len(dNdE_TT)]
+
+        openmc_univariate = [dd_source, dt_source]
+
+        # sometimes bins are empty
+        if len(E_pspec) ==0:
+            total_strength = sum([strength_DD, 1.0])
+            probabilities = [
+                strength_DD / total_strength,
+                1.0 / total_strength
+            ]
+        else:
+            total_strength = sum([strength_TT, strength_DD, 1.0])
+            tt_source = openmc.stats.Tabular(E_pspec[1:], dNdE_TT[1:])
+            probabilities = [
+                strength_DD / total_strength,
+                1.0 / total_strength,
+                strength_TT / total_strength
+            ]
+            openmc_univariate.append(tt_source)
+
+
+
+
+        return openmc.stats.Mixture(probabilities,openmc_univariate)
+        # bug reported for combine_distributions #3105 on openmc
+        # return openmc.data.combine_distributions(
+        #     dists=openmc_univariate,
+        #     probs=probabilities
+        # )

@@ -16,7 +16,7 @@ geometry = openmc.Geometry([cell])
 my_source = fusion_point_source(
     coordinate=(0, 0, 0),
     temperature=20000.0,
-    fuel={"D": 0.01, "T": 0.99},  # note this is mainly tritium fuel so that TT reactions are more likely
+    fuel={"D": 0.09, "T": 0.91},  # note this is mainly tritium fuel so that TT reactions are more likely
 )
 
 # Tell OpenMC we're going to use our custom source
@@ -38,7 +38,7 @@ from openmc_source_plotter import plot_source_energy
 
 plot = plot_source_energy(
     this=settings,
-    n_samples=1000000,  # increase this value for a smoother plot
+    n_samples=2000000,  # increase this value for a smoother plot
     energy_bins=np.linspace(0, 16e6, 1000),
     yaxis_type="log",
 )

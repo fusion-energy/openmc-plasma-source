@@ -50,8 +50,8 @@ model.run()
 # optionally if you would like to plot the direction of particles then another package can be used
 # https://github.com/fusion-energy/openmc_source_plotter
 
-from openmc_source_plotter import plot_source_direction
+from openmc_source_plotter import plot_source_position
 
-plot = plot_source_direction(this=settings, n_samples=200)
+plot = plot_source_position(this=settings, n_samples=200)
 
 plot.show()
