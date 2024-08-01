@@ -38,16 +38,14 @@ def fusion_point_source(
 
     sources = []
 
-    energy_distributions, strengths = get_neutron_energy_distribution(
+    energy_distribution = get_neutron_energy_distribution(
         ion_temperature=temperature, fuel=fuel
     )
 
-    for energy_distribution, strength in zip(energy_distributions, strengths):
-        source = openmc.IndependentSource()
-        source.energy = energy_distribution
-        source.space = openmc.stats.Point(coordinate)
-        source.angle = openmc.stats.Isotropic()
-        source.strength = strength
-        sources.append(source)
+    source = openmc.IndependentSource()
+    source.energy = energy_distribution
+    source.space = openmc.stats.Point(coordinate)
+    source.angle = openmc.stats.Isotropic()
+    sources.append(source)
 
     return sources

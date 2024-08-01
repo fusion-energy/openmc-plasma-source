@@ -173,15 +173,14 @@ def get_neutron_energy_distribution(
 
     # DT, DD and TT reaction
     else:
-        strength_DT = 1.0
         strength_DD = nst.yield_from_dt_yield_ratio(
-            "dd", strength_DT, ion_temperature, fuel["D"], fuel["T"]
+            "DD", 1.0, ion_temperature, fuel["D"], fuel["T"]
         )
         strength_TT = nst.yield_from_dt_yield_ratio(
-            "tt", strength_DT, ion_temperature, fuel["D"], fuel["T"]
+            "TT", 1.0, ion_temperature, fuel["D"], fuel["T"]
         )
 
-        total_strength = sum([strength_TT, strength_DD, strength_DT])
+        total_strength = sum([strength_TT, strength_DD, 1.0])
 
         dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature)
 
@@ -200,9 +199,6 @@ def get_neutron_energy_distribution(
         # normal could be done with Muir but in this case we have the mean and std dev from NeSST
         # dt_source = openmc.stats.muir(e0=DTmean * 1e6, m_rat=5, kt=ion_temperature)
 
-        # todo look into combining distributions openmc.data.combine_distributions()
-        return {
-            "TT": [tt_source, strength_TT / total_strength],
-            "DD": [dd_source, strength_DD / total_strength],
-            "DT": [dt_source, strength_DT / total_strength],
-        }
+        openmc_univariate = [tt_source, dd_source, dt_source]
+        probabilities = [strength_TT / total_strength, strength_DD / total_strength, 1.0 / total_strength]
+        return openmc.data.combine_distributions(openmc_univariate, probabilities)
