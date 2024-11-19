@@ -31,3 +31,6 @@ jobs:
           python examples/point_source_example.py
           python examples/ring_source_example.py
           python examples/tokamak_source_example.py
+          python examples/plot_tokamak_ion_temperature.py
+          python examples/plot_tokamak_neutron_source_density.py
+          python examples/plot_tokamak_neutron_source_strengths.py

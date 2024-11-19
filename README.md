@@ -8,9 +8,9 @@ This python-based package offers a collection of pre-built [OpenMC](https://gith
 
 OpenMC is required to use this package.
 
-To install openmc-plasma-source, simply run:
+To install openmc_plasma_source, simply run:
 ```
-pip install openmc-plasma-source
+pip install openmc_plasma_source
 ```
 
 ## Usage
@@ -24,26 +24,27 @@ Each source has its own strength (or probability that a neutron spawns in this l
 The equations implemented here are taken from [this paper](https://doi.org/10.1016/j.fusengdes.2012.02.025).
 
 ```python
-from openmc_plasma_source import TokamakSource
+from openmc_plasma_source import tokamak_source
 
-my_source = TokamakSource(
+my_sources = tokamak_source(
     elongation=1.557,
     ion_density_centre=1.09e20,
-    ion_density_peaking_factor=1,
     ion_density_pedestal=1.09e20,
+    ion_density_peaking_factor=1,
     ion_density_separatrix=3e19,
-    ion_temperature_centre=45.9,
+    ion_temperature_centre=45.9e3,
+    ion_temperature_pedestal=6.09e3,
+    ion_temperature_separatrix=0.1e3,
     ion_temperature_peaking_factor=8.06,
-    ion_temperature_pedestal=6.09,
-    ion_temperature_separatrix=0.1,
-    major_radius=9.06,
-    minor_radius=2.92258,
-    pedestal_radius=0.8 * 2.92258,
+    ion_temperature_beta=6,
+    major_radius=906,
+    minor_radius=292.258,
+    pedestal_radius=0.8 * 292.258,
     mode="H",
     shafranov_factor=0.44789,
     triangularity=0.270,
-    ion_temperature_beta=6
-  ).make_openmc_sources()
+    fuel={"D": 0.5, "T": 0.5},
+)
 ```
 
 For a more complete example check out the [example script](https://github.com/fusion-energy/openmc-plasma-source/blob/main/examples/tokamak_source_example.py).
@@ -57,13 +58,13 @@ For a more complete example check out the [example script](https://github.com/fu
 Create a ring source with temperature distribution of a 2000 eV plasma.
 
 ```python
-from openmc_plasma_source import FusionRingSource
+from openmc_plasma_source import fusion_ring_source
 
-my_plasma = FusionRingSource(
-    angles = (0., 6.28318530718),  # input is in radians
-    radius = 400,  # units in cm
-    temperature = 20000.,  # ion temperature in eV
-    fuel='DT'  # or 'DD'
+my_source = fusion_ring_source(
+    radius=700,
+    angles=(0.0, 2 * math.pi),  # 360deg source
+    temperature=20000.0,
+    fuel={"D": 0.5, "T": 0.5},
 )
 ```
 ### Point Source
@@ -72,12 +73,12 @@ Create a point source with temperature distribution of a 2000 eV plasma.
 
 
 ```python
-from openmc_plasma_source import FusionPointSource
+from openmc_plasma_source import fusion_point_source
 
-my_plasma = FusionPointSource(
-    coordinate = (0, 0, 0),
-    temperature = 20000.,  # ion temperature in eV
-    fuel = 'DT'  # or 'DD'
+my_source = fusion_point_source(
+    coordinate=(0, 0, 0),
+    temperature=20000.0,
+    fuel={"D": 0.09, "T": 0.91},  # note this is mainly tritium fuel so that TT reactions are more likely
 )
 ```
 
@@ -86,5 +87,5 @@ my_plasma = FusionPointSource(
 To run the tests, simply run
 
 ```
-pytest tests/
+pytest tests
 ```
