@@ -1,6 +1,7 @@
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 
 import numpy as np
+from numpy.typing import NDArray
 import openmc
 from openmc import IndependentSource
 import openmc.checkvalue as cv
@@ -31,7 +32,8 @@ def tokamak_source(
     fuel: Dict[str, float] = {"D": 0.5, "T": 0.5},
     sample_seed: int = 122807528840384100672342137672332424406,
 ) -> list[IndependentSource]:
-    """Creates a list of openmc.IndependentSource objects representing a tokamak plasma.
+    """
+    Creates a list of openmc.IndependentSource objects representing a tokamak plasma.
 
     Resulting sources will have an energy distribution according to the fuel
     composition.This function greatly relies on models described in [1]
@@ -164,8 +166,8 @@ def tokamak_source(
         fuel_densities[key] = densities * value
     reactions = get_reactions_from_fuel(fuel)
 
-    neutron_source_density = {}
-    total_source_density = 0
+    neutron_source_density = {}  # type: Dict[str, NDArray]
+    total_source_density = 0.0
     for reaction in reactions:
 
         if reaction == "DD":
@@ -184,7 +186,7 @@ def tokamak_source(
 
         total_source_density += sum(neutron_source_density[reaction])
 
-    all_sources = []
+    all_sources = []  # type: List[IndependentSource]
     for reaction in reactions:
         strengths = neutron_source_density[reaction] / total_source_density
 
@@ -200,23 +202,32 @@ def tokamak_source(
 
 
 def tokamak_ion_density(
-    mode,
-    ion_density_centre,
-    ion_density_peaking_factor,
-    ion_density_pedestal,
-    major_radius,
-    pedestal_radius,
-    ion_density_separatrix,
-    r,
-):
-    """Computes the ion density at a given position. The ion density is
+    mode: str,
+    ion_density_centre: float,
+    ion_density_peaking_factor: float,
+    ion_density_pedestal: float,
+    major_radius: float,
+    pedestal_radius: float,
+    ion_density_separatrix: float,
+    r: float | NDArray,
+) -> NDArray:
+    """
+    Computes the ion density at a given position. The ion density is
     only dependent on the minor radius.
 
     Args:
-        r (float, ndarray): the minor radius (cm)
+        mode: Confinement mode ("L", "H", "A")
+        ion_density_centre: Ion density at the plasma centre (m-3)
+        ion_density_peaking_factor: Ion density peaking factor
+            (referred in [1] as ion density exponent)
+        ion_density_pedestal: Ion density at pedestal (m-3)
+        major_radius: Plasma major radius (cm)
+        pedestal_radius: Minor radius at pedestal (cm)
+        ion_density_separatrix: Ion density at separatrix (m-3)
+        r: Minor radius (cm)
 
     Returns:
-        float, ndarray: ion density in m-3
+        ion density in m-3
     """
 
     r = np.asarray(r)
@@ -247,24 +258,36 @@ def tokamak_ion_density(
 
 
 def tokamak_ion_temperature(
-    r,
-    mode,
-    pedestal_radius,
-    ion_temperature_pedestal,
-    ion_temperature_centre,
-    ion_temperature_beta,
-    ion_temperature_peaking_factor,
-    ion_temperature_separatrix,
-    major_radius,
-):
-    """Computes the ion temperature at a given position. The ion
+    r: float | NDArray,
+    mode: str,
+    pedestal_radius: float,
+    ion_temperature_pedestal: float,
+    ion_temperature_centre: float,
+    ion_temperature_beta: float,
+    ion_temperature_peaking_factor: float,
+    ion_temperature_separatrix: float,
+    major_radius: float,
+) -> NDArray:
+    """
+    Computes the ion temperature at a given position. The ion
     temperature is only dependent on the minor radius.
 
     Args:
-        r (float, ndarray): minor radius (cm)
+        r: Minor radius (cm)
+        mode: Confinement mode ("L", "H", "A")
+        pedestal_radius: Minor radius at pedestal (cm)
+        ion_temperature_pedestal: Ion temperature at pedestal (eV)
+        ion_temperature_centre: Ion temperature at the plasma
+            centre (eV)
+        ion_temperature_beta: Ion temperature beta exponent
+        ion_temperature_peaking_factor: Ion temperature peaking
+            factor
+        ion_temperature_separatrix: Ion temperature at separatrix (eV)
+        major_radius: Plasma major radius (cm)
+
 
     Returns:
-        float, ndarray: ion temperature (eV)
+        ion temperature (eV)
     """
 
     r = np.asarray(r)
@@ -296,31 +319,34 @@ def tokamak_ion_temperature(
 
 
 def tokamak_convert_a_alpha_to_R_Z(
-    a,
-    alpha,
-    shafranov_factor,
-    minor_radius,
-    major_radius,
-    triangularity,
-    elongation,
-):
-    """Converts (r, alpha) cylindrical coordinates to (R, Z) cartesian
+    a: float | NDArray,
+    alpha: float | NDArray,
+    shafranov_factor: float,
+    minor_radius: float,
+    major_radius: float,
+    triangularity: float,
+    elongation: float,
+) -> Tuple[NDArray, NDArray]:
+    """
+    Converts (r, alpha) cylindrical coordinates to (R, Z) cartesian
     coordinates.
 
     Args:
-        a (float, ndarray): minor radius (cm)
-        alpha (float, ndarray): angle (rad)
-        shafranov_factor:
-        minor_radius:
-        major_radius:
+        a: Minor radius (cm)
+        alpha: Poloidal angle (radians)
+        shafranov_factor: Shafranov factor
+        minor_radius: Plasma minor radius (cm)
+        major_radius: Plasma major radius (cm)
+        triangularity: Plasma triangularity
+        elongation: Plasma elongation
 
     Returns:
-        ((float, ndarray), (float, ndarray)): (R, Z) coordinates
+        (R, Z) coordinates
     """
     a = np.asarray(a)
     alpha = np.asarray(alpha)
     if np.any(a < 0):
-        raise ValueError("Radius 'a'  must not be negative")
+        raise ValueError("Radius 'a' must not be negative")
 
     shafranov_shift = shafranov_factor * (1.0 - (a / minor_radius) ** 2)
     R = (
@@ -333,28 +359,28 @@ def tokamak_convert_a_alpha_to_R_Z(
 
 
 def tokamak_make_openmc_sources(
-    strengths,
-    angles,
-    temperatures,
-    fuel,
-    RZ,
-):
-    """Creates a list of OpenMC Sources() objects. The created sources are
+    strengths: List[float] | NDArray,
+    angles: Tuple[float, float],
+    temperatures: NDArray,
+    fuel: Dict[str, float],
+    RZ: Tuple[NDArray, NDArray],
+) -> List[IndependentSource]:
+    """
+    Creates a list of OpenMC IndependentSource() objects. The created sources are
     ring sources based on the .RZ coordinates between two angles. The
     energy of the sources are Muir energy spectra with ion temperatures
     based on .temperatures. The strength of the sources (their probability)
     is based on .strengths.
 
     Args:
-        strengths
-        angles ((float, float), optional): rotation of the ring source.
-            Defaults to (0, 2*np.pi).
-        temperatures
-        fuel
-        RZ
+        strengths: The strength of the sources
+        angles: The start and stop angles of the ring in radians
+        temperatures: The ion temperatures
+        fuel: Isotopes as keys and atom fractions as values
+        RZ: The (R, Z) coordinates of the sources
 
     Returns:
-        list: list of openmc.IndependentSource()
+        list of openmc.IndependentSource instances
     """
 
     sources = []
@@ -390,16 +416,20 @@ def tokamak_make_openmc_sources(
     return sources
 
 
-def tokamak_neutron_source_density(ion_density, ion_temperature, reaction):
-    """Computes the neutron source density given ion density and ion
+def tokamak_neutron_source_density(
+    ion_density: float | NDArray, ion_temperature: float | NDArray, reaction: str
+) -> NDArray:
+    """
+    Computes the neutron source density given ion density and ion
     temperature.
 
     Args:
-        ion_density (float, ndarray): Ion density (m-3)
-        ion_temperature (float, ndarray): Ion temperature (eV)
-        reaction (str): The fusion reactions to consider e.g. 'DD'
+        ion_density: Ion density (m-3)
+        ion_temperature: Ion temperature (eV)
+        reaction: The fusion reactions to consider e.g. 'DD'
+
     Returns:
-        float, ndarray: Neutron source density (neutron/s/m3)
+        Neutron source density (neutron/s/m3)
     """
 
     ion_density = np.asarray(ion_density)
