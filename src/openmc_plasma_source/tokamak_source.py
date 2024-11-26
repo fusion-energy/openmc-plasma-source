@@ -1,7 +1,7 @@
 from typing import Tuple, Dict, List
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import NDArray, List
 import openmc
 from openmc import IndependentSource
 import openmc.checkvalue as cv
@@ -31,7 +31,7 @@ def tokamak_source(
     sample_size: int = 1000,
     fuel: Dict[str, float] = {"D": 0.5, "T": 0.5},
     sample_seed: int = 122807528840384100672342137672332424406,
-) -> list[IndependentSource]:
+) -> List[IndependentSource]:
     """
     Creates a list of openmc.IndependentSource objects representing a tokamak plasma.
 
