@@ -3,9 +3,10 @@ from typing import Tuple
 import numpy as np
 import openmc
 import openmc.checkvalue as cv
-import NeSST as nst
-from .fuel_types import get_neutron_energy_distribution, get_reactions_from_fuel
-from NeSST.spectral_model import reac_DD, reac_TT, reac_DT
+from NeSST.spectral_model import reac_DD, reac_DT, reac_TT
+
+from .fuel_types import (get_neutron_energy_distribution,
+                         get_reactions_from_fuel)
 
 
 def tokamak_source(

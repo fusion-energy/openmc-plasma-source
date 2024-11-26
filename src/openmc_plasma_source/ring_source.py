@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import numpy as np
 import openmc
 
@@ -8,7 +6,7 @@ from .fuel_types import get_neutron_energy_distribution
 
 def fusion_ring_source(
     radius: float,
-    angles: Tuple[float, float] = (0, 2 * np.pi),
+    angles: tuple[float, float] = (0, 2 * np.pi),
     z_placement: float = 0,
     temperature: float = 20000.0,
     fuel: dict = {"D": 0.5, "T": 0.5},
@@ -21,9 +19,10 @@ def fusion_ring_source(
 
     Args:
         radius (float): the inner radius of the ring source, in metres
-        angles (iterable of floats): the start and stop angles of the ring in radians
+        angles (iterable of floats): the start and stop angles of the ring in
+            radians
         z_placement (float): Location of the ring source (m). Defaults to 0.
-        temperature (float): the temperature to use in the Muir distribution in eV,
+        temperature (float): Temperature of the source (eV).
         fuel (dict): Isotopes as keys and atom fractions as values
     """
 
