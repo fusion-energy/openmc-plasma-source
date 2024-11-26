@@ -36,6 +36,7 @@ write_to = "src/_version.py"
 [project.optional-dependencies]
 tests = [
     "pytest>=5.4.3",
+    "pytest-cov",
     "hypothesis",
     "NeSST>=1.1.0",
     "openmc_source_plotter"
