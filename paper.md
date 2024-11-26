@@ -43,7 +43,7 @@ With pre-built configurations for tokamak, ring, and point sources, `openmc-plas
 
 - The **tokamak source** models realistic spatial and temperature distributions, optimised for computational efficiency through the use of ring sources.
 - The **ring source** offers a simplified yet effective representation for cylindrical geometries.
-- The **point source** is ideal for preliminary studies or cases requiring a concentrated neutron emission.
+- The **point source** is ideal for preliminary studies or cases requiring a concentrated neutron emission found in inertial confinement fusion.
 
 
 The package’s open-source nature and community-driven development further ensure its adaptability and relevance to the evolving needs of the fusion research community.
