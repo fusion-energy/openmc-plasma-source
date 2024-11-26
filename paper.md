@@ -21,7 +21,6 @@ affiliations:
    index: 2
 
 date: 26 November 2024
-bibliography: paper.bib
 
 ---
 
