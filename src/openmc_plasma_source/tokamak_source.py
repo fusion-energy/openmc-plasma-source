@@ -1,7 +1,7 @@
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict, List, Union
 
 import numpy as np
-from numpy.typing import NDArray, List
+from numpy.typing import NDArray
 import openmc
 from openmc import IndependentSource
 import openmc.checkvalue as cv
@@ -209,7 +209,7 @@ def tokamak_ion_density(
     major_radius: float,
     pedestal_radius: float,
     ion_density_separatrix: float,
-    r: float | NDArray,
+    r: Union[float, NDArray],
 ) -> NDArray:
     """
     Computes the ion density at a given position. The ion density is
@@ -258,7 +258,7 @@ def tokamak_ion_density(
 
 
 def tokamak_ion_temperature(
-    r: float | NDArray,
+    r: Union[float, NDArray],
     mode: str,
     pedestal_radius: float,
     ion_temperature_pedestal: float,
@@ -319,8 +319,8 @@ def tokamak_ion_temperature(
 
 
 def tokamak_convert_a_alpha_to_R_Z(
-    a: float | NDArray,
-    alpha: float | NDArray,
+    a: Union[float, NDArray],
+    alpha: Union[float, NDArray],
     shafranov_factor: float,
     minor_radius: float,
     major_radius: float,
@@ -417,7 +417,9 @@ def tokamak_make_openmc_sources(
 
 
 def tokamak_neutron_source_density(
-    ion_density: float | NDArray, ion_temperature: float | NDArray, reaction: str
+    ion_density: Union[float, NDArray],
+    ion_temperature: Union[float, NDArray],
+    reaction: str,
 ) -> NDArray:
     """
     Computes the neutron source density given ion density and ion
