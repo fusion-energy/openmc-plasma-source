@@ -17,7 +17,7 @@ authors:
 affiliations:
  - name: Plasma Science and Fusion Center, MIT, USA
    index: 1
- - name: Proxima Fusion, Germanyu
+ - name: Proxima Fusion, Germany
    index: 2
 
 date: 26 November 2024
@@ -27,13 +27,18 @@ bibliography: paper.bib
 
 # Summary
 
-`openmc-plasma-source` is a Python-based package offering a collection of pre-built neutron sources designed for fusion applications using the Monte Carlo particle transport code OpenMC [@romano_openmc_2015]. By providing ready-to-use implementations for various neutron source configurations, such as tokamak, ring, and point sources, this package simplifies the often complex task of neutron source definition in fusion-related Monte Carlo simulations. These sources are parameterised to account for spatial distributions, plasma temperatures, and fusion fuel compositions, enabling realistic and computationally efficient neutron emission models.
+`openmc-plasma-source` is a Python-based package offering a collection of pre-built neutron sources designed for fusion applications using the Monte Carlo particle transport code OpenMC [@romano_openmc_2015].
+By providing ready-to-use implementations for various neutron source configurations, such as tokamak, ring, and point sources, this package simplifies the often complex task of neutron source definition in fusion-related Monte Carlo simulations.
+These sources are parameterised to account for spatial distributions, plasma temperatures, and fusion fuel compositions, enabling realistic and computationally efficient neutron emission models.
 
-The package is designed to integrate seamlessly into OpenMC workflows, allowing users to define sources in just a few lines of Python code. It also supports advanced features like temperature-based neutron spectra and spatial source distributions, making it an invaluable tool for researchers simulating neutron behaviour in fusion devices.
+The package is designed to integrate seamlessly into OpenMC workflows, allowing users to define sources in just a few lines of Python code.
+It also supports advanced features like temperature-based neutron spectra and spatial source distributions, making it an invaluable tool for researchers simulating neutron behaviour in fusion devices.
 
 # Statement of need
 
-Accurate modelling of neutron sources is critical for fusion energy research, underpinning tasks such as reactor shielding design, material testing, and tritium breeding analysis. In this context, OpenMC is a widely used tool for neutron transport simulations [@romano_openmc_2015]. However, creating realistic neutron source models for fusion applications can be a time-consuming and error-prone process, requiring detailed knowledge of plasma physics and significant coding effort.
+Accurate modelling of neutron sources is critical for fusion energy research, underpinning tasks such as reactor shielding design, material testing, and tritium breeding analysis.
+In this context, OpenMC is a widely used tool for neutron transport simulations [@romano_openmc_2015].
+However, creating realistic neutron source models for fusion applications can be a time-consuming and error-prone process, requiring detailed knowledge of plasma physics and significant coding effort.
 
 Traditionally, researchers have implemented their own custom neutron source definitions, which often results in redundant work and inconsistencies between studies. For example, spatial distributions, temperature effects, and fuel compositions must be correctly parameterised to ensure the fidelity of the simulations. The lack of standardised tools for these tasks introduces variability and potential errors in simulations.
 
