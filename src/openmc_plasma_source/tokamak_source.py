@@ -445,5 +445,5 @@ def tokamak_neutron_source_density(
         return ion_density * reac_DT(ion_temperature)  # could use _DT_xs instead
     else:
         raise ValueError(
-            'Reaction {reaction} not in available options ["DD", "DT", "TT"]'
+            f'Reaction {reaction} not in available options ["DD", "DT", "TT"]'
         )
