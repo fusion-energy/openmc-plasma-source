@@ -1,13 +1,14 @@
 import numpy as np
-import pytest
-from hypothesis import given, settings, HealthCheck
-from hypothesis import strategies as st
 import openmc
+import pytest
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
+
 from openmc_plasma_source import (
-    tokamak_source,
+    tokamak_convert_a_alpha_to_R_Z,
     tokamak_ion_density,
     tokamak_ion_temperature,
-    tokamak_convert_a_alpha_to_R_Z,
+    tokamak_source,
 )
 
 

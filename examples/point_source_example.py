@@ -1,7 +1,8 @@
 from pathlib import Path
-import numpy as np
 
+import numpy as np
 import openmc
+
 from openmc_plasma_source import fusion_point_source
 
 # just making use of a local cross section xml file, replace with your own cross sections or comment out

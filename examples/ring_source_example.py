@@ -2,6 +2,7 @@ import math
 from pathlib import Path
 
 import openmc
+
 from openmc_plasma_source import fusion_ring_source
 
 # just making use of a local cross section xml file, replace with your own cross sections or comment out

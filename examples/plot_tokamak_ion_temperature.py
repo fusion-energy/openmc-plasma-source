@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
 from openmc_plasma_source import tokamak_convert_a_alpha_to_R_Z, tokamak_ion_temperature
 
 sample_size = 20000

@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
 from openmc_plasma_source import (
-    tokamak_ion_temperature,
     tokamak_convert_a_alpha_to_R_Z,
-    tokamak_neutron_source_density,
     tokamak_ion_density,
+    tokamak_ion_temperature,
+    tokamak_neutron_source_density,
 )
 
 sample_size = 20000
