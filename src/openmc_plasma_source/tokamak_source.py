@@ -1,7 +1,8 @@
-from typing import Tuple
+from typing import Tuple, Dict
 
 import numpy as np
 import openmc
+from openmc import IndependentSource
 import openmc.checkvalue as cv
 from NeSST.spectral_model import reac_DD, reac_DT, reac_TT
 
@@ -27,9 +28,9 @@ def tokamak_source(
     shafranov_factor: float,
     angles: Tuple[float, float] = (0, 2 * np.pi),
     sample_size: int = 1000,
-    fuel: dict = {"D": 0.5, "T": 0.5},
+    fuel: Dict[str, float] = {"D": 0.5, "T": 0.5},
     sample_seed: int = 122807528840384100672342137672332424406,
-) -> list[openmc.IndependentSource]:
+) -> list[IndependentSource]:
     """Creates a list of openmc.IndependentSource objects representing a tokamak plasma.
 
     Resulting sources will have an energy distribution according to the fuel
@@ -45,37 +46,37 @@ def tokamak_source(
         my_settings.source = my_source
 
     Args:
-        major_radius (float): Plasma major radius (cm)
-        minor_radius (float): Plasma minor radius (cm)
-        elongation (float): Plasma elongation
-        triangularity (float): Plasma triangularity
-        mode (str): Confinement mode ("L", "H", "A")
-        ion_density_centre (float): Ion density at the plasma centre (m-3)
-        ion_density_peaking_factor (float): Ion density peaking factor
+        major_radius: Plasma major radius (cm)
+        minor_radius: Plasma minor radius (cm)
+        elongation: Plasma elongation
+        triangularity: Plasma triangularity
+        mode: Confinement mode ("L", "H", "A")
+        ion_density_centre: Ion density at the plasma centre (m-3)
+        ion_density_peaking_factor: Ion density peaking factor
             (referred in [1] as ion density exponent)
-        ion_density_pedestal (float): Ion density at pedestal (m-3)
-        ion_density_separatrix (float): Ion density at separatrix (m-3)
-        ion_temperature_centre (float): Ion temperature at the plasma
+        ion_density_pedestal: Ion density at pedestal (m-3)
+        ion_density_separatrix: Ion density at separatrix (m-3)
+        ion_temperature_centre: Ion temperature at the plasma
             centre (eV)
-        ion_temperature_peaking_factor (float): Ion temperature peaking
+        ion_temperature_peaking_factor: Ion temperature peaking
             factor (referred in [1] as ion temperature exponent alpha_T)
-        ion_temperature_beta (float): Ion temperature beta exponent
+        ion_temperature_beta: Ion temperature beta exponent
             (referred in [1] as ion temperature exponent beta_T)
-        ion_temperature_pedestal (float): Ion temperature at pedestal (eV)
-        ion_temperature_separatrix (float): Ion temperature at separatrix
+        ion_temperature_pedestal: Ion temperature at pedestal (eV)
+        ion_temperature_separatrix: Ion temperature at separatrix
             (eV)
-        pedestal_radius (float): Minor radius at pedestal (cm)
-        shafranov_factor (float): Shafranov factor (referred in [1] as esh)
+        pedestal_radius: Minor radius at pedestal (cm)
+        shafranov_factor: Shafranov factor (referred in [1] as esh)
             also known as outward radial displacement of magnetic surfaces
             (cm)
-        angles (iterable of floats): the start and stop angles of the ring in
+        angles: the start and stop angles of the ring in
             radians
         sample_seed int: the seed passed to numpy.random when sampling source
             location. Numpy recommend a large int value. Defaults to
             122807528840384100672342137672332424406
-        sample_size (int, optional): number of neutron sources. Defaults
+        sample_size: number of neutron sources. Defaults
             to 1000.
-        fuel (dict): Isotopes as keys and atom fractions as values
+        fuel: Isotopes as keys and atom fractions as values
     """
 
     # Perform sanity checks for inputs not caught by properties
@@ -102,7 +103,7 @@ def tokamak_source(
     cv.check_greater_than("ion_density_pedestal", ion_density_pedestal, 0)
     cv.check_greater_than("ion_density_separatrix", ion_density_separatrix, 0)
 
-    if (
+    if not (
         isinstance(angles, tuple)
         and len(angles) == 2
         and all(
@@ -110,8 +111,6 @@ def tokamak_source(
             for angle in angles
         )
     ):
-        pass
-    else:
         raise ValueError("Angles must be a tuple of floats between zero and 2 * np.pi")
 
     # Create a list of sources
@@ -372,7 +371,7 @@ def tokamak_make_openmc_sources(
             z_values = openmc.stats.Discrete([Z_val], [1])
             angle = openmc.stats.Uniform(a=angles[0], b=angles[1])
 
-            my_source = openmc.IndependentSource()
+            my_source = IndependentSource()
             my_source.energy = get_neutron_energy_distribution(
                 ion_temperature=temperature,
                 fuel=fuel,
