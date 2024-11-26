@@ -1,22 +1,25 @@
 import NeSST as nst
 import numpy as np
-import openmc
+import openmc.stats
+
+from typing import Dict, List
 
 
 def neutron_energy_mean(ion_temperature: float, reaction: str) -> float:
-    """Calculates the mean energy of the neutron emitted during DD or DT
+    """
+    Calculates the mean energy of the neutron emitted during DD or DT
     fusion accounting for temperature of the incident ions. Based on Ballabio
     fits, see Table III of L. Ballabio et al 1998 Nucl. Fusion 38 1723
 
     Args:
-        ion_temperature (float): the temperature of the ions in eV
-        reaction (str): the two isotope that fuse, can be either 'DD' or 'DT'
+        ion_temperature: the temperature of the ions in eV.
+        reaction: the two isotope that fuse, can be either 'DD' or 'DT'.
 
     Raises:
-        ValueError: if the reaction is not 'DD' or 'DT' then a ValueError is raised
+        ValueError: if the reaction is not 'DD' or 'DT' then a ValueError is raised.
 
     Returns:
-        float: the mean neutron energy in eV
+        The mean neutron energy in eV.
     """
 
     # values from Ballabio paper
@@ -47,19 +50,20 @@ def neutron_energy_mean(ion_temperature: float, reaction: str) -> float:
 
 
 def neutron_energy_std_dev(ion_temperature: float, reaction: str) -> float:
-    """Calculates the standard deviation of the neutron energy emitted during DD
+    """
+    Calculates the standard deviation of the neutron energy emitted during DD
      or DT fusion accounting for temperature of the incident ions. Based on
     Ballabio fits, see Table III of L. Ballabio et al 1998 Nucl. Fusion 38 1723
 
     Args:
-        ion_temperature (float): the temperature of the ions in eV
-        reaction (str): the two isotope that fuse, can be either 'DD' or 'DT'
+        ion_temperature: the temperature of the ions in eV.
+        reaction: the two isotope that fuse, can be either 'DD' or 'DT'.
 
     Raises:
-        ValueError: if the reaction is not 'DD' or 'DT' then a ValueError is raised
+        ValueError: if the reaction is not 'DD' or 'DT' then a ValueError is raised.
 
     Returns:
-        float: the mean neutron energy in eV
+        The mean neutron energy in eV
     """
 
     # values from Ballabio paper
@@ -93,35 +97,33 @@ def neutron_energy_std_dev(ion_temperature: float, reaction: str) -> float:
     return std_dev
 
 
-def get_reactions_from_fuel(fuel):
-    if ["D", "T"] == sorted(set(fuel.keys())):
+def get_reactions_from_fuel(fuel: Dict[str, float]) -> List[str]:
+    unique_keys = sorted(set(fuel.keys()))
+    if ["D", "T"] == unique_keys:
         return ["DT", "DD", "TT"]
-    elif ["D"] == sorted(set(fuel.keys())):
+    elif ["D"] == unique_keys:
         return ["DD"]
-    elif ["T"] == sorted(set(fuel.keys())):
+    elif ["T"] == unique_keys:
         return ["TT"]
     else:
-        msg = 'reactions of fuel {fuel} could not be found. Supported fuel keys are "T" and "D"'
+        msg = f'reactions of fuel {fuel} could not be found. Supported fuel keys are "T" and "D"'
         raise ValueError(msg)
 
 
 def get_neutron_energy_distribution(
     ion_temperature: float,
-    fuel: dict,
+    fuel: Dict[str, float],
 ) -> openmc.stats.Discrete:
     """Finds the energy distribution and their relative strengths.
 
     Parameters
     ----------
-    ion_temperature : float
-        temperature of plasma ions in eV
-    fuel : dict
-        isotopes as keys and atom fractions as values
+    ion_temperature : temperature of plasma ions in eV
+    fuel : isotopes as keys and atom fractions as values
 
     Returns
     -------
-    openmc.stats.Discrete
-        energy distribution
+    energy distribution
     """
 
     sum_fuel_isotopes = sum(fuel.values())
