@@ -1,5 +1,5 @@
 import numpy as np
-import openmc
+import openmc.stats
 from openmc import IndependentSource
 
 from .fuel_types import get_neutron_energy_distribution
