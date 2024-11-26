@@ -10,7 +10,7 @@ authors:
     corresponding: true
     orcid: 0000-0003-1064-8882
     affiliation: 1
-  - name: Jon Shimwell
+  - name: Jonathan Shimwell
     orcid: 0000-0001-6909-0946
     affiliation: 2
 
