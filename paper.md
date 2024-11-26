@@ -40,9 +40,11 @@ Traditionally, researchers have implemented their own custom neutron source defi
 `openmc-plasma-source` addresses these challenges by providing a standardised and easy-to-use interface for defining neutron sources in OpenMC. The package implements the equations for neutron distributions based on established models, such as those described in @fausser_tokamak_2012. By automating the setup process and including extensive documentation and examples, it reduces barriers to entry for researchers new to OpenMC or neutron source modelling.
 
 With pre-built configurations for tokamak, ring, and point sources, `openmc-plasma-source` is suitable for a wide range of applications. For example:
+
 - The **tokamak source** models realistic spatial and temperature distributions, optimised for computational efficiency through the use of ring sources.
 - The **ring source** offers a simplified yet effective representation for cylindrical geometries.
 - The **point source** is ideal for preliminary studies or cases requiring a concentrated neutron emission.
+
 
 The package’s open-source nature and community-driven development further ensure its adaptability and relevance to the evolving needs of the fusion research community.
 
