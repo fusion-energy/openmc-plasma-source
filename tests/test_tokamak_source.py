@@ -4,9 +4,12 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from openmc_plasma_source import (tokamak_convert_a_alpha_to_R_Z,
-                                  tokamak_ion_density, tokamak_ion_temperature,
-                                  tokamak_source)
+from openmc_plasma_source import (
+    tokamak_convert_a_alpha_to_R_Z,
+    tokamak_ion_density,
+    tokamak_ion_temperature,
+    tokamak_source,
+)
 
 
 @pytest.fixture
