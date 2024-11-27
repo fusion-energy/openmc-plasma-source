@@ -153,7 +153,7 @@ def get_neutron_energy_distribution(
     # 1.0 neutron yield, all reactions scaled by this value
     num_of_vals = 100
     # single grid for TT neutrons
-    E_pspec = np.linspace(0, 12e6, num_of_vals)  # E_pspec is exspected in MeV units
+    E_pspec = np.linspace(0, 12e6, num_of_vals)  # E_pspec is exspected in eV units
 
     DDmean = neutron_energy_mean(ion_temperature=ion_temperature, reaction="DD")
     DTmean = neutron_energy_mean(ion_temperature=ion_temperature, reaction="DT")
@@ -165,7 +165,7 @@ def get_neutron_energy_distribution(
     if reactions == ["TT"]:
         strength_TT = 1.0
         dNdE_TT = strength_TT * nst.dNdE_TT(E_pspec, ion_temperature)
-        tt_source = openmc.stats.Tabular(E_pspec * 1e6, dNdE_TT)
+        tt_source = openmc.stats.Tabular(E_pspec, dNdE_TT)
         return tt_source
 
     elif reactions == ["DD"]:
