@@ -1,16 +1,19 @@
 import numpy as np
-import openmc
+import openmc.stats
+from openmc import IndependentSource
 
 from .fuel_types import get_neutron_energy_distribution
+
+from typing import Tuple, List, Dict
 
 
 def fusion_ring_source(
     radius: float,
-    angles: tuple[float, float] = (0, 2 * np.pi),
+    angles: Tuple[float, float] = (0, 2 * np.pi),
     z_placement: float = 0,
     temperature: float = 20000.0,
-    fuel: dict = {"D": 0.5, "T": 0.5},
-) -> list[openmc.IndependentSource]:
+    fuel: Dict = {"D": 0.5, "T": 0.5},
+) -> List[IndependentSource]:
     """Creates a list of openmc.IndependentSource objects in a ring shape.
 
     Useful for simulations where all the plasma parameters are not known and
@@ -18,20 +21,21 @@ def fusion_ring_source(
     energy distribution according to the fuel composition.
 
     Args:
-        radius (float): the inner radius of the ring source, in metres
-        angles (iterable of floats): the start and stop angles of the ring in
+        radius: the inner radius of the ring source, in metres
+        angles: the start and stop angles of the ring in
             radians
-        z_placement (float): Location of the ring source (m). Defaults to 0.
-        temperature (float): Temperature of the source (eV).
-        fuel (dict): Isotopes as keys and atom fractions as values
+        z_placement: Location of the ring source (m). Defaults to 0.
+        temperature: Temperature of the source (eV).
+        fuel: Isotopes as keys and atom fractions as values
+
+    Returns:
+        A list of one openmc.IndependentSource instance.
     """
 
-    if isinstance(radius, (int, float)) and radius > 0:
-        pass
-    else:
+    if not isinstance(radius, (int, float)) or radius <= 0:
         raise ValueError("Radius must be a float strictly greater than 0.")
 
-    if (
+    if not (
         isinstance(angles, tuple)
         and len(angles) == 2
         and all(
@@ -39,27 +43,15 @@ def fusion_ring_source(
             for angle in angles
         )
     ):
-        pass
-    else:
         raise ValueError("Angles must be a tuple of floats between zero and 2 * np.pi")
 
-    if isinstance(z_placement, (int, float)):
-        pass
-    else:
+    if not isinstance(z_placement, (int, float)):
         raise TypeError("Z placement must be a float.")
 
-    if isinstance(temperature, (int, float)) and temperature > 0:
-        pass
-    else:
+    if not (isinstance(temperature, (int, float)) and temperature > 0):
         raise ValueError("Temperature must be a float strictly greater than 0.")
 
-    sources = []
-
-    energy_distributions = get_neutron_energy_distribution(
-        ion_temperature=temperature, fuel=fuel
-    )
-
-    source = openmc.IndependentSource()
+    source = IndependentSource()
 
     source.space = openmc.stats.CylindricalIndependent(
         r=openmc.stats.Discrete([radius], [1]),
@@ -68,8 +60,11 @@ def fusion_ring_source(
         origin=(0.0, 0.0, 0.0),
     )
 
+    energy_distributions = get_neutron_energy_distribution(
+        ion_temperature=temperature, fuel=fuel
+    )
+
     source.energy = energy_distributions
     source.angle = openmc.stats.Isotropic()
-    sources.append(source)
 
-    return sources
+    return [source]
