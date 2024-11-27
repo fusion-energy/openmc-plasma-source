@@ -51,18 +51,25 @@ The lack of standardised tools for these tasks introduces variability, potential
 
 `openmc-plasma-source` addresses these challenges by providing a standardised and easy-to-use interface for defining neutron sources in OpenMC. The package implements the equations for neutron distributions based on established models, such as those described in @fausser_tokamak_2012 and fusion energy spectra from the NeSST tool @Crilly_NESST_-_Neutron_2024. By automating the setup process and including extensive documentation and examples, it reduces barriers to entry for researchers new to OpenMC or neutron source modelling.
 
+# Pre-Built Configurations
+
 With pre-built configurations for tokamak, ring, and point sources, `openmc-plasma-source` is suitable for a wide range of applications. For example:
 
-- The **tokamak source** models realistic spatial and temperature distributions, optimised for computational efficiency through the use of ring sources.
+- The **tokamak source** models realistic spatial and temperature distributions, optimised for computational efficiency through the use of ring sources (see \autoref{fig:tokamak_source} and \autroef{3d_tokamak_source}).
 - The **ring source** offers a simplified yet effective representation for cylindrical geometries.
-- The **point source** is ideal for preliminary studies or cases requiring a concentrated neutron emission found in inertial confinement fusion.
+- The **point source** is ideal for preliminary studies or cases requiring a concentrated neutron emission found in inertial confinement fusion or sealed-tube neutron generators.
 
+![Spatial neutron source density distributions of a tokamak source.\label{fig:tokamak_source}](https://user-images.githubusercontent.com/40028739/135100022-330aa51c-e2a2-401c-9738-90f3e99c84d4.png){ width=50% }
+
+![3D representation of a tokamak source.\label{fig:3d_tokamak_source}](3d_tokamak_source.png){ width=50% }
+
+# Custom Energy Spectra
+
+`openmc-plasma-source` allows for customisation of neutron energy spectra based on varying fusion fuel compositions and spatial parameters. Users can define different fuel mixtures (e.g., DT, DD, TT) with associated spatially resolved temperature and density profiles, ensuring accurate and precise energy distributions. This flexibility is crucial for capturing the full range of neutron behaviours in complex fusion scenarios (see \autoref{fig:energy_spectra}).
+
+![Neutron Energy Spectra for different fusion fuels.\label{fig: energy spectra}]()
 
 The package’s open-source nature and community-driven development further ensure its adaptability and relevance to the evolving needs of the fusion research community.
-
-![Spatial neutron source density distributions of a tokamak source.\label{fig:tokamak_source}](https://user-images.githubusercontent.com/40028739/135100022-330aa51c-e2a2-401c-9738-90f3e99c84d4.png)
-
-![3D representation of a tokamak source.\label{fig:3d_tokamak_source}](3d_tokamak_source.png)
 
 # Example usage
 
