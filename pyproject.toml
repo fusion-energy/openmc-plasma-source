@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "openmc_plasma_source"
 dynamic = ["version"]
-description = "Creates tokamak and ICF plasma sources for OpenMC"
+description = "Creates tokamak and fusion point sources for OpenMC"
 readme = "README.md"
 classifiers = [
     "Programming Language :: Python :: 3",

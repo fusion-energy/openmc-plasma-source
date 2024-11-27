@@ -13,10 +13,11 @@ def fusion_point_source(
     temperature: float = 20000.0,
     fuel: Dict[str, float] = {"D": 0.5, "T": 0.5},
 ) -> List[IndependentSource]:
-    """Creates a list of openmc.IndependentSource objects representing an ICF source.
+    """
+    Creates a list of openmc.IndependentSource objects representing a point source.
+    Example uses: sealed-tube neutron generator, inertial confinement fusion source...
 
-    Resulting ICF (Inertial Confinement Fusion) source will have an energy
-    distribution according to the fuel composition.
+    Resulting source will have an energy distribution according to the fuel composition.
 
     Args:
         coordinate: Location of the point source.
