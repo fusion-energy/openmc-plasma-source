@@ -50,3 +50,4 @@ jobs:
           python examples/plot_tokamak_ion_temperature.py
           python examples/plot_tokamak_neutron_source_density.py
           python examples/plot_tokamak_neutron_source_strengths.py
+          python examples/plot_energy_spectra.py
