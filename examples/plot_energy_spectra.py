@@ -19,16 +19,19 @@ for tritium_fraction in tritium_factions:
     )
 
     # Plot the source energy distribution
-    energies = my_source[0].energy.sample(n_samples=100000)
+    energies = my_source[0].energy.sample(n_samples=int(5e6))
 
-    plt.hist(
+    data, bins, _ = plt.hist(
         energies / 1e6,
         bins=1000,
         histtype="step",
         label=f"{1-tritium_fraction:.0%} D - {tritium_fraction:.0%} T",
+        density=True,
+        # alpha=0.5,
     )
 
 plt.xlabel("Energy (MeV)")
-plt.ylabel("Number of neutrons")
+plt.ylabel("Neturon energy distribution")
+plt.yscale("log")
 plt.legend()
 plt.show()
