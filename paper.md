@@ -55,7 +55,7 @@ The lack of standardised tools for these tasks introduces variability, potential
 
 With pre-built configurations for tokamak, ring, and point sources, `openmc-plasma-source` is suitable for a wide range of applications. For example:
 
-- The **tokamak source** models realistic spatial and temperature distributions, optimised for computational efficiency through the use of ring sources (see \autoref{fig:tokamak_source} and \autroef{3d_tokamak_source}).
+- The **tokamak source** models realistic spatial and temperature distributions, optimised for computational efficiency through the use of ring sources (see \autoref{fig:tokamak_source} and \autoref{fig:3d_tokamak_source}).
 - The **ring source** offers a simplified yet effective representation for cylindrical geometries.
 - The **point source** is ideal for preliminary studies or cases requiring a concentrated neutron emission found in inertial confinement fusion or sealed-tube neutron generators.
 
