@@ -67,7 +67,7 @@ With pre-built configurations for tokamak, ring, and point sources, `openmc-plas
 
 `openmc-plasma-source` allows for customisation of neutron energy spectra based on varying fusion fuel compositions and spatial parameters. Users can define different fuel mixtures (e.g., DT, DD, TT) with associated spatially resolved temperature and density profiles, ensuring accurate and precise energy distributions. This flexibility is crucial for capturing the full range of neutron behaviours in complex fusion scenarios (see \autoref{fig:energy_spectra}).
 
-![Neutron Energy Spectra for different fusion fuels.\label{fig: energy spectra}]()
+![Neutron Energy Spectra for different fusion fuels.\label{fig: energy spectra}](energy_spectra.svg)
 
 The package’s open-source nature and community-driven development further ensure its adaptability and relevance to the evolving needs of the fusion research community.
 
