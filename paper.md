@@ -49,7 +49,7 @@ Traditionally, researchers have implemented their own custom neutron source defi
 For example, spatial distributions, temperature effects, and fuel compositions must be correctly parameterised to ensure the fidelity of the simulations.
 The lack of standardised tools for these tasks introduces variability, potential errors in simulations and a lack of reproducibility.
 
-`openmc-plasma-source` addresses these challenges by providing a standardised and easy-to-use interface for defining neutron sources in OpenMC. The package implements the equations for neutron distributions based on established models, such as those described in @fausser_tokamak_2012. By automating the setup process and including extensive documentation and examples, it reduces barriers to entry for researchers new to OpenMC or neutron source modelling.
+`openmc-plasma-source` addresses these challenges by providing a standardised and easy-to-use interface for defining neutron sources in OpenMC. The package implements the equations for neutron distributions based on established models, such as those described in @fausser_tokamak_2012 and fusion energy spectra from the NeSST tool @Crilly_NESST_-_Neutron_2024. By automating the setup process and including extensive documentation and examples, it reduces barriers to entry for researchers new to OpenMC or neutron source modelling.
 
 With pre-built configurations for tokamak, ring, and point sources, `openmc-plasma-source` is suitable for a wide range of applications. For example:
 
