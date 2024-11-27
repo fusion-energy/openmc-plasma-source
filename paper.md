@@ -29,7 +29,12 @@ bibliography: paper.bib
 
 `openmc-plasma-source` is a Python-based package offering a collection of pre-built neutron sources designed for fusion applications using the Monte Carlo particle transport code OpenMC [@romano_openmc_2015].
 By providing ready-to-use implementations for various neutron source configurations, such as tokamak, ring, and point sources, this package simplifies the often complex task of neutron source definition in fusion-related Monte Carlo simulations.
-These sources are parameterised to account for spatial distributions, plasma temperatures, and fusion fuel compositions, enabling realistic and computationally efficient neutron emission models.
+These sources are parameterised to account for spatial distributions, plasma temperatures, plasma pressure, and fusion fuel compositions.
+DT (deuterium, tritium) plasmas with any ratio of D and T are supported including pure DD and pure TT plasmas.
+The package computes spatial distributions of temperature and density and accounts for them when computing the spatially distributed reactivity for the differentfusion reactions availablein the fuel composition.
+The temperature, density and fuel composition are accounted for when producing the neutron energy distribution which also varies spatially. 
+energy distributions  of neutron sources.
+The approach take is also computationally efficient by making use of rotational symmetry to reduce the size of the source definition.
 
 The package is designed to integrate seamlessly into OpenMC workflows, allowing users to define sources in just a few lines of Python code.
 It also supports advanced features like temperature-based neutron spectra and spatial source distributions, making it an invaluable tool for researchers simulating neutron behaviour in fusion devices.
