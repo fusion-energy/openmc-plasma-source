@@ -23,6 +23,7 @@ my_source = fusion_point_source(
     },  # note this is mainly tritium fuel so that TT reactions are more likely
 )
 
+
 # Tell OpenMC we're going to use our custom source
 settings = openmc.Settings()
 settings.run_mode = "fixed source"
@@ -34,16 +35,10 @@ model = openmc.model.Model(materials=None, geometry=geometry, settings=settings)
 
 model.run()
 
+# Plot the source energy distribution
+energies = my_source[0].energy.sample(n_samples=10000)
+import matplotlib.pyplot as plt
 
-# optionally if you would like to plot the energy of particles then another package can be used
-# https://github.com/fusion-energy/openmc_source_plotter
-
-from openmc_source_plotter import plot_source_energy
-
-plot = plot_source_energy(
-    this=settings,
-    n_samples=2000000,  # increase this value for a smoother plot
-    energy_bins=np.linspace(0, 16e6, 1000),
-    yaxis_type="log",
-)
-plot.show()
+plt.hist(energies, bins=1000)
+plt.xlim(14e6 - 2e6, 14e6 + 2e6)
+plt.show()
