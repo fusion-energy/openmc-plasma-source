@@ -31,7 +31,7 @@ bibliography: paper.bib
 By providing ready-to-use implementations for various neutron source configurations, such as tokamak, ring, and point sources, this package simplifies the often complex task of neutron source definition in fusion-related Monte Carlo simulations.
 These sources are parameterised to account for spatial distributions, plasma temperatures, plasma pressure, and fusion fuel compositions.
 DT (deuterium, tritium) plasmas with any ratio of D and T are supported including pure DD and pure TT plasmas.
-The package computes spatial distributions of temperature and density and accounts for them when computing the spatially distributed reactivity for the differentfusion reactions availablein the fuel composition.
+The package computes spatial distributions of temperature and density and accounts for them when computing the spatially distributed reactivity for the different fusion reactions possible with the fuel composition.
 The temperature, density and fuel composition are accounted for when producing the neutron energy distribution which also varies spatially. 
 energy distributions  of neutron sources.
 The approach take is also computationally efficient by making use of rotational symmetry to reduce the size of the source definition.
