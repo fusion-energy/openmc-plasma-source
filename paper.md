@@ -34,7 +34,7 @@ DT (deuterium, tritium) plasmas with any ratio of D and T are supported includin
 The package computes spatial distributions of temperature and density and accounts for them when computing the spatially distributed reactivity for the different fusion reactions possible with the fuel composition.
 The temperature, density and fuel composition are accounted for when producing the neutron energy distribution which also varies spatially. 
 energy distributions  of neutron sources.
-The approach take is also computationally efficient by making use of rotational symmetry to reduce the size of the source definition.
+The approach taken is also computationally efficient by making use of rotational symmetry to reduce the size of the source definition.
 
 The package is designed to integrate seamlessly into OpenMC workflows, allowing users to define sources in just a few lines of Python code.
 It also supports advanced features like temperature-based neutron spectra and spatial source distributions, making it an invaluable tool for researchers simulating neutron behaviour in fusion devices.
