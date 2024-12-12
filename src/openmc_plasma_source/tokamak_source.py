@@ -28,7 +28,7 @@ def tokamak_source(
     pedestal_radius: float,
     shafranov_factor: float,
     angles: Tuple[float, float] = (0, 2 * np.pi),
-    sample_size: int = 1000,
+    sample_size: int = 10000,
     fuel: Dict[str, float] = {"D": 0.5, "T": 0.5},
     sample_seed: int = 122807528840384100672342137672332424406,
 ) -> List[IndependentSource]:
