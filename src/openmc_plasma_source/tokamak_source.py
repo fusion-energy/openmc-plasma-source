@@ -190,9 +190,7 @@ def tokamak_source(
     # Z = kappa * a * sin(alpha)
     theta = alpha_flat + triangularity * np.sin(alpha_flat)
     dtheta_dalpha = 1 + triangularity * np.cos(alpha_flat)
-    dR_da = (
-        np.cos(theta) - 2 * shafranov_factor * a_flat / minor_radius**2
-    )
+    dR_da = np.cos(theta) - 2 * shafranov_factor * a_flat / minor_radius**2
     dR_dalpha = -a_flat * np.sin(theta) * dtheta_dalpha
     dZ_da = elongation * np.sin(alpha_flat)
     dZ_dalpha = elongation * a_flat * np.cos(alpha_flat)

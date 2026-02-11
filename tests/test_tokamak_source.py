@@ -171,9 +171,7 @@ def test_bad_shafranov_factor(tokamak_args_dict, major_radius, minor_radius, sha
         tokamak_source(**tokamak_args_dict)
 
 
-@pytest.mark.parametrize(
-    "angles", [(0, 1), (0, 2 * np.pi), (np.pi / 4, 3 * np.pi / 4)]
-)
+@pytest.mark.parametrize("angles", [(0, 1), (0, 2 * np.pi), (np.pi / 4, 3 * np.pi / 4)])
 def test_angles(tokamak_args_dict, angles):
     """Checks that custom angles are reflected in the mesh phi_grid"""
     tokamak_args_dict["angles"] = angles
