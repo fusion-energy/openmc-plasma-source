@@ -247,7 +247,7 @@ def tokamak_source(
         for j in range(n_phi):
             for k in range(n_z):
                 src = IndependentSource()
-                strength = float(binned_strength[i, k])
+                strength = float(binned_strength[i, k]) / n_phi
                 temp = float(mean_temperature[i, k])
 
                 if strength > 0 and temp > 0:
