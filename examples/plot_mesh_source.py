@@ -48,14 +48,23 @@ strengths_masked = np.ma.masked_where(strengths <= 0, strengths)
 alpha_lcfs = np.linspace(0, 2 * np.pi, 500)
 a_lcfs = np.full_like(alpha_lcfs, 292.258)
 R_lcfs, Z_lcfs = tokamak_convert_a_alpha_to_R_Z(
-    a=a_lcfs, alpha=alpha_lcfs, shafranov_factor=0.44789,
-    minor_radius=292.258, major_radius=906, triangularity=0.270, elongation=1.557,
+    a=a_lcfs,
+    alpha=alpha_lcfs,
+    shafranov_factor=0.44789,
+    minor_radius=292.258,
+    major_radius=906,
+    triangularity=0.270,
+    elongation=1.557,
 )
 
 fig, ax = plt.subplots(figsize=(8, 10))
 R, Z = np.meshgrid(r_grid, z_grid, indexing="ij")
 pcm = ax.pcolormesh(
-    R, Z, strengths_masked, shading="flat", cmap="plasma",
+    R,
+    Z,
+    strengths_masked,
+    shading="flat",
+    cmap="plasma",
     norm=mcolors.LogNorm(vmin=strengths_masked.min(), vmax=strengths_masked.max()),
 )
 ax.plot(R_lcfs, Z_lcfs, "w--", linewidth=1.5, label="LCFS")
