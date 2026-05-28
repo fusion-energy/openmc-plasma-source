@@ -161,6 +161,20 @@ def tokamak_source(
         elongation=elongation,
     )
 
+    # Weight each sample by the plasma volume element it represents. Samples are
+    # drawn uniformly in (a, alpha), so to recover the true spatial neutron
+    # emission each sample must be weighted by the local volume per unit
+    # (a, alpha): dV is proportional to R * |d(R,Z)/d(a,alpha)|, i.e. the
+    # toroidal factor R times the poloidal cross-sectional Jacobian |J|.
+    # Without this weighting the core (small a, small R) is over-represented.
+    theta = alpha + triangularity * np.sin(alpha)
+    dR_da = np.cos(theta) - 2 * shafranov_factor * a / minor_radius**2
+    dR_dalpha = -a * np.sin(theta) * (1 + triangularity * np.cos(alpha))
+    dZ_da = elongation * np.sin(alpha)
+    dZ_dalpha = elongation * a * np.cos(alpha)
+    jacobian = np.abs(dR_da * dZ_dalpha - dR_dalpha * dZ_da)
+    volume_weight = RZ[0] * jacobian
+
     fuel_densities = {}
     for key, value in fuel.items():
         fuel_densities[key] = densities * value
@@ -183,6 +197,11 @@ def tokamak_source(
         if reaction == "TT":
             # TT reaction emits 2 neutrons
             neutron_source_density[reaction] = neutron_source_density[reaction] * 2
+
+        # apply the (a, alpha) volume element weighting (toroidal R * Jacobian)
+        neutron_source_density[reaction] = (
+            neutron_source_density[reaction] * volume_weight
+        )
 
         total_source_density += np.sum(neutron_source_density[reaction])
 

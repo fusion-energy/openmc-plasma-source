@@ -429,3 +429,26 @@ def test_source_locations_are_within_correct_range(tokamak_source):
         assert approx_gt(R_min, R_0 - A)
         assert approx_lt(R, R_max)
         assert approx_gt(R, R_min)
+
+
+def test_strengths_are_volume_weighted(tokamak_args_dict):
+    """Source strengths must include the plasma volume element.
+
+    Samples are drawn uniformly in (a, alpha), so the neutron source density
+    must be weighted by the local volume per unit (a, alpha), which is
+    proportional to the toroidal factor R times the poloidal cross-sectional
+    Jacobian |d(R,Z)/d(a,alpha)|. Applying this weighting biases the emission
+    outward in R relative to the raw (unweighted) sample distribution. See
+    "Tokamak D-T neutron source models for different plasma physics confinement
+    modes", C. Fausser et al., Fusion Engineering and Design, 2012.
+    """
+    sources = tokamak_source(**tokamak_args_dict)
+    strengths = np.array([source.strength for source in sources])
+    R = np.array([source.space.r.x[0] for source in sources])
+
+    # strengths remain normalised after volume weighting
+    assert pytest.approx(strengths.sum()) == 1
+
+    # the R * |J| volume weighting shifts the strength-weighted mean major
+    # radius outward relative to the unweighted (uniform a, alpha) sample mean
+    assert np.average(R, weights=strengths) > R.mean()
