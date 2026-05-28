@@ -77,7 +77,7 @@ def tokamak_source(
             location. Numpy recommend a large int value. Defaults to
             122807528840384100672342137672332424406
         sample_size: number of neutron sources. Defaults
-            to 1000.
+            to 10000.
         fuel: Isotopes as keys and atom fractions as values
     """
 
@@ -176,6 +176,10 @@ def tokamak_source(
             fuel_density = fuel_densities["T"] * 0.5
         elif reaction == "DT":
             fuel_density = fuel_densities["T"] * fuel_densities["D"]
+        else:
+            raise ValueError(
+                f'Reaction {reaction} not in available options ["DD", "DT", "TT"]'
+            )
 
         neutron_source_density[reaction] = tokamak_neutron_source_density(
             fuel_density, temperatures, reaction
@@ -184,7 +188,13 @@ def tokamak_source(
             # TT reaction emits 2 neutrons
             neutron_source_density[reaction] = neutron_source_density[reaction] * 2
 
-        total_source_density += sum(neutron_source_density[reaction])
+        total_source_density += np.sum(neutron_source_density[reaction])
+
+    if total_source_density == 0.0:
+        raise ValueError(
+            "Total neutron source density is zero. This may be caused by " 
+            "ion temperatures or densities that are too low to produce fusion reactions."
+        )
 
     all_sources = []  # type: List[IndependentSource]
     for reaction in reactions:
@@ -198,6 +208,11 @@ def tokamak_source(
             RZ=RZ,
         )
         all_sources = all_sources + sources
+    if not all_sources:
+        raise ValueError(
+            "No neutron sources were created. All computed source strengths "
+            "were zero or negative after normalisation. Try increasing sample_size."
+        )
     return all_sources
 
 
@@ -254,6 +269,8 @@ def tokamak_ion_density(
                 + ion_density_separatrix
             ),
         )
+    else:
+        raise ValueError(f'Mode {mode} not in available options ["L", "H", "A"]')
     return density
 
 
@@ -315,6 +332,8 @@ def tokamak_ion_temperature(
                 / (major_radius - pedestal_radius)
             ),
         )
+    else:
+        raise ValueError(f'Mode {mode} not in available options ["L", "H", "A"]')
     return temperature * 1e3
 
 
