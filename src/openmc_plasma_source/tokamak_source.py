@@ -176,10 +176,6 @@ def tokamak_source(
             fuel_density = fuel_densities["T"] * 0.5
         elif reaction == "DT":
             fuel_density = fuel_densities["T"] * fuel_densities["D"]
-        else:
-            raise ValueError(
-                f'Reaction {reaction} not in available options ["DD", "DT", "TT"]'
-            )
 
         neutron_source_density[reaction] = tokamak_neutron_source_density(
             fuel_density, temperatures, reaction
@@ -190,9 +186,9 @@ def tokamak_source(
 
         total_source_density += np.sum(neutron_source_density[reaction])
 
-    if total_source_density == 0.0:
+    if total_source_density <= 0.0:
         raise ValueError(
-            "Total neutron source density is zero. This may be caused by " 
+            "Total neutron source density is zero. This may be caused by "
             "ion temperatures or densities that are too low to produce fusion reactions."
         )
 
@@ -211,7 +207,7 @@ def tokamak_source(
     if not all_sources:
         raise ValueError(
             "No neutron sources were created. All computed source strengths "
-            "were zero or negative after normalisation. Try increasing sample_size."
+            "were zero or negative after normalisation. Try increasing sample_size or changing the physics input parameters."
         )
     return all_sources
 
