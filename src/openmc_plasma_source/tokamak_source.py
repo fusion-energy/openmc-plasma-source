@@ -122,7 +122,7 @@ def tokamak_source(
     """
     # create a sample of (a, alpha) coordinates
     rng = np.random.default_rng(sample_seed)
-    a = rng.random(sample_size) * minor_radius   # a is local minor radius
+    a = rng.random(sample_size) * minor_radius  # a is local minor radius
     alpha = rng.random(sample_size) * 2 * np.pi
 
     # compute densities, temperatures
