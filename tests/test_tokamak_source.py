@@ -198,7 +198,7 @@ def test_ion_density(tokamak_args_dict):
         ion_density_centre=tokamak_args_dict["ion_density_centre"],
         ion_density_peaking_factor=tokamak_args_dict["ion_density_peaking_factor"],
         ion_density_pedestal=tokamak_args_dict["ion_density_pedestal"],
-        major_radius=tokamak_args_dict["major_radius"],
+        minor_radius=tokamak_args_dict["minor_radius"],
         pedestal_radius=tokamak_args_dict["pedestal_radius"],
         ion_density_separatrix=tokamak_args_dict["ion_density_separatrix"],
     )
@@ -217,7 +217,7 @@ def test_bad_ion_density(tokamak_args_dict):
             ion_density_centre=tokamak_args_dict["ion_density_centre"],
             ion_density_peaking_factor=tokamak_args_dict["ion_density_peaking_factor"],
             ion_density_pedestal=tokamak_args_dict["ion_density_pedestal"],
-            major_radius=tokamak_args_dict["major_radius"],
+            minor_radius=tokamak_args_dict["minor_radius"],
             pedestal_radius=tokamak_args_dict["pedestal_radius"],
             ion_density_separatrix=tokamak_args_dict["ion_density_separatrix"],
         )
@@ -238,7 +238,7 @@ def test_ion_temperature(tokamak_args_dict, tokamak_source_example):
             "ion_temperature_peaking_factor"
         ],
         ion_temperature_separatrix=tokamak_args_dict["ion_temperature_separatrix"],
-        major_radius=tokamak_args_dict["major_radius"],
+        minor_radius=tokamak_args_dict["minor_radius"],
     )
     assert isinstance(temperature, np.ndarray)
     assert len(temperature) == len(r)
@@ -260,7 +260,7 @@ def test_bad_ion_temperature(tokamak_args_dict):
                 "ion_temperature_peaking_factor"
             ],
             ion_temperature_separatrix=tokamak_args_dict["ion_temperature_separatrix"],
-            major_radius=tokamak_args_dict["major_radius"],
+            minor_radius=tokamak_args_dict["minor_radius"],
         )
     assert "must not be negative" in str(excinfo.value)
 
