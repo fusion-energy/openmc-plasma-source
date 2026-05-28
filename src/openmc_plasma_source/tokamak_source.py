@@ -122,7 +122,7 @@ def tokamak_source(
     """
     # create a sample of (a, alpha) coordinates
     rng = np.random.default_rng(sample_seed)
-    a = rng.random(sample_size) * minor_radius
+    a = rng.random(sample_size) * minor_radius   # a is local minor radius
     alpha = rng.random(sample_size) * 2 * np.pi
 
     # compute densities, temperatures
@@ -131,7 +131,7 @@ def tokamak_source(
         ion_density_centre=ion_density_centre,
         ion_density_peaking_factor=ion_density_peaking_factor,
         ion_density_pedestal=ion_density_pedestal,
-        major_radius=major_radius,
+        minor_radius=minor_radius,
         pedestal_radius=pedestal_radius,
         ion_density_separatrix=ion_density_separatrix,
         r=a,
@@ -147,7 +147,7 @@ def tokamak_source(
         ion_temperature_beta=ion_temperature_beta,
         ion_temperature_peaking_factor=ion_temperature_peaking_factor,
         ion_temperature_separatrix=ion_temperature_separatrix / 1e3,
-        major_radius=major_radius,
+        minor_radius=minor_radius,
     )
 
     # convert coordinates
@@ -206,7 +206,7 @@ def tokamak_ion_density(
     ion_density_centre: float,
     ion_density_peaking_factor: float,
     ion_density_pedestal: float,
-    major_radius: float,
+    minor_radius: float,
     pedestal_radius: float,
     ion_density_separatrix: float,
     r: Union[float, NDArray],
@@ -221,10 +221,10 @@ def tokamak_ion_density(
         ion_density_peaking_factor: Ion density peaking factor
             (referred in [1] as ion density exponent)
         ion_density_pedestal: Ion density at pedestal (m-3)
-        major_radius: Plasma major radius (cm)
+        minor_radius: Plasma minor radius (cm)
         pedestal_radius: Minor radius at pedestal (cm)
         ion_density_separatrix: Ion density at separatrix (m-3)
-        r: Minor radius (cm)
+        r: Local minor radius (cm)
 
     Returns:
         ion density in m-3
@@ -237,7 +237,7 @@ def tokamak_ion_density(
     if mode == "L":
         density = (
             ion_density_centre
-            * (1 - (r / major_radius) ** 2) ** ion_density_peaking_factor
+            * (1 - (r / minor_radius) ** 2) ** ion_density_peaking_factor
         )
     elif mode in ["H", "A"]:
         density = np.where(
@@ -249,8 +249,8 @@ def tokamak_ion_density(
             ),
             (
                 (ion_density_pedestal - ion_density_separatrix)
-                * (major_radius - r)
-                / (major_radius - pedestal_radius)
+                * (minor_radius - r)
+                / (minor_radius - pedestal_radius)
                 + ion_density_separatrix
             ),
         )
@@ -266,14 +266,14 @@ def tokamak_ion_temperature(
     ion_temperature_beta: float,
     ion_temperature_peaking_factor: float,
     ion_temperature_separatrix: float,
-    major_radius: float,
+    minor_radius: float,
 ) -> NDArray:
     """
     Computes the ion temperature at a given position. The ion
     temperature is only dependent on the minor radius.
 
     Args:
-        r: Minor radius (cm)
+        r: Local minor radius (cm)
         mode: Confinement mode ("L", "H", "A")
         pedestal_radius: Minor radius at pedestal (cm)
         ion_temperature_pedestal: Ion temperature at pedestal (eV)
@@ -283,7 +283,7 @@ def tokamak_ion_temperature(
         ion_temperature_peaking_factor: Ion temperature peaking
             factor
         ion_temperature_separatrix: Ion temperature at separatrix (eV)
-        major_radius: Plasma major radius (cm)
+        minor_radius: Plasma minor radius (cm)
 
 
     Returns:
@@ -297,7 +297,7 @@ def tokamak_ion_temperature(
     if mode == "L":
         temperature = (
             ion_temperature_centre
-            * (1 - (r / major_radius) ** 2) ** ion_temperature_peaking_factor
+            * (1 - (r / minor_radius) ** 2) ** ion_temperature_peaking_factor
         )
     elif mode in ["H", "A"]:
         temperature = np.where(
@@ -311,8 +311,8 @@ def tokamak_ion_temperature(
             (
                 ion_temperature_separatrix
                 + (ion_temperature_pedestal - ion_temperature_separatrix)
-                * (major_radius - r)
-                / (major_radius - pedestal_radius)
+                * (minor_radius - r)
+                / (minor_radius - pedestal_radius)
             ),
         )
     return temperature * 1e3
