@@ -20,7 +20,7 @@ temperatures = tokamak_ion_temperature(
     ion_temperature_beta=2,
     ion_temperature_peaking_factor=8.06,
     ion_temperature_separatrix=0.1,
-    major_radius=major_radius,
+    minor_radius=minor_radius,
 )
 
 RZ = tokamak_convert_a_alpha_to_R_Z(

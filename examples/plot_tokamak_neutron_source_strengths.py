@@ -27,7 +27,7 @@ temperatures = tokamak_ion_temperature(
     ion_temperature_beta=2,
     ion_temperature_peaking_factor=8.06,
     ion_temperature_separatrix=0.1,
-    major_radius=major_radius,
+    minor_radius=minor_radius,
 )
 
 densities = tokamak_ion_density(
@@ -35,7 +35,7 @@ densities = tokamak_ion_density(
     ion_density_centre=ion_density_centre,
     ion_density_peaking_factor=1,
     ion_density_pedestal=1.09e20,
-    major_radius=major_radius,
+    minor_radius=minor_radius,
     pedestal_radius=0.8 * minor_radius,
     ion_density_separatrix=3e19,
     r=a,
