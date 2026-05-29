@@ -90,8 +90,8 @@ def neutron_energy_std_dev(ion_temperature: float, reaction: str) -> float:
         + a_4 * ion_temperature_kev
     )
 
-    # 2.3548200450309493 on the line below comes from equation 2* math.sqrt(math.log(2)*2)
-    variance = ((w_0 * (1 + delta)) ** 2 * ion_temperature_kev) / 2.3548200450309493**2
+    FWHM_OVER_SIGMA = 2 * np.sqrt(2 * np.log(2))  # = 2.3548200450309493
+    variance = ((w_0 * (1 + delta)) ** 2 * ion_temperature_kev) / FWHM_OVER_SIGMA**2
     variance *= 1e6  # converting keV^2 back to eV^2
     std_dev = np.sqrt(variance)
     return std_dev
@@ -153,7 +153,7 @@ def get_neutron_energy_distribution(
     # 1.0 neutron yield, all reactions scaled by this value
     num_of_vals = 100
     # single grid for TT neutrons
-    E_pspec = np.linspace(0, 12e6, num_of_vals)  # E_pspec is exspected in eV units
+    E_pspec = np.linspace(0, 12e6, num_of_vals)  # E_pspec is expected in eV units
 
     DDmean = neutron_energy_mean(ion_temperature=ion_temperature, reaction="DD")
     DTmean = neutron_energy_mean(ion_temperature=ion_temperature, reaction="DT")
@@ -201,10 +201,11 @@ def get_neutron_energy_distribution(
 
         # sometimes bins are empty
         if len(E_pspec) == 0:
-            total_strength = sum([strength_DD, 1.0])
+            total_strength = np.sum([strength_DD, 1.0])
             probabilities = [strength_DD / total_strength, 1.0 / total_strength]
         else:
-            total_strength = sum([strength_TT, strength_DD, 1.0])
+            total_strength = np.sum([strength_TT, strength_DD, 1.0])
+            # drop the first bin (E=0) from np.linspace which is aphysical for a neutron source
             tt_source = openmc.stats.Tabular(E_pspec[1:], dNdE_TT[1:])
             probabilities = [
                 strength_DD / total_strength,
