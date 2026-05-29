@@ -209,9 +209,9 @@ def tokamak_source(
     total_source_density = np.zeros_like(a_flat)
     for reaction in reactions:
         if reaction == "DD":
-            fuel_density = fuel_densities["D"] * 0.5
+            fuel_density =  0.5 * fuel_densities["D"]**2
         elif reaction == "TT":
-            fuel_density = fuel_densities["T"] * 0.5
+            fuel_density = 0.5 * fuel_densities["T"]**2
         elif reaction == "DT":
             fuel_density = fuel_densities["T"] * fuel_densities["D"]
 
