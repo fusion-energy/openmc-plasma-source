@@ -207,7 +207,7 @@ def test_ion_density(tokamak_args_dict):
         ion_density_centre=tokamak_args_dict["ion_density_centre"],
         ion_density_peaking_factor=tokamak_args_dict["ion_density_peaking_factor"],
         ion_density_pedestal=tokamak_args_dict["ion_density_pedestal"],
-        major_radius=tokamak_args_dict["major_radius"],
+        minor_radius=tokamak_args_dict["minor_radius"],
         pedestal_radius=tokamak_args_dict["pedestal_radius"],
         ion_density_separatrix=tokamak_args_dict["ion_density_separatrix"],
     )
@@ -226,7 +226,7 @@ def test_bad_ion_density(tokamak_args_dict):
             ion_density_centre=tokamak_args_dict["ion_density_centre"],
             ion_density_peaking_factor=tokamak_args_dict["ion_density_peaking_factor"],
             ion_density_pedestal=tokamak_args_dict["ion_density_pedestal"],
-            major_radius=tokamak_args_dict["major_radius"],
+            minor_radius=tokamak_args_dict["minor_radius"],
             pedestal_radius=tokamak_args_dict["pedestal_radius"],
             ion_density_separatrix=tokamak_args_dict["ion_density_separatrix"],
         )
@@ -247,7 +247,7 @@ def test_ion_temperature(tokamak_args_dict, tokamak_source_example):
             "ion_temperature_peaking_factor"
         ],
         ion_temperature_separatrix=tokamak_args_dict["ion_temperature_separatrix"],
-        major_radius=tokamak_args_dict["major_radius"],
+        minor_radius=tokamak_args_dict["minor_radius"],
     )
     assert isinstance(temperature, np.ndarray)
     assert len(temperature) == len(r)
@@ -269,7 +269,7 @@ def test_bad_ion_temperature(tokamak_args_dict):
                 "ion_temperature_peaking_factor"
             ],
             ion_temperature_separatrix=tokamak_args_dict["ion_temperature_separatrix"],
-            major_radius=tokamak_args_dict["major_radius"],
+            minor_radius=tokamak_args_dict["minor_radius"],
         )
     assert "must not be negative" in str(excinfo.value)
 
@@ -423,3 +423,38 @@ def test_source_locations_are_within_correct_range(tokamak_source):
     # Mesh Z bounds encompass the LCMS
     assert z_grid[0] <= -El * A or np.isclose(z_grid[0], -El * A)
     assert z_grid[-1] >= El * A or np.isclose(z_grid[-1], El * A)
+
+
+def test_strengths_are_volume_weighted(tokamak_args_dict):
+    """Source strengths must include the plasma volume element.
+
+    The (a, alpha) grid is uniform, so the neutron source density must be
+    weighted by the local volume per unit (a, alpha), which is proportional to
+    the toroidal factor R times the poloidal cross-sectional Jacobian
+    |d(R,Z)/d(a,alpha)|. Applying this weighting biases the emission outward in
+    R relative to an unweighted distribution. See "Tokamak D-T neutron source
+    models for different plasma physics confinement modes", C. Fausser et al.,
+    Fusion Engineering and Design, 2012.
+    """
+    mesh_source = tokamak_source(**tokamak_args_dict)
+    mesh = mesh_source.mesh
+
+    r_grid = np.asarray(mesh.r_grid)
+    r_centers = 0.5 * (r_grid[:-1] + r_grid[1:])
+
+    # strengths over the (n_r, n_phi, n_z) voxel grid
+    n_r, n_phi, n_z = mesh.dimension
+    strengths = np.array(
+        [src.strength for src in np.asarray(mesh_source.sources).flat]
+    ).reshape(n_r, n_phi, n_z)
+
+    # strengths are normalised to sum to 1
+    assert pytest.approx(strengths.sum()) == 1
+
+    # collapse over phi and z to get the strength per R bin
+    strength_per_r = strengths.sum(axis=(1, 2))
+
+    # the R * |J| volume weighting shifts the strength-weighted mean major
+    # radius outward relative to the plasma's geometric major radius
+    weighted_mean_R = np.average(r_centers, weights=strength_per_r)
+    assert weighted_mean_R > tokamak_args_dict["major_radius"]

@@ -142,3 +142,6 @@ tests/*.png
 # openmc output files
 *.h5
 *.out
+
+# plotly plots
+*.html
