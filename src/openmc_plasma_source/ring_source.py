@@ -39,7 +39,7 @@ def fusion_ring_source(
         isinstance(angles, tuple)
         and len(angles) == 2
         and all(
-            isinstance(angle, (int, float)) and -2 * np.pi <= angle <= 2 * np.pi
+            isinstance(angle, (int, float)) and 0 <= angle <= 2 * np.pi
             for angle in angles
         )
     ):
