@@ -129,8 +129,8 @@ def tokamak_source(
     n_r, n_phi, n_z = mesh_resolution
 
     # Compute mesh bounds from geometry
-    R_min = major_radius - minor_radius - abs(shafranov_factor)
-    R_max = major_radius + minor_radius + abs(shafranov_factor)
+    R_min = major_radius - minor_radius
+    R_max = major_radius + minor_radius
     Z_max = elongation * minor_radius
 
     # Create cylindrical mesh
