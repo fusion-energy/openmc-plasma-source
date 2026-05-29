@@ -19,15 +19,17 @@ pip install openmc_plasma_source
 ### Tokamak Source
 
 Create a source with a spatial and temperature distribution of a tokamak plasma.
-The OpenMC sources are ring sources which reduces the computational cost and the settings.xml file size.
-Each source has its own strength (or probability that a neutron spawns in this location).
+The function returns a single `openmc.MeshSource` backed by a `CylindricalMesh`.
+The plasma cross-section is discretised onto the mesh and each mesh voxel is
+assigned its own neutron source strength (the probability that a neutron spawns
+in that voxel) and energy distribution based on the local ion temperature.
 
 The equations implemented here are taken from [this paper](https://doi.org/10.1016/j.fusengdes.2012.02.025).
 
 ```python
 from openmc_plasma_source import tokamak_source
 
-my_sources = tokamak_source(
+my_source = tokamak_source(
     elongation=1.557,
     ion_density_centre=1.09e20,
     ion_density_pedestal=1.09e20,
@@ -45,6 +47,19 @@ my_sources = tokamak_source(
     shafranov_factor=0.44789,
     triangularity=0.270,
     fuel={"D": 0.5, "T": 0.5},
+)
+```
+
+The mesh resolution and the density of the internal sampling grid can be
+controlled with optional arguments, along with the toroidal extent of the
+source:
+
+```python
+my_source = tokamak_source(
+    # ... plasma parameters as above ...
+    angles=(0, 2 * 3.14159),       # toroidal start/stop angle in radians
+    mesh_resolution=(100, 1, 100), # number of mesh bins in (r, phi, z)
+    grid_density=500,              # points per dimension in the (a, alpha) grid
 )
 ```
 
