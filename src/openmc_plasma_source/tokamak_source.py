@@ -266,7 +266,7 @@ def tokamak_ion_density(
             ),
         )
     else:
-        raise ValueError(f'Mode {mode} not in available options ["H", "L", "A"]')
+        raise ValueError(f'Mode {mode} not in available options ["L", "H", "A"]')
     return density
 
 
