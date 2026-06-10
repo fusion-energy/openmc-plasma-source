@@ -10,6 +10,7 @@ from openmc_plasma_source import (
     tokamak_ion_temperature,
     tokamak_source,
 )
+from openmc_plasma_source.tokamak_source import _toroidal_phi_grid
 
 # Small mesh/grid params used across tests for speed
 FAST_MESH = (20, 1, 20)
@@ -179,22 +180,55 @@ def test_bad_shafranov_factor(tokamak_args_dict, major_radius, minor_radius, sha
         (np.pi / 4, np.pi / 2),
         (-np.pi, np.pi),
         (3 * np.pi / 4, -np.pi / 4),
+        (7 * np.pi / 4, np.pi / 2),  # crosses the 0 / 2*pi seam
     ],
 )
 def test_angles(tokamak_args_dict, start_angle, rotation_angle):
-    """Checks that start_angle and rotation_angle are reflected in the mesh phi_grid.
-
-    The sector may be shifted by 2*pi to lie within [0, 2*pi] (required by
-    CylindricalMesh), so we check the toroidal extent and bounds rather than
-    the exact endpoints.
-    """
+    """Checks that a valid sector produces a usable mesh with normalized strengths."""
     tokamak_args_dict["start_angle"] = start_angle
     tokamak_args_dict["rotation_angle"] = rotation_angle
     mesh_source = tokamak_source(**tokamak_args_dict)
-    phi_grid = mesh_source.mesh.phi_grid
-    assert np.isclose(phi_grid[-1] - phi_grid[0], abs(rotation_angle))
-    assert phi_grid[0] >= 0
+    phi_grid = np.asarray(mesh_source.mesh.phi_grid)
+    # Mesh edges must be increasing and within [0, 2*pi]
+    assert np.all(np.diff(phi_grid) > 0)
+    assert phi_grid[0] >= -1e-12
     assert phi_grid[-1] <= 2 * np.pi + 1e-9
+    # Source strengths are normalized to sum to 1
+    strengths = np.array([s.strength for s in mesh_source.sources.ravel()])
+    assert np.isclose(strengths.sum(), 1.0)
+
+
+@pytest.mark.parametrize(
+    "start_angle, rotation_angle",
+    [
+        (0, np.pi / 2),
+        (0, 2 * np.pi),
+        (-np.pi, np.pi),
+        (3 * np.pi / 4, -np.pi / 4),
+        (7 * np.pi / 4, np.pi / 2),  # crosses the 0 / 2*pi seam
+        (-np.pi / 4, np.pi / 2),  # crosses the seam
+    ],
+)
+def test_toroidal_phi_grid(start_angle, rotation_angle):
+    """The phi grid is valid and its active bins span exactly abs(rotation_angle)."""
+    phi_grid, phi_fraction = _toroidal_phi_grid(start_angle, rotation_angle, n_phi=4)
+    bin_widths = np.diff(phi_grid)
+    # Valid CylindricalMesh edges
+    assert np.all(bin_widths > 0)
+    assert phi_grid[0] >= -1e-12
+    assert phi_grid[-1] <= 2 * np.pi + 1e-9
+    # Strength fractions sum to 1 and the active bins span the requested extent
+    assert np.isclose(phi_fraction.sum(), 1.0)
+    assert np.isclose(bin_widths[phi_fraction > 0].sum(), abs(rotation_angle))
+
+
+@pytest.mark.parametrize("start_angle, rotation_angle", [(7 * np.pi / 4, np.pi / 2)])
+def test_seam_crossing_sector_has_dead_bin(start_angle, rotation_angle):
+    """A seam-crossing sector covers the full circle with a zero-strength bin."""
+    phi_grid, phi_fraction = _toroidal_phi_grid(start_angle, rotation_angle, n_phi=4)
+    assert np.isclose(phi_grid[0], 0.0)
+    assert np.isclose(phi_grid[-1], 2 * np.pi)
+    assert np.any(phi_fraction == 0.0)  # the dead bin
 
 
 @pytest.mark.parametrize("start_angle", [3 * np.pi, -3 * np.pi, "hello", (0, 1)])
