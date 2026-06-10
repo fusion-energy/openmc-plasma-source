@@ -47,7 +47,11 @@ PLASMA = dict(
 
 # The two source cases to plot
 cases = [
-    {"start_angle": 0.0, "rotation_angle": 1.5 * np.pi, "label": "0 -> 270deg (cutaway)"},
+    {
+        "start_angle": 0.0,
+        "rotation_angle": 1.5 * np.pi,
+        "label": "0 -> 270deg (cutaway)",
+    },
     {
         "start_angle": 7 * np.pi / 4,
         "rotation_angle": np.pi / 2,
@@ -60,7 +64,10 @@ def sample_points(start_angle, rotation_angle):
     """Sample neutron birth positions for a tokamak sector using the real mesh."""
     # Cheap single-phi-bin build to get the poloidal (R, Z) strength map.
     source = tokamak_source(
-        **PLASMA, start_angle=0.0, rotation_angle=2 * np.pi, mesh_resolution=(100, 1, 100)
+        **PLASMA,
+        start_angle=0.0,
+        rotation_angle=2 * np.pi,
+        mesh_resolution=(100, 1, 100),
     )
     n_r = len(source.mesh.r_grid) - 1
     n_z = len(source.mesh.z_grid) - 1

@@ -46,9 +46,7 @@ def fusion_ring_source(
         and not isinstance(start_angle, bool)
         and -2 * np.pi <= start_angle <= 2 * np.pi
     ):
-        raise ValueError(
-            "start_angle must be a float between -2 * np.pi and 2 * np.pi"
-        )
+        raise ValueError("start_angle must be a float between -2 * np.pi and 2 * np.pi")
 
     if not (
         isinstance(rotation_angle, (int, float))

@@ -17,11 +17,36 @@ N_SAMPLES = 2000
 # A few (start_angle, rotation_angle) combinations, each placed at its own
 # z height so the toroidal sectors are easy to tell apart in 3D.
 cases = [
-    {"start_angle": 0.0, "rotation_angle": 2 * np.pi, "z": 0, "label": "full ring (0 -> 2pi)"},
-    {"start_angle": 0.0, "rotation_angle": np.pi / 2, "z": 200, "label": "start=0, rot=pi/2"},
-    {"start_angle": np.pi, "rotation_angle": np.pi / 2, "z": 400, "label": "start=pi, rot=pi/2"},
-    {"start_angle": np.pi / 2, "rotation_angle": np.pi, "z": 600, "label": "start=pi/2, rot=pi"},
-    {"start_angle": 0.0, "rotation_angle": -np.pi / 2, "z": 800, "label": "start=0, rot=-pi/2"},
+    {
+        "start_angle": 0.0,
+        "rotation_angle": 2 * np.pi,
+        "z": 0,
+        "label": "full ring (0 -> 2pi)",
+    },
+    {
+        "start_angle": 0.0,
+        "rotation_angle": np.pi / 2,
+        "z": 200,
+        "label": "start=0, rot=pi/2",
+    },
+    {
+        "start_angle": np.pi,
+        "rotation_angle": np.pi / 2,
+        "z": 400,
+        "label": "start=pi, rot=pi/2",
+    },
+    {
+        "start_angle": np.pi / 2,
+        "rotation_angle": np.pi,
+        "z": 600,
+        "label": "start=pi/2, rot=pi",
+    },
+    {
+        "start_angle": 0.0,
+        "rotation_angle": -np.pi / 2,
+        "z": 800,
+        "label": "start=0, rot=-pi/2",
+    },
 ]
 
 figure = go.Figure()
