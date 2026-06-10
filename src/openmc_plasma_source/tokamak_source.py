@@ -10,6 +10,63 @@ from NeSST.spectral_model import reac_DD, reac_DT, reac_TT
 from .fuel_types import get_neutron_energy_distribution, get_reactions_from_fuel
 
 
+def _toroidal_phi_grid(
+    start_angle: float, rotation_angle: float, n_phi: int
+) -> Tuple[NDArray, NDArray]:
+    """Build a CylindricalMesh phi_grid and per-bin source strength fractions.
+
+    The toroidal sector spans an angular width of abs(rotation_angle), divided
+    into n_phi bins. A CylindricalMesh requires phi edges that are increasing
+    and within [0, 2*pi], so when the sector crosses the 0 / 2*pi seam the grid
+    covers the full circle with a zero-strength "dead" bin filling the
+    unselected portion; otherwise it is a partial mesh covering only the sector.
+
+    Args:
+        start_angle: Toroidal angle at which the sector starts (radians).
+        rotation_angle: Toroidal extent of the sector (radians). May be negative.
+        n_phi: Number of bins requested across the sector.
+
+    Returns:
+        (phi_grid, phi_fraction) where phi_grid is the array of bin edges and
+        phi_fraction is the fraction of the total source strength assigned to
+        each bin (summing to 1 over the active bins, 0 in any dead bin).
+    """
+    two_pi = 2 * np.pi
+    width = abs(rotation_angle)
+
+    # A sector spanning the full circle is the whole torus regardless of start.
+    if np.isclose(width, two_pi):
+        phi_grid = np.linspace(0.0, two_pi, n_phi + 1)
+        bin_widths = np.diff(phi_grid)
+        return phi_grid, bin_widths / bin_widths.sum()
+
+    # Normalize the sector start into [0, 2*pi); the unwrapped end may exceed it.
+    lo = min(start_angle, start_angle + rotation_angle) % two_pi
+    hi = lo + width
+    raw = np.linspace(lo, hi, n_phi + 1)
+
+    if hi <= two_pi + 1e-12:
+        # Sector does not cross the seam: a partial mesh covering [lo, hi].
+        phi_grid = np.clip(raw, 0.0, two_pi)
+        bin_widths = np.diff(phi_grid)
+        return phi_grid, bin_widths / width
+
+    # Sector crosses the seam: cover the full circle. The selected angles are
+    # [0, hi - 2*pi] (wrapped end) and [lo, 2*pi] (start); the gap between is a
+    # single dead bin carrying zero strength.
+    seam_hi = hi - two_pi
+    lower = raw[raw < two_pi]  # edges from lo up towards 2*pi
+    upper = raw[raw > two_pi] - two_pi  # wrapped edges from 0 up to seam_hi
+    edges = np.concatenate(([0.0], upper, [seam_hi, lo], lower, [two_pi]))
+    phi_grid = np.unique(edges)  # sorted and deduplicated
+
+    bin_widths = np.diff(phi_grid)
+    mids = 0.5 * (phi_grid[:-1] + phi_grid[1:])
+    active = (mids <= seam_hi + 1e-12) | (mids >= lo - 1e-12)
+    phi_fraction = np.where(active, bin_widths / width, 0.0)
+    return phi_grid, phi_fraction
+
+
 def tokamak_source(
     major_radius: float,
     minor_radius: float,
@@ -27,7 +84,8 @@ def tokamak_source(
     ion_temperature_separatrix: float,
     pedestal_radius: float,
     shafranov_factor: float,
-    angles: Tuple[float, float] = (0, 2 * np.pi),
+    start_angle: float = 0.0,
+    rotation_angle: float = 2 * np.pi,
     mesh_resolution: Tuple[int, int, int] = (100, 1, 100),
     grid_density: int = 500,
     fuel: Dict[str, float] = {"D": 0.5, "T": 0.5},
@@ -76,8 +134,13 @@ def tokamak_source(
         shafranov_factor: Shafranov factor (cm, referred in [1] as
             esh) also known as outward radial displacement of magnetic
             surfaces
-        angles: The start and stop toroidal angles (radians).
-            Must be in [0, 2*pi] with angles[0] < angles[1].
+        start_angle: The toroidal angle at which the plasma starts, in
+            radians. Must be between -2*pi and 2*pi.
+        rotation_angle: The toroidal extent of the plasma, in radians. Must
+            be a non-zero value between -2*pi and 2*pi. A negative value
+            extends the plasma in the opposite direction from start_angle. A
+            sector that crosses the 0 / 2*pi seam is supported via a full-circle
+            mesh with a zero-strength bin filling the unselected portion.
         mesh_resolution: Number of mesh bins in (r, phi, z).
             Defaults to (100, 1, 100).
         grid_density: Number of points per dimension in the internal
@@ -113,17 +176,20 @@ def tokamak_source(
     cv.check_greater_than("ion_density_separatrix", ion_density_separatrix, 0)
 
     if not (
-        isinstance(angles, tuple)
-        and len(angles) == 2
-        and all(
-            isinstance(angle, (int, float)) and 0 <= angle <= 2 * np.pi
-            for angle in angles
-        )
-        and angles[0] < angles[1]
+        isinstance(start_angle, (int, float))
+        and not isinstance(start_angle, bool)
+        and -2 * np.pi <= start_angle <= 2 * np.pi
+    ):
+        raise ValueError("start_angle must be a float between -2*pi and 2*pi")
+
+    if not (
+        isinstance(rotation_angle, (int, float))
+        and not isinstance(rotation_angle, bool)
+        and -2 * np.pi <= rotation_angle <= 2 * np.pi
+        and rotation_angle != 0
     ):
         raise ValueError(
-            "Angles must be a tuple of two floats in [0, 2*pi] with "
-            "angles[0] < angles[1]"
+            "rotation_angle must be a non-zero float between -2*pi and 2*pi"
         )
 
     n_r, n_phi, n_z = mesh_resolution
@@ -133,10 +199,16 @@ def tokamak_source(
     R_max = major_radius + minor_radius + abs(shafranov_factor)
     Z_max = elongation * minor_radius
 
+    # Build the toroidal grid. phi_fraction holds the share of source strength
+    # for each phi bin; bins outside the sector (the "dead" bin of a sector
+    # that crosses the 0 / 2*pi seam) get zero.
+    phi_grid, phi_fraction = _toroidal_phi_grid(start_angle, rotation_angle, n_phi)
+    n_phi = len(phi_grid) - 1
+
     # Create cylindrical mesh
     mesh = openmc.CylindricalMesh(
         r_grid=np.linspace(R_min, R_max, n_r + 1),
-        phi_grid=np.linspace(angles[0], angles[1], n_phi + 1),
+        phi_grid=phi_grid,
         z_grid=np.linspace(-Z_max, Z_max, n_z + 1),
     )
 
@@ -258,7 +330,7 @@ def tokamak_source(
         for j in range(n_phi):
             for k in range(n_z):
                 src = IndependentSource()
-                strength = float(binned_strength[i, k]) / n_phi
+                strength = float(binned_strength[i, k]) * phi_fraction[j]
                 temp = float(mean_temperature[i, k])
 
                 if strength > 0 and temp > 0:

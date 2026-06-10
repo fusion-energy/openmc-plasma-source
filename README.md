@@ -57,7 +57,8 @@ source:
 ```python
 my_source = tokamak_source(
     # ... plasma parameters as above ...
-    angles=(0, 2 * 3.14159),       # toroidal start/stop angle in radians
+    start_angle=0,                 # toroidal start angle in radians
+    rotation_angle=2 * 3.14159,    # toroidal extent in radians
     mesh_resolution=(100, 1, 100), # number of mesh bins in (r, phi, z)
     grid_density=500,              # points per dimension in the (a, alpha) grid
 )
@@ -78,7 +79,8 @@ from openmc_plasma_source import fusion_ring_source
 
 my_source = fusion_ring_source(
     radius=700,
-    angles=(0.0, 2 * math.pi),  # 360deg source
+    start_angle=0.0,            # toroidal start angle in radians
+    rotation_angle=2 * math.pi, # toroidal extent in radians (360deg source)
     temperature=20000.0,
     fuel={"D": 0.5, "T": 0.5},
 )
