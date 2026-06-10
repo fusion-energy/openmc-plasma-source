@@ -57,7 +57,8 @@ source:
 ```python
 my_source = tokamak_source(
     # ... plasma parameters as above ...
-    angles=(0, 2 * 3.14159),       # toroidal start/stop angle in radians
+    start_angle=0,                 # toroidal start angle in radians
+    rotation_angle=2 * 3.14159,    # toroidal extent in radians
     mesh_resolution=(100, 1, 100), # number of mesh bins in (r, phi, z)
     grid_density=500,              # points per dimension in the (a, alpha) grid
 )

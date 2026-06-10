@@ -171,29 +171,44 @@ def test_bad_shafranov_factor(tokamak_args_dict, major_radius, minor_radius, sha
         tokamak_source(**tokamak_args_dict)
 
 
-@pytest.mark.parametrize("angles", [(0, 1), (0, 2 * np.pi), (np.pi / 4, 3 * np.pi / 4)])
-def test_angles(tokamak_args_dict, angles):
-    """Checks that custom angles are reflected in the mesh phi_grid"""
-    tokamak_args_dict["angles"] = angles
-    mesh_source = tokamak_source(**tokamak_args_dict)
-    phi_grid = mesh_source.mesh.phi_grid
-    assert np.isclose(phi_grid[0], angles[0])
-    assert np.isclose(phi_grid[-1], angles[1])
-
-
 @pytest.mark.parametrize(
-    "angles",
+    "start_angle, rotation_angle",
     [
-        (0, 1, 2),
-        -5,
-        ("hello", "world"),
+        (0, 1),
+        (0, 2 * np.pi),
+        (np.pi / 4, np.pi / 2),
         (-np.pi, np.pi),
         (3 * np.pi / 4, -np.pi / 4),
     ],
 )
-def test_bad_angles(tokamak_args_dict, angles):
-    """Checks that invalid angles are rejected"""
-    tokamak_args_dict["angles"] = angles
+def test_angles(tokamak_args_dict, start_angle, rotation_angle):
+    """Checks that start_angle and rotation_angle are reflected in the mesh phi_grid.
+
+    The sector may be shifted by 2*pi to lie within [0, 2*pi] (required by
+    CylindricalMesh), so we check the toroidal extent and bounds rather than
+    the exact endpoints.
+    """
+    tokamak_args_dict["start_angle"] = start_angle
+    tokamak_args_dict["rotation_angle"] = rotation_angle
+    mesh_source = tokamak_source(**tokamak_args_dict)
+    phi_grid = mesh_source.mesh.phi_grid
+    assert np.isclose(phi_grid[-1] - phi_grid[0], abs(rotation_angle))
+    assert phi_grid[0] >= 0
+    assert phi_grid[-1] <= 2 * np.pi + 1e-9
+
+
+@pytest.mark.parametrize("start_angle", [3 * np.pi, -3 * np.pi, "hello", (0, 1)])
+def test_bad_start_angle(tokamak_args_dict, start_angle):
+    """Checks that invalid start_angle values are rejected"""
+    tokamak_args_dict["start_angle"] = start_angle
+    with pytest.raises((ValueError, TypeError)):
+        tokamak_source(**tokamak_args_dict)
+
+
+@pytest.mark.parametrize("rotation_angle", [3 * np.pi, -3 * np.pi, 0, "hello", (0, 1)])
+def test_bad_rotation_angle(tokamak_args_dict, rotation_angle):
+    """Checks that invalid rotation_angle values are rejected"""
+    tokamak_args_dict["rotation_angle"] = rotation_angle
     with pytest.raises((ValueError, TypeError)):
         tokamak_source(**tokamak_args_dict)
 

@@ -27,7 +27,8 @@ def tokamak_source(
     ion_temperature_separatrix: float,
     pedestal_radius: float,
     shafranov_factor: float,
-    angles: Tuple[float, float] = (0, 2 * np.pi),
+    start_angle: float = 0.0,
+    rotation_angle: float = 2 * np.pi,
     mesh_resolution: Tuple[int, int, int] = (100, 1, 100),
     grid_density: int = 500,
     fuel: Dict[str, float] = {"D": 0.5, "T": 0.5},
@@ -76,8 +77,11 @@ def tokamak_source(
         shafranov_factor: Shafranov factor (cm, referred in [1] as
             esh) also known as outward radial displacement of magnetic
             surfaces
-        angles: The start and stop toroidal angles (radians).
-            Must be in [0, 2*pi] with angles[0] < angles[1].
+        start_angle: The toroidal angle at which the plasma starts, in
+            radians. Must be between -2*pi and 2*pi.
+        rotation_angle: The toroidal extent of the plasma, in radians. Must
+            be between -2*pi and 2*pi. A negative value extends the plasma in
+            the opposite direction from start_angle.
         mesh_resolution: Number of mesh bins in (r, phi, z).
             Defaults to (100, 1, 100).
         grid_density: Number of points per dimension in the internal
@@ -113,17 +117,20 @@ def tokamak_source(
     cv.check_greater_than("ion_density_separatrix", ion_density_separatrix, 0)
 
     if not (
-        isinstance(angles, tuple)
-        and len(angles) == 2
-        and all(
-            isinstance(angle, (int, float)) and 0 <= angle <= 2 * np.pi
-            for angle in angles
-        )
-        and angles[0] < angles[1]
+        isinstance(start_angle, (int, float))
+        and not isinstance(start_angle, bool)
+        and -2 * np.pi <= start_angle <= 2 * np.pi
+    ):
+        raise ValueError("start_angle must be a float between -2*pi and 2*pi")
+
+    if not (
+        isinstance(rotation_angle, (int, float))
+        and not isinstance(rotation_angle, bool)
+        and -2 * np.pi <= rotation_angle <= 2 * np.pi
+        and rotation_angle != 0
     ):
         raise ValueError(
-            "Angles must be a tuple of two floats in [0, 2*pi] with "
-            "angles[0] < angles[1]"
+            "rotation_angle must be a non-zero float between -2*pi and 2*pi"
         )
 
     n_r, n_phi, n_z = mesh_resolution
@@ -133,10 +140,29 @@ def tokamak_source(
     R_max = major_radius + minor_radius + abs(shafranov_factor)
     Z_max = elongation * minor_radius
 
+    # The mesh phi_grid must be monotonically increasing and, for a
+    # CylindricalMesh, lie within [0, 2*pi]. Order the two toroidal endpoints
+    # (a negative rotation_angle spans the same sector as the equivalent
+    # positive one) and shift the sector by 2*pi where that lets it fit.
+    phi_start, phi_stop = sorted((start_angle, start_angle + rotation_angle))
+    if phi_start < 0:
+        phi_start += 2 * np.pi
+        phi_stop += 2 * np.pi
+    elif phi_stop > 2 * np.pi:
+        phi_start -= 2 * np.pi
+        phi_stop -= 2 * np.pi
+    if phi_start < 0 or phi_stop > 2 * np.pi:
+        raise ValueError(
+            "The toroidal sector defined by start_angle and rotation_angle "
+            "crosses the 0 / 2*pi boundary, which a CylindricalMesh cannot "
+            "represent. Choose values whose sector lies within a single "
+            "[0, 2*pi] interval."
+        )
+
     # Create cylindrical mesh
     mesh = openmc.CylindricalMesh(
         r_grid=np.linspace(R_min, R_max, n_r + 1),
-        phi_grid=np.linspace(angles[0], angles[1], n_phi + 1),
+        phi_grid=np.linspace(phi_start, phi_stop, n_phi + 1),
         z_grid=np.linspace(-Z_max, Z_max, n_z + 1),
     )
 
