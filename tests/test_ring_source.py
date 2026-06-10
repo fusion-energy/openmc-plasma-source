@@ -35,18 +35,29 @@ def test_bad_radius(radius):
         fusion_ring_source(radius=radius)
 
 
-@pytest.mark.parametrize("angles", [(1, 2), (0.0, np.pi), (np.pi, 0.0)])
-def test_angles(angles):
-    # Should allow any tuple of length 2 with contents convertible to float
-    fusion_ring_source(radius=1.0, angles=angles)
+@pytest.mark.parametrize(
+    "start_angle, rotation_angle",
+    [(0.0, np.pi), (np.pi, np.pi), (-np.pi, np.pi), (np.pi, -np.pi), (0.0, 2 * np.pi)],
+)
+def test_angles(start_angle, rotation_angle):
+    # Should allow any start_angle and rotation_angle within -2*pi and 2*pi
+    fusion_ring_source(
+        radius=1.0, start_angle=start_angle, rotation_angle=rotation_angle
+    )
 
 
-@pytest.mark.parametrize("angles", [(1.0,), [1, 2], 5, "ab", ("a", "b")])
-def test_bad_angles(angles):
-    # Should reject iterables of length != 2, anything non tuple, and anything
-    # that can't convert to float
+@pytest.mark.parametrize("start_angle", [3 * np.pi, -3 * np.pi, "a", [1, 2]])
+def test_bad_start_angle(start_angle):
+    # Should reject values outside -2*pi to 2*pi and anything not a float
     with pytest.raises(ValueError):
-        fusion_ring_source(radius=1.0, angles=angles)
+        fusion_ring_source(radius=1.0, start_angle=start_angle)
+
+
+@pytest.mark.parametrize("rotation_angle", [3 * np.pi, -3 * np.pi, "a", [1, 2]])
+def test_bad_rotation_angle(rotation_angle):
+    # Should reject values outside -2*pi to 2*pi and anything not a float
+    with pytest.raises(ValueError):
+        fusion_ring_source(radius=1.0, rotation_angle=rotation_angle)
 
 
 @pytest.mark.parametrize("temperature", [20000.0, 1e4, 0.1, 25000])

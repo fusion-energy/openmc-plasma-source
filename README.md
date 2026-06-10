@@ -78,7 +78,8 @@ from openmc_plasma_source import fusion_ring_source
 
 my_source = fusion_ring_source(
     radius=700,
-    angles=(0.0, 2 * math.pi),  # 360deg source
+    start_angle=0.0,            # toroidal start angle in radians
+    rotation_angle=2 * math.pi, # toroidal extent in radians (360deg source)
     temperature=20000.0,
     fuel={"D": 0.5, "T": 0.5},
 )
