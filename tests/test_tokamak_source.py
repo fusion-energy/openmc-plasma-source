@@ -13,7 +13,7 @@ from openmc_plasma_source import (
 from openmc_plasma_source.tokamak_source import _toroidal_phi_grid
 
 # Small mesh/grid params used across tests for speed
-FAST_MESH = (20, 1, 20)
+FAST_MESH = (20, 20)
 FAST_GRID = 50
 
 
@@ -247,6 +247,28 @@ def test_bad_rotation_angle(tokamak_args_dict, rotation_angle):
         tokamak_source(**tokamak_args_dict)
 
 
+@pytest.mark.parametrize("mesh_resolution", [(10, 1, 10), (10,), (10, 10, 10, 10)])
+def test_bad_mesh_resolution(tokamak_args_dict, mesh_resolution):
+    """mesh_resolution must be a 2-tuple (n_r, n_z); other lengths are rejected.
+
+    In particular the old 3-tuple (n_r, n_phi, n_z) form should fail with a
+    helpful message rather than silently mis-binning.
+    """
+    tokamak_args_dict["mesh_resolution"] = mesh_resolution
+    with pytest.raises(ValueError, match="two values"):
+        tokamak_source(**tokamak_args_dict)
+
+
+def test_mesh_resolution_sets_single_phi_bin(tokamak_args_dict):
+    """A 2-tuple (n_r, n_z) yields a mesh whose toroidal dimension is a single
+    bin for a full rotation, and the requested r/z resolution."""
+    tokamak_args_dict["mesh_resolution"] = (12, 8)
+    tokamak_args_dict["rotation_angle"] = 2 * np.pi
+    source = tokamak_source(**tokamak_args_dict)
+    n_r, n_phi, n_z = source.mesh.dimension
+    assert (n_r, n_phi, n_z) == (12, 1, 8)
+
+
 def test_ion_density(tokamak_args_dict):
     # test with values of r that are within acceptable ranges.
     r = np.linspace(0.0, tokamak_args_dict["minor_radius"], 100)
@@ -427,7 +449,7 @@ def tokamak_source_strategy(draw):
         ion_temperature_separatrix=0.1,
         mode="H",
         ion_temperature_beta=6,
-        mesh_resolution=(10, 1, 10),
+        mesh_resolution=(10, 10),
         grid_density=30,
     ), {
         "major_radius": major_radius,
