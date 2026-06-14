@@ -67,7 +67,7 @@ def sample_points(start_angle, rotation_angle):
         **PLASMA,
         start_angle=0.0,
         rotation_angle=2 * np.pi,
-        mesh_resolution=(100, 1, 100),
+        mesh_resolution=(100, 100),
     )
     n_r = len(source.mesh.r_grid) - 1
     n_z = len(source.mesh.z_grid) - 1

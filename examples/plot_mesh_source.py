@@ -22,7 +22,7 @@ mesh_source = tokamak_source(
     shafranov_factor=0.44789,
     triangularity=0.270,
     fuel={"D": 0.5, "T": 0.5},
-    mesh_resolution=(100, 1, 100),
+    mesh_resolution=(100, 100),
     grid_density=500,
 )
 
