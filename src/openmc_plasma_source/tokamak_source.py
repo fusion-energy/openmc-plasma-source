@@ -86,7 +86,7 @@ def tokamak_source(
     shafranov_factor: float,
     start_angle: float = 0.0,
     rotation_angle: float = 2 * np.pi,
-    mesh_resolution: Tuple[int, int, int] = (100, 1, 100),
+    mesh_resolution: Tuple[int, int] = (100, 100),
     grid_density: int = 500,
     fuel: Dict[str, float] = {"D": 0.5, "T": 0.5},
 ) -> openmc.MeshSource:
@@ -141,8 +141,11 @@ def tokamak_source(
             extends the plasma in the opposite direction from start_angle. A
             sector that crosses the 0 / 2*pi seam is supported via a full-circle
             mesh with a zero-strength bin filling the unselected portion.
-        mesh_resolution: Number of mesh bins in (r, phi, z).
-            Defaults to (100, 1, 100).
+        mesh_resolution: Number of mesh bins in (r, z) as a tuple of two
+            values. Defaults to (100, 100). The toroidal (phi) dimension is
+            not exposed: the source is axisymmetric (density and temperature
+            depend only on the minor radius) so the toroidal direction carries
+            no structure and is handled internally.
         grid_density: Number of points per dimension in the internal
             (a, alpha) grid used for forward mapping. Defaults to 500.
         fuel: Isotopes as keys and atom fractions as values
@@ -192,7 +195,17 @@ def tokamak_source(
             "rotation_angle must be a non-zero float between -2*pi and 2*pi"
         )
 
-    n_r, n_phi, n_z = mesh_resolution
+    if len(mesh_resolution) != 2:
+        raise ValueError(
+            "mesh_resolution must be a tuple of two values (n_r, n_z). The "
+            "toroidal dimension is axisymmetric and is handled internally, so "
+            "it is no longer a user parameter."
+        )
+    n_r, n_z = mesh_resolution
+    # The source is axisymmetric, so a single toroidal bin spanning the sector
+    # is sufficient. _toroidal_phi_grid still expands this internally to add a
+    # zero-strength dead bin when the sector crosses the 0 / 2*pi seam.
+    n_phi = 1
 
     # Compute mesh bounds from geometry
     R_min = major_radius - minor_radius - abs(shafranov_factor)
