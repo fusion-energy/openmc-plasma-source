@@ -51,3 +51,6 @@ jobs:
           python examples/plot_tokamak_neutron_source_density.py
           python examples/plot_tokamak_neutron_source_strengths.py
           python examples/plot_energy_spectra.py
+          python examples/plot_mesh_source.py
+          python examples/ring_source_angles_plot.py
+          python examples/tokamak_source_plot.py
