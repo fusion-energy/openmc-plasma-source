@@ -59,9 +59,9 @@ for i, case in enumerate(cases):
     )[0]
 
     space = source.space
-    r, _ = space.r.sample(N_SAMPLES, seed=i + 1)
-    phi, _ = space.phi.sample(N_SAMPLES, seed=i + 1)
-    z, _ = space.z.sample(N_SAMPLES, seed=i + 1)
+    r = space.r.sample(N_SAMPLES, seed=i + 1)
+    phi = space.phi.sample(N_SAMPLES, seed=i + 1)
+    z = space.z.sample(N_SAMPLES, seed=i + 1)
 
     x = r * np.cos(phi)
     y = r * np.sin(phi)
