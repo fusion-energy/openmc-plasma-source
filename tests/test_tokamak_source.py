@@ -531,23 +531,9 @@ def test_strengths_are_volume_weighted(tokamak_args_dict):
     assert weighted_mean_R > tokamak_args_dict["major_radius"]
 
 
-# --- Regression tests for RuntimeWarning in H/A mode profiles (issues #90, #115) ---
-#
-# np.where evaluates *both* branches for all elements before selecting. In H/A
-# mode the core branch computes (1 - (r/pedestal_radius)**beta)**alpha; for
-# r > pedestal_radius this raises a negative base to a non-integer power,
-# producing NaN and a RuntimeWarning. The fix clips r in the core branch with
-# r_core = np.minimum(r, pedestal_radius). The tests below pin that fix.
-
-
 @pytest.mark.parametrize("mode", ["H", "A"])
 def test_ion_density_h_a_mode_no_warning(tokamak_args_dict, mode, recwarn):
-    """tokamak_ion_density in H/A mode must not raise a RuntimeWarning.
-
-    Regression for issue #90 and #115: np.where evaluates both branches for
-    all r, so without clipping r the core-branch exponentiation fires for
-    r > pedestal_radius and produces NaN + RuntimeWarning.
-    """
+    """tokamak_ion_density in H/A mode must not raise a RuntimeWarning."""
     tokamak_args_dict["mode"] = mode
     r = np.linspace(0.0, tokamak_args_dict["minor_radius"], 200)
     tokamak_ion_density(
@@ -566,10 +552,7 @@ def test_ion_density_h_a_mode_no_warning(tokamak_args_dict, mode, recwarn):
 
 @pytest.mark.parametrize("mode", ["H", "A"])
 def test_ion_temperature_h_a_mode_no_warning(tokamak_args_dict, mode, recwarn):
-    """tokamak_ion_temperature in H/A mode must not raise a RuntimeWarning.
-
-    Regression for issue #90 and #115.
-    """
+    """tokamak_ion_temperature in H/A mode must not raise a RuntimeWarning."""
     tokamak_args_dict["mode"] = mode
     r = np.linspace(0.0, tokamak_args_dict["minor_radius"], 200)
     tokamak_ion_temperature(
@@ -589,18 +572,11 @@ def test_ion_temperature_h_a_mode_no_warning(tokamak_args_dict, mode, recwarn):
 
 @pytest.mark.parametrize("mode", ["H", "A"])
 def test_tokamak_source_h_a_mode_no_warning(tokamak_args_dict, mode, recwarn):
-    """tokamak_source in H/A mode must not raise a RuntimeWarning.
-
-    Regression for issue #90 and #115: exercises the full source-creation path
-    which calls tokamak_ion_density and tokamak_ion_temperature internally.
-    """
+    """tokamak_source in H/A mode must not raise a RuntimeWarning."""
     tokamak_args_dict["mode"] = mode
     tokamak_source(**tokamak_args_dict)
     runtime_warnings = [w for w in recwarn.list if issubclass(w.category, RuntimeWarning)]
     assert runtime_warnings == [], f"Unexpected RuntimeWarnings: {runtime_warnings}"
-
-
-# --- Physical boundary-condition tests for ion density ---
 
 
 @pytest.mark.parametrize("mode", ["L", "H", "A"])
@@ -660,9 +636,6 @@ def test_ion_density_boundary_conditions(tokamak_args_dict, mode):
         )
     else:  # L mode: density drops to 0 at the separatrix
         np.testing.assert_allclose(density_at_separatrix[0], 0.0, atol=1e-6)
-
-
-# --- Physical boundary-condition tests for ion temperature ---
 
 
 @pytest.mark.parametrize("mode", ["L", "H", "A"])
