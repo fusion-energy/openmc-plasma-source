@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import openmc
 import pytest
@@ -598,3 +600,115 @@ def test_shaped_strengths_match_boundary_integrals(
     )
     # cell-centre binning adds dz^2 / 12 to <Z^2>, small next to the tolerance here
     assert mean_z2 == pytest.approx(I3 / I1 + dz**2 / 12, rel=5e-3)
+
+
+def _ion_density(args, r, mode):
+    return tokamak_ion_density(
+        r=r,
+        mode=mode,
+        ion_density_centre=args["ion_density_centre"],
+        ion_density_peaking_factor=args["ion_density_peaking_factor"],
+        ion_density_pedestal=args["ion_density_pedestal"],
+        minor_radius=args["minor_radius"],
+        pedestal_radius=args["pedestal_radius"],
+        ion_density_separatrix=args["ion_density_separatrix"],
+    )
+
+
+def _ion_temperature(args, r, mode):
+    return tokamak_ion_temperature(
+        r=r,
+        mode=mode,
+        pedestal_radius=args["pedestal_radius"],
+        ion_temperature_pedestal=args["ion_temperature_pedestal"],
+        ion_temperature_centre=args["ion_temperature_centre"],
+        ion_temperature_beta=args["ion_temperature_beta"],
+        ion_temperature_peaking_factor=args["ion_temperature_peaking_factor"],
+        ion_temperature_separatrix=args["ion_temperature_separatrix"],
+        minor_radius=args["minor_radius"],
+    )
+
+
+@pytest.mark.parametrize("mode", ["H", "A"])
+def test_ion_density_h_a_mode_no_warning(tokamak_args_dict, mode):
+    """tokamak_ion_density in H/A mode must not raise a RuntimeWarning."""
+    # a non-integer exponent is needed for a negative base to produce NaN
+    tokamak_args_dict["ion_density_peaking_factor"] = 1.5
+    r = np.linspace(0.0, tokamak_args_dict["minor_radius"], 200)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        _ion_density(tokamak_args_dict, r, mode)
+
+
+@pytest.mark.parametrize("mode", ["H", "A"])
+def test_ion_temperature_h_a_mode_no_warning(tokamak_args_dict, mode):
+    """tokamak_ion_temperature in H/A mode must not raise a RuntimeWarning."""
+    r = np.linspace(0.0, tokamak_args_dict["minor_radius"], 200)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        _ion_temperature(tokamak_args_dict, r, mode)
+
+
+@pytest.mark.parametrize("mode", ["H", "A"])
+def test_tokamak_source_h_a_mode_no_warning(tokamak_args_dict, mode):
+    """tokamak_source in H/A mode must not raise a RuntimeWarning."""
+    tokamak_args_dict["mode"] = mode
+    tokamak_args_dict["ion_density_peaking_factor"] = 1.5
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        tokamak_source(**tokamak_args_dict)
+
+
+@pytest.mark.parametrize("mode", ["L", "H", "A"])
+def test_ion_density_all_modes_finite(tokamak_args_dict, mode):
+    """Ion density is finite and non-negative for r in [0, minor_radius]."""
+    r = np.linspace(0.0, tokamak_args_dict["minor_radius"], 300)
+    density = _ion_density(tokamak_args_dict, r, mode)
+    assert np.all(np.isfinite(density))
+    assert np.all(density >= 0)
+
+
+@pytest.mark.parametrize("mode", ["L", "H", "A"])
+def test_ion_density_boundary_conditions(tokamak_args_dict, mode):
+    """Ion density equals ion_density_centre at r=0 and ion_density_separatrix
+    (H/A) or 0 (L) at r=minor_radius."""
+    # pedestal below centre so the core profile contributes at r=0
+    tokamak_args_dict["ion_density_pedestal"] = 0.8e20
+    r = np.array([0.0, tokamak_args_dict["minor_radius"]])
+    density = _ion_density(tokamak_args_dict, r, mode)
+
+    np.testing.assert_allclose(
+        density[0], tokamak_args_dict["ion_density_centre"], rtol=1e-6
+    )
+    if mode in ["H", "A"]:
+        np.testing.assert_allclose(
+            density[1], tokamak_args_dict["ion_density_separatrix"], rtol=1e-6
+        )
+    else:
+        np.testing.assert_allclose(density[1], 0.0, atol=1e-6)
+
+
+@pytest.mark.parametrize("mode", ["L", "H", "A"])
+def test_ion_temperature_all_modes_finite(tokamak_args_dict, mode):
+    """Ion temperature is finite and non-negative for r in [0, minor_radius]."""
+    r = np.linspace(0.0, tokamak_args_dict["minor_radius"], 300)
+    temperature = _ion_temperature(tokamak_args_dict, r, mode)
+    assert np.all(np.isfinite(temperature))
+    assert np.all(temperature >= 0)
+
+
+@pytest.mark.parametrize("mode", ["H", "A"])
+def test_ion_temperature_h_a_boundary_conditions(tokamak_args_dict, mode):
+    """In H/A mode, temperature equals ion_temperature_centre at r=0 and
+    ion_temperature_separatrix at r=minor_radius (inputs keV, output eV)."""
+    r = np.array([0.0, tokamak_args_dict["minor_radius"]])
+    temperature = _ion_temperature(tokamak_args_dict, r, mode)
+
+    np.testing.assert_allclose(
+        temperature[0], tokamak_args_dict["ion_temperature_centre"] * 1e3, rtol=1e-6
+    )
+    np.testing.assert_allclose(
+        temperature[1],
+        tokamak_args_dict["ion_temperature_separatrix"] * 1e3,
+        rtol=1e-6,
+    )
