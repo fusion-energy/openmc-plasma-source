@@ -54,4 +54,8 @@ from openmc_source_plotter import plot_source_position
 
 plot = plot_source_position(this=settings, n_samples=200)
 
+# equal scaling on all three axes, otherwise plotly stretches each axis to the
+# same length and the plasma looks much taller than it is
+plot.update_layout(scene={"aspectmode": "data"})
+
 plot.show()
