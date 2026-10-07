@@ -498,39 +498,108 @@ def test_source_locations_are_within_correct_range(tokamak_source):
     assert z_grid[-1] >= El * A or np.isclose(z_grid[-1], El * A)
 
 
-def test_strengths_are_volume_weighted(tokamak_args_dict):
-    """Source strengths must include the plasma volume element.
+def _uniform_args(**overrides):
+    """Flat density and temperature (L mode, zero peaking), so the emission
+    per unit volume is uniform and the source is pure geometry."""
+    args = {
+        "major_radius": 9.06,
+        "minor_radius": 2.92258,
+        "elongation": 1.0,
+        "triangularity": 0.0,
+        "shafranov_factor": 0.0,
+        "mode": "L",
+        "ion_density_centre": 1.0e20,
+        "ion_density_peaking_factor": 0,
+        "ion_density_pedestal": 1.0e20,
+        "ion_density_separatrix": 1.0e19,
+        "ion_temperature_centre": 20e3,
+        "ion_temperature_peaking_factor": 0,
+        "ion_temperature_beta": 2,
+        "ion_temperature_pedestal": 5e3,
+        "ion_temperature_separatrix": 100,
+        "pedestal_radius": 0.8 * 2.92258,
+        "mesh_resolution": (40, 40),
+        "grid_density": 200,
+    }
+    args.update(overrides)
+    return args
 
-    The (a, alpha) grid is uniform, so the neutron source density must be
-    weighted by the local volume per unit (a, alpha), which is proportional to
-    the toroidal factor R times the poloidal cross-sectional Jacobian
-    |d(R,Z)/d(a,alpha)|. Applying this weighting biases the emission outward in
-    R relative to an unweighted distribution. See "Tokamak D-T neutron source
+
+def _strength_moments(mesh_source):
+    """Strength-weighted <R> and <Z^2> over mesh cell centres."""
+    mesh = mesh_source.mesh
+    # MeshSource stores sources flattened in mesh index (Fortran) order
+    strengths = np.array([src.strength for src in mesh_source.sources]).reshape(
+        mesh.dimension, order="F"
+    )
+    strengths = strengths.sum(axis=1)
+    r_grid = np.asarray(mesh.r_grid)
+    z_grid = np.asarray(mesh.z_grid)
+    r_centers = 0.5 * (r_grid[:-1] + r_grid[1:])
+    z_centers = 0.5 * (z_grid[:-1] + z_grid[1:])
+    mean_r = np.average(r_centers, weights=strengths.sum(axis=1))
+    mean_z = np.average(z_centers, weights=strengths.sum(axis=0))
+    mean_z2 = np.average(z_centers**2, weights=strengths.sum(axis=0))
+    return mean_r, mean_z, mean_z2, z_grid[1] - z_grid[0]
+
+
+def test_strengths_are_volume_weighted():
+    """Source strengths must include the plasma volume element R * |J|.
+
+    For uniform emission in a circular torus, Pappus gives the
+    strength-weighted mean radius exactly: <R> = R0 + a^2 / (4 R0). Without
+    the toroidal R factor it would be R0. See "Tokamak D-T neutron source
     models for different plasma physics confinement modes", C. Fausser et al.,
     Fusion Engineering and Design, 2012.
     """
-    mesh_source = tokamak_source(**tokamak_args_dict)
-    mesh = mesh_source.mesh
+    args = _uniform_args()
+    R0, a = args["major_radius"], args["minor_radius"]
+    mean_r, mean_z, _, _ = _strength_moments(tokamak_source(**args))
+    expected = R0 + a**2 / (4 * R0)
+    assert mean_r == pytest.approx(expected, abs=0.02 * (expected - R0))
+    # up-down symmetric plasma, so the emission is centred on the midplane
+    assert mean_z == pytest.approx(0.0, abs=1e-3 * a)
 
-    r_grid = np.asarray(mesh.r_grid)
-    r_centers = 0.5 * (r_grid[:-1] + r_grid[1:])
 
-    # strengths over the (n_r, n_phi, n_z) voxel grid
-    n_r, n_phi, n_z = mesh.dimension
-    strengths = np.array(
-        [src.strength for src in np.asarray(mesh_source.sources).flat]
-    ).reshape(n_r, n_phi, n_z)
+@pytest.mark.parametrize(
+    "elongation, triangularity, shafranov_factor",
+    [(1.557, 0.27, 0.0), (1.557, 0.27, 0.44789), (1.8, 0.5, -0.9), (1.3, -0.4, 1.2)],
+)
+def test_shaped_strengths_match_boundary_integrals(
+    elongation, triangularity, shafranov_factor
+):
+    """Uniform emission in a shaped plasma, checked against the boundary alone.
 
-    # strengths are normalised to sum to 1
-    assert pytest.approx(strengths.sum()) == 1
+    Green's theorem turns the area integrals into loop integrals over the last
+    closed surface, which the Shafranov shift does not move:
+        int R dA = loop R^2/2 dZ,  int R^2 dA = loop R^3/3 dZ,
+        int R Z^2 dA = loop R^2 Z^2/2 dZ
+    so the reference never touches the (a, alpha) Jacobian used by the code.
+    """
+    args = _uniform_args(
+        elongation=elongation,
+        triangularity=triangularity,
+        shafranov_factor=shafranov_factor,
+    )
+    R0, a = args["major_radius"], args["minor_radius"]
 
-    # collapse over phi and z to get the strength per R bin
-    strength_per_r = strengths.sum(axis=(1, 2))
+    # periodic integrands, so the uniform rule converges spectrally
+    t = np.linspace(0, 2 * np.pi, 4096, endpoint=False)
+    R = R0 + a * np.cos(t + triangularity * np.sin(t))
+    Z = elongation * a * np.sin(t)
+    dZ = elongation * a * np.cos(t)
+    I1 = np.mean(R**2 / 2 * dZ)
+    I2 = np.mean(R**3 / 3 * dZ)
+    I3 = np.mean(R**2 * Z**2 / 2 * dZ)
 
-    # the R * |J| volume weighting shifts the strength-weighted mean major
-    # radius outward relative to the plasma's geometric major radius
-    weighted_mean_R = np.average(r_centers, weights=strength_per_r)
-    assert weighted_mean_R > tokamak_args_dict["major_radius"]
+    mean_r, mean_z, mean_z2, dz = _strength_moments(tokamak_source(**args))
+    assert mean_z == pytest.approx(0.0, abs=1e-3 * a)
+    expected_r = I2 / I1
+    assert mean_r == pytest.approx(
+        expected_r, abs=0.05 * abs(expected_r - R0) + 1e-3 * a
+    )
+    # cell-centre binning adds dz^2 / 12 to <Z^2>, small next to the tolerance here
+    assert mean_z2 == pytest.approx(I3 / I1 + dz**2 / 12, rel=5e-3)
 
 
 def _ion_density(args, r, mode):
