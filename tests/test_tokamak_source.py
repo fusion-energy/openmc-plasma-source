@@ -536,8 +536,9 @@ def _strength_moments(mesh_source):
     r_centers = 0.5 * (r_grid[:-1] + r_grid[1:])
     z_centers = 0.5 * (z_grid[:-1] + z_grid[1:])
     mean_r = np.average(r_centers, weights=strengths.sum(axis=1))
+    mean_z = np.average(z_centers, weights=strengths.sum(axis=0))
     mean_z2 = np.average(z_centers**2, weights=strengths.sum(axis=0))
-    return mean_r, mean_z2, z_grid[1] - z_grid[0]
+    return mean_r, mean_z, mean_z2, z_grid[1] - z_grid[0]
 
 
 def test_strengths_are_volume_weighted():
@@ -551,9 +552,11 @@ def test_strengths_are_volume_weighted():
     """
     args = _uniform_args()
     R0, a = args["major_radius"], args["minor_radius"]
-    mean_r, _, _ = _strength_moments(tokamak_source(**args))
+    mean_r, mean_z, _, _ = _strength_moments(tokamak_source(**args))
     expected = R0 + a**2 / (4 * R0)
     assert mean_r == pytest.approx(expected, abs=0.02 * (expected - R0))
+    # up-down symmetric plasma, so the emission is centred on the midplane
+    assert mean_z == pytest.approx(0.0, abs=1e-3 * a)
 
 
 @pytest.mark.parametrize(
@@ -587,10 +590,11 @@ def test_shaped_strengths_match_boundary_integrals(
     I2 = np.mean(R**3 / 3 * dZ)
     I3 = np.mean(R**2 * Z**2 / 2 * dZ)
 
-    mean_r, mean_z2, dz = _strength_moments(tokamak_source(**args))
+    mean_r, mean_z, mean_z2, dz = _strength_moments(tokamak_source(**args))
+    assert mean_z == pytest.approx(0.0, abs=1e-3 * a)
     expected_r = I2 / I1
     assert mean_r == pytest.approx(
         expected_r, abs=0.05 * abs(expected_r - R0) + 1e-3 * a
     )
-    # binning at cell centres adds dz^2 / 12 to <Z^2>
+    # cell-centre binning adds dz^2 / 12 to <Z^2>, small next to the tolerance here
     assert mean_z2 == pytest.approx(I3 / I1 + dz**2 / 12, rel=5e-3)
