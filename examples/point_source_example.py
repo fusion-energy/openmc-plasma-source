@@ -37,6 +37,9 @@ model.run()
 
 # Plot the source energy distribution
 energies = my_source[0].energy.sample(n_samples=10000)
+# openmc >= 0.16 returns (samples, weights), older versions just the samples
+if isinstance(energies, tuple):
+    energies = energies[0]
 import matplotlib.pyplot as plt
 
 plt.hist(energies, bins=1000)
