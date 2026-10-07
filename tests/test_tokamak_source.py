@@ -186,7 +186,8 @@ def test_bad_shafranov_factor(tokamak_args_dict, major_radius, minor_radius, sha
     ],
 )
 def test_angles(tokamak_args_dict, start_angle, rotation_angle):
-    """Checks that a valid sector produces a usable mesh with normalized strengths."""
+    """Checks that a valid sector produces a usable mesh whose total strength is
+    the full torus neutron rate scaled by the sector angle."""
     tokamak_args_dict["start_angle"] = start_angle
     tokamak_args_dict["rotation_angle"] = rotation_angle
     mesh_source = tokamak_source(**tokamak_args_dict)
@@ -195,9 +196,16 @@ def test_angles(tokamak_args_dict, start_angle, rotation_angle):
     assert np.all(np.diff(phi_grid) > 0)
     assert phi_grid[0] >= -1e-12
     assert phi_grid[-1] <= 2 * np.pi + 1e-9
-    # Source strengths are normalized to sum to 1
+    # The sector emits its share of the full torus neutron rate
+    full_torus_args = {
+        **tokamak_args_dict,
+        "start_angle": 0.0,
+        "rotation_angle": 2 * np.pi,
+    }
+    full_torus_rate = tokamak_source(**full_torus_args).strength
     strengths = np.array([s.strength for s in mesh_source.sources.ravel()])
-    assert np.isclose(strengths.sum(), 1.0)
+    expected = full_torus_rate * abs(rotation_angle) / (2 * np.pi)
+    assert np.isclose(strengths.sum(), expected, rtol=1e-9)
 
 
 @pytest.mark.parametrize(
@@ -463,13 +471,13 @@ def tokamak_source_strategy(draw):
 
 @given(tokamak_source=tokamak_source_strategy())
 @settings(max_examples=30, suppress_health_check=(HealthCheck.too_slow,))
-def test_strengths_are_normalised(tokamak_source):
-    """Tests that the sum of the strengths attribute is equal to 1"""
-    local_strength = 0
+def test_strengths_sum_to_neutron_rate(tokamak_source):
+    """Tests that the voxel strengths sum to the positive MeshSource strength,
+    the neutron emission rate"""
     mesh_source = tokamak_source[0]
-    for source in mesh_source.sources.flat:
-        local_strength = local_strength + source.strength
-    assert pytest.approx(local_strength) == 1
+    local_strength = sum(source.strength for source in mesh_source.sources.flat)
+    assert mesh_source.strength > 0
+    assert pytest.approx(local_strength) == mesh_source.strength
 
 
 @given(tokamak_source=tokamak_source_strategy())
@@ -711,4 +719,54 @@ def test_ion_temperature_h_a_boundary_conditions(tokamak_args_dict, mode):
         temperature[1],
         tokamak_args_dict["ion_temperature_separatrix"] * 1e3,
         rtol=1e-6,
+    )
+
+
+@pytest.mark.parametrize(
+    "elongation, triangularity, shafranov_factor, fuel, rotation_angle",
+    [
+        (1.0, 0.0, 0.0, {"D": 0.5, "T": 0.5}, 2 * np.pi),
+        (1.557, 0.27, 0.44789, {"D": 0.5, "T": 0.5}, 2 * np.pi),
+        (1.8, 0.5, -0.9, {"D": 0.9, "T": 0.1}, np.pi / 2),
+        (1.3, -0.4, 1.2, {"D": 1.0}, 2 * np.pi),
+        (1.557, 0.27, 0.44789, {"T": 1.0}, -np.pi),
+    ],
+)
+def test_strength_is_neutron_rate_of_uniform_plasma(
+    elongation, triangularity, shafranov_factor, fuel, rotation_angle
+):
+    """For uniform density and temperature the neutron emission rate is the
+    plasma volume times the neutron source density. The volume comes from the
+    last closed surface alone, V = 2 pi int R dA = 2 pi loop R^2/2 dZ, so the
+    reference does not use the code's (a, alpha) Jacobian."""
+    from NeSST.spectral_model import reac_DD, reac_DT, reac_TT
+
+    args = _uniform_args(
+        elongation=elongation,
+        triangularity=triangularity,
+        shafranov_factor=shafranov_factor,
+        fuel=fuel,
+        rotation_angle=rotation_angle,
+    )
+    R0, a = args["major_radius"], args["minor_radius"]
+
+    t = np.linspace(0, 2 * np.pi, 4096, endpoint=False)
+    R = R0 + a * np.cos(t + triangularity * np.sin(t))
+    dZ = elongation * a * np.cos(t)
+    area_moment = 2 * np.pi * np.mean(R**2 / 2 * dZ)  # int R dA in cm^3
+    volume_m3 = abs(rotation_angle) * area_moment * 1e-6
+
+    temperature = args["ion_temperature_centre"]  # eV
+    n_d = args["ion_density_centre"] * fuel.get("D", 0.0)
+    n_t = args["ion_density_centre"] * fuel.get("T", 0.0)
+    # neutrons m^-3 s^-1: DT gives one, DD (n+He3 branch) one, TT two
+    source_density = (
+        n_d * n_t * reac_DT(temperature)
+        + 0.5 * n_d**2 * reac_DD(temperature)
+        + 2 * 0.5 * n_t**2 * reac_TT(temperature)
+    )
+
+    mesh_source = tokamak_source(**args)
+    assert mesh_source.strength == pytest.approx(
+        float(volume_m3 * source_density), rel=1e-3
     )
