@@ -20,6 +20,9 @@ for tritium_fraction in tritium_factions:
 
     # Plot the source energy distribution
     energies = my_source[0].energy.sample(n_samples=int(5e6))
+    # openmc >= 0.16 returns (samples, weights), older versions just the samples
+    if isinstance(energies, tuple):
+        energies = energies[0]
 
     data, bins, _ = plt.hist(
         energies / 1e6,

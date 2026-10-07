@@ -14,6 +14,13 @@ from openmc_plasma_source import fusion_ring_source
 
 N_SAMPLES = 2000
 
+
+def _samples(dist, n, seed):
+    """openmc >= 0.16 returns (samples, weights), older versions just the samples."""
+    out = dist.sample(n, seed=seed)
+    return out[0] if isinstance(out, tuple) else out
+
+
 # A few (start_angle, rotation_angle) combinations, each placed at its own
 # z height so the toroidal sectors are easy to tell apart in 3D.
 cases = [
@@ -59,9 +66,9 @@ for i, case in enumerate(cases):
     )[0]
 
     space = source.space
-    r = space.r.sample(N_SAMPLES, seed=i + 1)
-    phi = space.phi.sample(N_SAMPLES, seed=i + 1)
-    z = space.z.sample(N_SAMPLES, seed=i + 1)
+    r = _samples(space.r, N_SAMPLES, seed=i + 1)
+    phi = _samples(space.phi, N_SAMPLES, seed=i + 1)
+    z = _samples(space.z, N_SAMPLES, seed=i + 1)
 
     x = r * np.cos(phi)
     y = r * np.sin(phi)
