@@ -151,7 +151,12 @@ def tokamak_source(
         fuel: Isotopes as keys and atom fractions as values
 
     Returns:
-        openmc.MeshSource backed by a CylindricalMesh
+        openmc.MeshSource backed by a CylindricalMesh. Each voxel strength is
+        its neutron emission rate in neutrons per second, so the MeshSource
+        strength (the sum over voxels) is the neutron emission rate of the
+        plasma, which can be used to normalise tallies. Call
+        normalize_source_strengths() on the returned source to rescale the
+        strengths to sum to 1.
     """
 
     # Perform sanity checks for inputs not caught by properties
@@ -328,14 +333,19 @@ def tokamak_source(
             0.0,
         )
 
-    # Normalize strengths so they sum to 1
     total = binned_strength.sum()
     if total <= 0.0:
         raise ValueError(
             "Total neutron source density is zero. This may be caused by "
             "ion temperatures or densities that are too low to produce fusion reactions."
         )
-    binned_strength /= total
+    # The weights are neutrons per second per radian of toroidal angle, with
+    # the source density in m-3 s-1 and the volume element in cm3, so the
+    # neutron emission rate of the plasma sector in neutrons per second is
+    neutron_rate = weights.sum() * abs(rotation_angle) * 1e-6
+    # Scale the strengths so each voxel holds its neutrons per second and the
+    # MeshSource strength (the sum over voxels) is the neutron emission rate
+    binned_strength *= neutron_rate / total
 
     # Create one IndependentSource per mesh voxel
     sources = np.empty((n_r, n_phi, n_z), dtype=object)

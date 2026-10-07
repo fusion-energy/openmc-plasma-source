@@ -21,8 +21,11 @@ pip install openmc_plasma_source
 Create a source with a spatial and temperature distribution of a tokamak plasma.
 The function returns a single `openmc.MeshSource` backed by a `CylindricalMesh`.
 The plasma cross-section is discretised onto the mesh and each mesh voxel is
-assigned its own neutron source strength (the probability that a neutron spawns
-in that voxel) and energy distribution based on the local ion temperature.
+assigned its own neutron source strength (its neutron emission rate in neutrons
+per second) and energy distribution based on the local ion temperature. The
+strength of the returned source, `my_source.strength`, is the total neutron
+emission rate of the plasma, which can be used to normalise tallies (OpenMC
+tally results are per source neutron).
 
 The equations implemented here are taken from [this paper](https://doi.org/10.1016/j.fusengdes.2012.02.025).
 
