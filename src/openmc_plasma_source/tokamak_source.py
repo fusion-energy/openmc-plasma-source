@@ -10,13 +10,13 @@ from NeSST.spectral_model import reac_DD, reac_DT, reac_TT
 from .fuel_types import get_neutron_energy_distribution, get_reactions_from_fuel
 
 
-EV_TO_J = 1.602176634e-19
-FUSION_Q_MEV = {
+_EV_TO_J = 1.602176634e-19
+_FUSION_Q_MEV = {
     "DD": 7.3,
     "DT": 17.6,
     "TT": 11.3,
 }
-REACTION_REACTIVITY = {
+_REACTION_REACTIVITY = {
     "DD": reac_DD,
     "DT": reac_DT,
     "TT": reac_TT,
