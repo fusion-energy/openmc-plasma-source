@@ -810,8 +810,8 @@ def test_volume_and_fusion_power_of_uniform_plasma(
         + 0.5 * n_t**2 * reac_TT(temperature) * 11.3
     )
 
-    _, plasma_volume, fusion_power = tokamak_source(**args)
-    assert plasma_volume == pytest.approx(volume_m3, rel=1e-3)
-    assert fusion_power == pytest.approx(
+    make_source = tokamak_source(**args)
+    assert make_source.plasma_volume == pytest.approx(volume_m3, rel=1e-3)
+    assert make_source.fusion_power == pytest.approx(
         float(volume_m3 * power_density) * 1e-6, rel=1e-3
     )
