@@ -610,7 +610,7 @@ def tokamak_reaction_rate(
         Fusion reaction rate density (reactions/s/m3).
     """
     try:
-        reactivity = REACTION_REACTIVITY[reaction]
+        reactivity = _REACTION_REACTIVITY[reaction]
     except KeyError as exc:
         raise ValueError(
             f'Reaction {reaction} not in available options ["DD", "DT", "TT"]'
