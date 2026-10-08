@@ -67,6 +67,14 @@ my_source = tokamak_source(
 )
 ```
 
+The returned source also provides the total plasma volume and total fusion
+power:
+
+```python
+print(my_source.volume)        # plasma volume in m^3
+print(my_source.fusion_power)  # total fusion power in MW
+```
+
 For a more complete example check out the [example script](https://github.com/fusion-energy/openmc-plasma-source/blob/main/examples/tokamak_source_example.py).
 
 ![out](https://user-images.githubusercontent.com/40028739/135100022-330aa51c-e2a2-401c-9738-90f3e99c84d4.png)

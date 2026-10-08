@@ -10,6 +10,15 @@ from NeSST.spectral_model import reac_DD, reac_DT, reac_TT
 from .fuel_types import get_neutron_energy_distribution, get_reactions_from_fuel
 
 
+EV_TO_J = 1.602176634e-19
+FUSION_Q_MEV = {
+    # Average Q-value of the two DD branches.
+    "DD": 3.65,
+    "DT": 17.6,
+    "TT": 11.3,
+}
+
+
 def _toroidal_phi_grid(
     start_angle: float, rotation_angle: float, n_phi: int
 ) -> Tuple[NDArray, NDArray]:
@@ -292,11 +301,17 @@ def tokamak_source(
     jacobian = np.abs(dR_da * dZ_dalpha - dR_dalpha * dZ_da)
     volume_weight = R_flat * jacobian
 
+    # Plasma volume for the selected toroidal sector, in m^3.
+    plasma_volume = (
+        np.sum(volume_weight) * da * dalpha * abs(rotation_angle) * 1e-6
+    )
+
     # Compute total neutron source density across all reactions
     fuel_densities = {key: densities * value for key, value in fuel.items()}
     reactions = get_reactions_from_fuel(fuel)
 
     total_source_density = np.zeros_like(a_flat)
+    total_fusion_power_density = np.zeros_like(a_flat)
     for reaction in reactions:
         if reaction == "DD":
             fuel_density = 0.5 * fuel_densities["D"] ** 2
@@ -309,6 +324,19 @@ def tokamak_source(
         if reaction == "TT":
             nsd = nsd * 2
         total_source_density += nsd
+
+        reactivity = {
+            "DD": reac_DD,
+            "DT": reac_DT,
+            "TT": reac_TT,
+        }[reaction](temperatures)
+        reaction_rate = fuel_density * reactivity
+        total_fusion_power_density += (
+            reaction_rate
+            * FUSION_Q_MEV[reaction]
+            * 1e6
+            * EV_TO_J
+        )
 
     # Bin source density and temperature into mesh cells, weighting each grid
     # point by the plasma volume element (toroidal R * poloidal Jacobian).
@@ -347,6 +375,14 @@ def tokamak_source(
     # MeshSource strength (the sum over voxels) is the neutron emission rate
     binned_strength *= neutron_rate / total
 
+    # The total fusion power of the plasma sector in W
+    fusion_power_w = (
+        np.sum(total_fusion_power_density * volume_weight * da * dalpha)
+        * abs(rotation_angle)
+        * 1e-6
+    )
+    fusion_power = fusion_power_w * 1e-6  # MW
+
     # Create one IndependentSource per mesh voxel
     sources = np.empty((n_r, n_phi, n_z), dtype=object)
     for i in range(n_r):
@@ -366,7 +402,10 @@ def tokamak_source(
                 src.strength = strength
                 sources[i, j, k] = src
 
-    return openmc.MeshSource(mesh, sources)
+    mesh_source = openmc.MeshSource(mesh, sources)
+    mesh_source.volume = plasma_volume
+    mesh_source.fusion_power = float(fusion_power)
+    return mesh_source
 
 
 def tokamak_ion_density(
