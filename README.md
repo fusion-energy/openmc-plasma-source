@@ -19,7 +19,8 @@ pip install openmc_plasma_source
 ### Tokamak Source
 
 Create a source with a spatial and temperature distribution of a tokamak plasma.
-The function returns a single `openmc.MeshSource` backed by a `CylindricalMesh`.
+The function returns an `openmc.MeshSource`, plasma volume, and fusion power.
+The source is backed by a `CylindricalMesh`.
 The plasma cross-section is discretised onto the mesh and each mesh voxel is
 assigned its own neutron source strength (its neutron emission rate in neutrons
 per second) and energy distribution based on the local ion temperature. The
@@ -32,7 +33,7 @@ The equations implemented here are taken from [this paper](https://doi.org/10.10
 ```python
 from openmc_plasma_source import tokamak_source
 
-my_source = tokamak_source(
+my_source, plasma_volume, fusion_power = tokamak_source(
     elongation=1.557,
     ion_density_centre=1.09e20,
     ion_density_pedestal=1.09e20,
@@ -58,7 +59,7 @@ controlled with optional arguments, along with the toroidal extent of the
 source:
 
 ```python
-my_source = tokamak_source(
+my_source, plasma_volume, fusion_power = tokamak_source(
     # ... plasma parameters as above ...
     start_angle=0,                 # toroidal start angle in radians
     rotation_angle=2 * 3.14159,    # toroidal extent in radians
@@ -67,12 +68,11 @@ my_source = tokamak_source(
 )
 ```
 
-The returned source also provides the total plasma volume and total fusion
-power:
+The plasma volume and total fusion power are returned separately:
 
 ```python
-print(my_source.volume)        # plasma volume in m^3
-print(my_source.fusion_power)  # total fusion power in MW
+print(plasma_volume)  # plasma volume in m^3
+print(fusion_power)   # total fusion power in MW
 ```
 
 For a more complete example check out the [example script](https://github.com/fusion-energy/openmc-plasma-source/blob/main/examples/tokamak_source_example.py).

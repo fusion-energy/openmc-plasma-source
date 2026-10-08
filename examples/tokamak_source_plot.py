@@ -1,6 +1,7 @@
 """Plot tokamak (plasma) sources in 3D, including a seam-crossing sector.
 
-tokamak_source returns an openmc.MeshSource backed by a CylindricalMesh: each
+tokamak_source returns an openmc.MeshSource, plasma volume, and fusion power.
+The source is backed by a CylindricalMesh: each
 voxel is an IndependentSource whose strength is proportional to the local
 neutron emission. The poloidal (R, Z) emission profile is identical in every
 toroidal bin, so we build the source cheaply with a single phi bin to get the
@@ -63,7 +64,7 @@ cases = [
 def sample_points(start_angle, rotation_angle):
     """Sample neutron birth positions for a tokamak sector using the real mesh."""
     # Cheap single-phi-bin build to get the poloidal (R, Z) strength map.
-    source = tokamak_source(
+    source, plasma_volume, fusion_power = tokamak_source(
         **PLASMA,
         start_angle=0.0,
         rotation_angle=2 * np.pi,

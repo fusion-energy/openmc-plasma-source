@@ -12,10 +12,14 @@ from .fuel_types import get_neutron_energy_distribution, get_reactions_from_fuel
 
 EV_TO_J = 1.602176634e-19
 FUSION_Q_MEV = {
-    # Average Q-value of the two DD branches.
-    "DD": 3.65,
+    "DD": 7.3,
     "DT": 17.6,
     "TT": 11.3,
+}
+REACTION_REACTIVITY = {
+    "DD": reac_DD,
+    "DT": reac_DT,
+    "TT": reac_TT,
 }
 
 
@@ -98,7 +102,7 @@ def tokamak_source(
     mesh_resolution: Tuple[int, int] = (100, 100),
     grid_density: int = 500,
     fuel: Dict[str, float] = {"D": 0.5, "T": 0.5},
-) -> openmc.MeshSource:
+) -> Tuple[openmc.MeshSource, float, float]:
     """
     Creates an openmc.MeshSource representing a tokamak plasma.
 
@@ -113,7 +117,7 @@ def tokamak_source(
     https://doi.org/10.1016/j.fusengdes.2012.02.025
 
     Usage:
-        my_source = tokamak_source(**plasma_prms)
+        my_source, plasma_volume, fusion_power = tokamak_source(**plasma_prms)
         my_settings = openmc.Settings()
         my_settings.source = [my_source]
 
@@ -160,12 +164,12 @@ def tokamak_source(
         fuel: Isotopes as keys and atom fractions as values
 
     Returns:
-        openmc.MeshSource backed by a CylindricalMesh. Each voxel strength is
-        its neutron emission rate in neutrons per second, so the MeshSource
-        strength (the sum over voxels) is the neutron emission rate of the
-        plasma, which can be used to normalise tallies. Call
-        normalize_source_strengths() on the returned source to rescale the
-        strengths to sum to 1.
+        A tuple containing the openmc.MeshSource, plasma volume in m^3, and
+        total fusion power in MW. Each voxel strength is its neutron emission
+        rate in neutrons per second, so the MeshSource strength (the sum over
+        voxels) is the neutron emission rate of the plasma, which can be used
+        to normalise tallies. Call normalize_source_strengths() on the source
+        to rescale the strengths to sum to 1.
     """
 
     # Perform sanity checks for inputs not caught by properties
@@ -320,17 +324,11 @@ def tokamak_source(
         elif reaction == "DT":
             fuel_density = fuel_densities["T"] * fuel_densities["D"]
 
-        nsd = tokamak_neutron_source_density(fuel_density, temperatures, reaction)
-        if reaction == "TT":
-            nsd = nsd * 2
-        total_source_density += nsd
-
-        reactivity = {
-            "DD": reac_DD,
-            "DT": reac_DT,
-            "TT": reac_TT,
-        }[reaction](temperatures)
-        reaction_rate = fuel_density * reactivity
+        reaction_rate = tokamak_reaction_rate(
+            fuel_density, temperatures, reaction
+        )
+        # TT produces two neutrons per fusion reaction; DD and DT produce one.
+        total_source_density += reaction_rate * (2 if reaction == "TT" else 1)
         total_fusion_power_density += (
             reaction_rate
             * FUSION_Q_MEV[reaction]
@@ -403,9 +401,7 @@ def tokamak_source(
                 sources[i, j, k] = src
 
     mesh_source = openmc.MeshSource(mesh, sources)
-    mesh_source.volume = plasma_volume
-    mesh_source.fusion_power = float(fusion_power)
-    return mesh_source
+    return mesh_source, float(plasma_volume), float(fusion_power)
 
 
 def tokamak_ion_density(
@@ -595,16 +591,29 @@ def tokamak_neutron_source_density(
         Neutron source density (neutron/s/m3)
     """
 
-    ion_density = np.asarray(ion_density)
-    ion_temperature = np.asarray(ion_temperature)
+    return tokamak_reaction_rate(ion_density, ion_temperature, reaction)
 
-    if reaction == "DD":
-        return ion_density * reac_DD(ion_temperature)
-    elif reaction == "TT":
-        return ion_density * reac_TT(ion_temperature)
-    elif reaction == "DT":
-        return ion_density * reac_DT(ion_temperature)  # could use _DT_xs instead
-    else:
+
+def tokamak_reaction_rate(
+    ion_density: Union[float, NDArray],
+    ion_temperature: Union[float, NDArray],
+    reaction: str,
+) -> NDArray:
+    """Compute the fusion reaction rate density for a reaction.
+
+    Args:
+        ion_density: Reaction-specific density factor (m-3).
+        ion_temperature: Ion temperature (eV).
+        reaction: Fusion reaction, one of ``"DD"``, ``"DT"``, or ``"TT"``.
+
+    Returns:
+        Fusion reaction rate density (reactions/s/m3).
+    """
+    try:
+        reactivity = REACTION_REACTIVITY[reaction]
+    except KeyError as exc:
         raise ValueError(
             f'Reaction {reaction} not in available options ["DD", "DT", "TT"]'
-        )
+        ) from exc
+
+    return np.asarray(ion_density) * reactivity(np.asarray(ion_temperature))
