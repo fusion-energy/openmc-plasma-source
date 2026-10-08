@@ -33,7 +33,7 @@ The equations implemented here are taken from [this paper](https://doi.org/10.10
 ```python
 from openmc_plasma_source import tokamak_source
 
-my_source, plasma_volume, fusion_power = tokamak_source(
+make_source = tokamak_source(
     elongation=1.557,
     ion_density_centre=1.09e20,
     ion_density_pedestal=1.09e20,
@@ -52,6 +52,7 @@ my_source, plasma_volume, fusion_power = tokamak_source(
     triangularity=0.270,
     fuel={"D": 0.5, "T": 0.5},
 )
+my_source = make_source.source
 ```
 
 The mesh resolution and the density of the internal sampling grid can be
@@ -59,20 +60,21 @@ controlled with optional arguments, along with the toroidal extent of the
 source:
 
 ```python
-my_source, plasma_volume, fusion_power = tokamak_source(
+make_source = tokamak_source(
     # ... plasma parameters as above ...
     start_angle=0,                 # toroidal start angle in radians
     rotation_angle=2 * 3.14159,    # toroidal extent in radians
     mesh_resolution=(100, 100), # number of mesh bins in (r, z)
     grid_density=500,              # points per dimension in the (a, alpha) grid
 )
+my_source = make_source.source
 ```
 
 The plasma volume and total fusion power are returned separately:
 
 ```python
-print(plasma_volume)  # plasma volume in m^3
-print(fusion_power)   # total fusion power in MW
+print(make_source.plasma_volume)  # plasma volume in m^3
+print(make_source.fusion_power)   # total fusion power in MW
 ```
 
 For a more complete example check out the [example script](https://github.com/fusion-energy/openmc-plasma-source/blob/main/examples/tokamak_source_example.py).

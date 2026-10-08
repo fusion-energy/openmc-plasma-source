@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Tuple, Dict, List, Union
 
 import numpy as np
@@ -21,6 +22,15 @@ _REACTION_REACTIVITY = {
     "DT": reac_DT,
     "TT": reac_TT,
 }
+
+
+@dataclass
+class TokamakSource:
+    """Result of creating a tokamak source and its derived metadata."""
+
+    source: openmc.MeshSource
+    plasma_volume: float
+    fusion_power: float
 
 
 def _toroidal_phi_grid(
@@ -102,7 +112,7 @@ def tokamak_source(
     mesh_resolution: Tuple[int, int] = (100, 100),
     grid_density: int = 500,
     fuel: Dict[str, float] = {"D": 0.5, "T": 0.5},
-) -> Tuple[openmc.MeshSource, float, float]:
+) -> TokamakSource:
     """
     Creates an openmc.MeshSource representing a tokamak plasma.
 
@@ -117,7 +127,8 @@ def tokamak_source(
     https://doi.org/10.1016/j.fusengdes.2012.02.025
 
     Usage:
-        my_source, plasma_volume, fusion_power = tokamak_source(**plasma_prms)
+        make_source = tokamak_source(**plasma_prms)
+        my_source = make_source.source
         my_settings = openmc.Settings()
         my_settings.source = [my_source]
 
@@ -164,12 +175,11 @@ def tokamak_source(
         fuel: Isotopes as keys and atom fractions as values
 
     Returns:
-        A tuple containing the openmc.MeshSource, plasma volume in m^3, and
-        total fusion power in MW. Each voxel strength is its neutron emission
-        rate in neutrons per second, so the MeshSource strength (the sum over
-        voxels) is the neutron emission rate of the plasma, which can be used
-        to normalise tallies. Call normalize_source_strengths() on the source
-        to rescale the strengths to sum to 1.
+        A TokamakSource containing the openmc.MeshSource, plasma volume in
+        m^3, and total fusion power in MW. Each voxel strength is its neutron
+        emission rate in neutrons per second, so the MeshSource strength (the
+        sum over voxels) is the neutron emission rate of the plasma, which can
+        be used to normalise tallies.
     """
 
     # Perform sanity checks for inputs not caught by properties
@@ -401,7 +411,11 @@ def tokamak_source(
                 sources[i, j, k] = src
 
     mesh_source = openmc.MeshSource(mesh, sources)
-    return mesh_source, float(plasma_volume), float(fusion_power)
+    return TokamakSource(
+        source=mesh_source,
+        plasma_volume=float(plasma_volume),
+        fusion_power=float(fusion_power),
+    )
 
 
 def tokamak_ion_density(

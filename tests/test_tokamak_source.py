@@ -48,7 +48,7 @@ def tokamak_args_dict():
 @pytest.fixture
 def tokamak_source_example(tokamak_args_dict):
     """Returns a tokamak_source with realistic inputs"""
-    return tokamak_source(**tokamak_args_dict)[0]
+    return tokamak_source(**tokamak_args_dict).source
 
 
 def test_creation(tokamak_source_example):
@@ -190,7 +190,7 @@ def test_angles(tokamak_args_dict, start_angle, rotation_angle):
     the full torus neutron rate scaled by the sector angle."""
     tokamak_args_dict["start_angle"] = start_angle
     tokamak_args_dict["rotation_angle"] = rotation_angle
-    mesh_source = tokamak_source(**tokamak_args_dict)[0]
+    mesh_source = tokamak_source(**tokamak_args_dict).source
     phi_grid = np.asarray(mesh_source.mesh.phi_grid)
     # Mesh edges must be increasing and within [0, 2*pi]
     assert np.all(np.diff(phi_grid) > 0)
@@ -202,7 +202,7 @@ def test_angles(tokamak_args_dict, start_angle, rotation_angle):
         "start_angle": 0.0,
         "rotation_angle": 2 * np.pi,
     }
-    full_torus_rate = tokamak_source(**full_torus_args)[0].strength
+    full_torus_rate = tokamak_source(**full_torus_args).source.strength
     strengths = np.array([s.strength for s in mesh_source.sources.ravel()])
     expected = full_torus_rate * abs(rotation_angle) / (2 * np.pi)
     assert np.isclose(strengths.sum(), expected, rtol=1e-9)
@@ -274,7 +274,7 @@ def test_mesh_resolution_sets_single_phi_bin(tokamak_args_dict):
     bin for a full rotation, and the requested r/z resolution."""
     tokamak_args_dict["mesh_resolution"] = (12, 8)
     tokamak_args_dict["rotation_angle"] = 2 * np.pi
-    source = tokamak_source(**tokamak_args_dict)[0]
+    source = tokamak_source(**tokamak_args_dict).source
     n_r, n_phi, n_z = source.mesh.dimension
     assert (n_r, n_phi, n_z) == (12, 1, 8)
 
@@ -461,7 +461,7 @@ def tokamak_source_strategy(draw):
         ion_temperature_beta=6,
         mesh_resolution=(10, 10),
         grid_density=30,
-    )[0], {
+    ).source, {
         "major_radius": major_radius,
         "minor_radius": minor_radius,
         "elongation": elongation,
@@ -562,7 +562,7 @@ def test_strengths_are_volume_weighted():
     """
     args = _uniform_args()
     R0, a = args["major_radius"], args["minor_radius"]
-    mean_r, mean_z, _, _ = _strength_moments(tokamak_source(**args)[0])
+    mean_r, mean_z, _, _ = _strength_moments(tokamak_source(**args).source)
     expected = R0 + a**2 / (4 * R0)
     assert mean_r == pytest.approx(expected, abs=0.02 * (expected - R0))
     # up-down symmetric plasma, so the emission is centred on the midplane
@@ -600,7 +600,7 @@ def test_shaped_strengths_match_boundary_integrals(
     I2 = np.mean(R**3 / 3 * dZ)
     I3 = np.mean(R**2 * Z**2 / 2 * dZ)
 
-    mean_r, mean_z, mean_z2, dz = _strength_moments(tokamak_source(**args)[0])
+    mean_r, mean_z, mean_z2, dz = _strength_moments(tokamak_source(**args).source)
     assert mean_z == pytest.approx(0.0, abs=1e-3 * a)
     expected_r = I2 / I1
     assert mean_r == pytest.approx(
@@ -774,7 +774,7 @@ def test_strength_is_neutron_rate_of_uniform_plasma(
         + 2 * 0.5 * n_t**2 * reac_TT(temperature)
     )
 
-    mesh_source = tokamak_source(**args)[0]
+    mesh_source = tokamak_source(**args).source
     assert mesh_source.strength == pytest.approx(
         float(volume_m3 * source_density), rel=1e-3
     )

@@ -4,7 +4,7 @@ import numpy as np
 
 from openmc_plasma_source import tokamak_source, tokamak_convert_a_alpha_to_R_Z
 
-mesh_source, plasma_volume, fusion_power = tokamak_source(
+make_source = tokamak_source(
     elongation=1.557,
     ion_density_centre=1.09e20,
     ion_density_pedestal=1.09e20,
@@ -25,6 +25,7 @@ mesh_source, plasma_volume, fusion_power = tokamak_source(
     mesh_resolution=(100, 100),
     grid_density=500,
 )
+mesh_source = make_source.source
 
 # Extract mesh grid edges and strengths
 r_grid = np.asarray(mesh_source.mesh.r_grid)

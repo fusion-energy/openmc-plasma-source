@@ -14,7 +14,7 @@ cell = openmc.Cell(region=-sphere_surface)
 geometry = openmc.Geometry([cell])
 
 # create a plasma source
-my_source, plasma_volume, fusion_power = tokamak_source(
+make_source = tokamak_source(
     elongation=1.557,
     ion_density_centre=1.09e20,
     ion_density_pedestal=1.09e20,
@@ -33,6 +33,7 @@ my_source, plasma_volume, fusion_power = tokamak_source(
     triangularity=0.270,
     fuel={"D": 0.5, "T": 0.5},
 )
+my_source = make_source.source
 
 # Tell OpenMC we're going to use our custom source
 settings = openmc.Settings()
