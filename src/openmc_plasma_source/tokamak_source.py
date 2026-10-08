@@ -331,9 +331,9 @@ def tokamak_source(
         total_source_density += reaction_rate * (2 if reaction == "TT" else 1)
         total_fusion_power_density += (
             reaction_rate
-            * FUSION_Q_MEV[reaction]
+            * _FUSION_Q_MEV[reaction]
             * 1e6
-            * EV_TO_J
+            * _EV_TO_J
         )
 
     # Bin source density and temperature into mesh cells, weighting each grid
