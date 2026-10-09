@@ -10,7 +10,6 @@ from NeSST.spectral_model import reac_DD, reac_DT, reac_TT
 
 from .fuel_types import get_neutron_energy_distribution, get_reactions_from_fuel
 
-
 _EV_TO_J = 1.602176634e-19
 _FUSION_Q_MEV = {
     "DD": 7.3,
@@ -316,9 +315,7 @@ def tokamak_source(
     volume_weight = R_flat * jacobian
 
     # Plasma volume for the selected toroidal sector, in m^3.
-    plasma_volume = (
-        np.sum(volume_weight) * da * dalpha * abs(rotation_angle) * 1e-6
-    )
+    plasma_volume = np.sum(volume_weight) * da * dalpha * abs(rotation_angle) * 1e-6
 
     # Compute total neutron source density across all reactions
     fuel_densities = {key: densities * value for key, value in fuel.items()}
@@ -334,16 +331,11 @@ def tokamak_source(
         elif reaction == "DT":
             fuel_density = fuel_densities["T"] * fuel_densities["D"]
 
-        reaction_rate = tokamak_reaction_rate(
-            fuel_density, temperatures, reaction
-        )
+        reaction_rate = tokamak_reaction_rate(fuel_density, temperatures, reaction)
         # TT produces two neutrons per fusion reaction; DD and DT produce one.
         total_source_density += reaction_rate * (2 if reaction == "TT" else 1)
         total_fusion_power_density += (
-            reaction_rate
-            * _FUSION_Q_MEV[reaction]
-            * 1e6
-            * _EV_TO_J
+            reaction_rate * _FUSION_Q_MEV[reaction] * 1e6 * _EV_TO_J
         )
 
     # Bin source density and temperature into mesh cells, weighting each grid
