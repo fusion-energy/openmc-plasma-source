@@ -48,7 +48,7 @@ def tokamak_args_dict():
 @pytest.fixture
 def tokamak_source_example(tokamak_args_dict):
     """Returns a tokamak_source with realistic inputs"""
-    return tokamak_source(**tokamak_args_dict)
+    return tokamak_source(**tokamak_args_dict).source
 
 
 def test_creation(tokamak_source_example):
@@ -190,7 +190,7 @@ def test_angles(tokamak_args_dict, start_angle, rotation_angle):
     the full torus neutron rate scaled by the sector angle."""
     tokamak_args_dict["start_angle"] = start_angle
     tokamak_args_dict["rotation_angle"] = rotation_angle
-    mesh_source = tokamak_source(**tokamak_args_dict)
+    mesh_source = tokamak_source(**tokamak_args_dict).source
     phi_grid = np.asarray(mesh_source.mesh.phi_grid)
     # Mesh edges must be increasing and within [0, 2*pi]
     assert np.all(np.diff(phi_grid) > 0)
@@ -202,7 +202,7 @@ def test_angles(tokamak_args_dict, start_angle, rotation_angle):
         "start_angle": 0.0,
         "rotation_angle": 2 * np.pi,
     }
-    full_torus_rate = tokamak_source(**full_torus_args).strength
+    full_torus_rate = tokamak_source(**full_torus_args).source.strength
     strengths = np.array([s.strength for s in mesh_source.sources.ravel()])
     expected = full_torus_rate * abs(rotation_angle) / (2 * np.pi)
     assert np.isclose(strengths.sum(), expected, rtol=1e-9)
@@ -274,7 +274,7 @@ def test_mesh_resolution_sets_single_phi_bin(tokamak_args_dict):
     bin for a full rotation, and the requested r/z resolution."""
     tokamak_args_dict["mesh_resolution"] = (12, 8)
     tokamak_args_dict["rotation_angle"] = 2 * np.pi
-    source = tokamak_source(**tokamak_args_dict)
+    source = tokamak_source(**tokamak_args_dict).source
     n_r, n_phi, n_z = source.mesh.dimension
     assert (n_r, n_phi, n_z) == (12, 1, 8)
 
@@ -461,7 +461,7 @@ def tokamak_source_strategy(draw):
         ion_temperature_beta=6,
         mesh_resolution=(10, 10),
         grid_density=30,
-    ), {
+    ).source, {
         "major_radius": major_radius,
         "minor_radius": minor_radius,
         "elongation": elongation,
@@ -562,7 +562,7 @@ def test_strengths_are_volume_weighted():
     """
     args = _uniform_args()
     R0, a = args["major_radius"], args["minor_radius"]
-    mean_r, mean_z, _, _ = _strength_moments(tokamak_source(**args))
+    mean_r, mean_z, _, _ = _strength_moments(tokamak_source(**args).source)
     expected = R0 + a**2 / (4 * R0)
     assert mean_r == pytest.approx(expected, abs=0.02 * (expected - R0))
     # up-down symmetric plasma, so the emission is centred on the midplane
@@ -600,7 +600,7 @@ def test_shaped_strengths_match_boundary_integrals(
     I2 = np.mean(R**3 / 3 * dZ)
     I3 = np.mean(R**2 * Z**2 / 2 * dZ)
 
-    mean_r, mean_z, mean_z2, dz = _strength_moments(tokamak_source(**args))
+    mean_r, mean_z, mean_z2, dz = _strength_moments(tokamak_source(**args).source)
     assert mean_z == pytest.approx(0.0, abs=1e-3 * a)
     expected_r = I2 / I1
     assert mean_r == pytest.approx(
@@ -722,7 +722,7 @@ def test_ion_temperature_h_a_boundary_conditions(tokamak_args_dict, mode):
     )
 
 
-@pytest.mark.parametrize(
+UNIFORM_PLASMA_CASES = pytest.mark.parametrize(
     "elongation, triangularity, shafranov_factor, fuel, rotation_angle",
     [
         (1.0, 0.0, 0.0, {"D": 0.5, "T": 0.5}, 2 * np.pi),
@@ -732,6 +732,20 @@ def test_ion_temperature_h_a_boundary_conditions(tokamak_args_dict, mode):
         (1.557, 0.27, 0.44789, {"T": 1.0}, -np.pi),
     ],
 )
+
+
+def _last_closed_surface_volume_m3(args, rotation_angle):
+    """Volume of the plasma sector from the last closed surface alone,
+    V = 2 pi int R dA = 2 pi loop R^2/2 dZ, scaled to the sector width."""
+    R0, a = args["major_radius"], args["minor_radius"]
+    t = np.linspace(0, 2 * np.pi, 4096, endpoint=False)
+    R = R0 + a * np.cos(t + args["triangularity"] * np.sin(t))
+    dZ = args["elongation"] * a * np.cos(t)
+    area_moment = 2 * np.pi * np.mean(R**2 / 2 * dZ)  # int R dA in cm^3
+    return abs(rotation_angle) * area_moment * 1e-6
+
+
+@UNIFORM_PLASMA_CASES
 def test_strength_is_neutron_rate_of_uniform_plasma(
     elongation, triangularity, shafranov_factor, fuel, rotation_angle
 ):
@@ -748,13 +762,7 @@ def test_strength_is_neutron_rate_of_uniform_plasma(
         fuel=fuel,
         rotation_angle=rotation_angle,
     )
-    R0, a = args["major_radius"], args["minor_radius"]
-
-    t = np.linspace(0, 2 * np.pi, 4096, endpoint=False)
-    R = R0 + a * np.cos(t + triangularity * np.sin(t))
-    dZ = elongation * a * np.cos(t)
-    area_moment = 2 * np.pi * np.mean(R**2 / 2 * dZ)  # int R dA in cm^3
-    volume_m3 = abs(rotation_angle) * area_moment * 1e-6
+    volume_m3 = _last_closed_surface_volume_m3(args, rotation_angle)
 
     temperature = args["ion_temperature_centre"]  # eV
     n_d = args["ion_density_centre"] * fuel.get("D", 0.0)
@@ -766,7 +774,44 @@ def test_strength_is_neutron_rate_of_uniform_plasma(
         + 2 * 0.5 * n_t**2 * reac_TT(temperature)
     )
 
-    mesh_source = tokamak_source(**args)
+    mesh_source = tokamak_source(**args).source
     assert mesh_source.strength == pytest.approx(
         float(volume_m3 * source_density), rel=1e-3
+    )
+
+
+@UNIFORM_PLASMA_CASES
+def test_volume_and_fusion_power_of_uniform_plasma(
+    elongation, triangularity, shafranov_factor, fuel, rotation_angle
+):
+    """For uniform density and temperature the returned plasma volume matches
+    the last closed surface, and the fusion power is that volume times the sum
+    over reactions of reaction rate density times energy released."""
+    from NeSST.spectral_model import reac_DD, reac_DT, reac_TT
+
+    args = _uniform_args(
+        elongation=elongation,
+        triangularity=triangularity,
+        shafranov_factor=shafranov_factor,
+        fuel=fuel,
+        rotation_angle=rotation_angle,
+    )
+    volume_m3 = _last_closed_surface_volume_m3(args, rotation_angle)
+
+    temperature = args["ion_temperature_centre"]  # eV
+    n_d = args["ion_density_centre"] * fuel.get("D", 0.0)
+    n_t = args["ion_density_centre"] * fuel.get("T", 0.0)
+    mev_to_j = 1.602176634e-13
+    # W m^-3. reac_DD is the D(d,n)He3 branch only, and each of those comes
+    # with an equally likely D(d,p)T reaction, so it carries 3.27 + 4.03 MeV.
+    power_density = mev_to_j * (
+        n_d * n_t * reac_DT(temperature) * 17.6
+        + 0.5 * n_d**2 * reac_DD(temperature) * (3.27 + 4.03)
+        + 0.5 * n_t**2 * reac_TT(temperature) * 11.3
+    )
+
+    make_source = tokamak_source(**args)
+    assert make_source.plasma_volume == pytest.approx(volume_m3, rel=1e-3)
+    assert make_source.fusion_power == pytest.approx(
+        float(volume_m3 * power_density) * 1e-6, rel=1e-3
     )
