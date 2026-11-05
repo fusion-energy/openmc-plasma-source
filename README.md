@@ -85,7 +85,7 @@ For a more complete example check out the [example script](https://github.com/fu
 ### Ring Source
 
 
-Create a ring source with temperature distribution of a 2000 eV plasma.
+Create a ring source with temperature distribution of a 20,000 eV plasma.
 
 ```python
 from openmc_plasma_source import fusion_ring_source
@@ -100,7 +100,7 @@ my_source = fusion_ring_source(
 ```
 ### Point Source
 
-Create a point source with temperature distribution of a 2000 eV plasma.
+Create a point source with temperature distribution of a 20,000 eV plasma.
 
 
 ```python
