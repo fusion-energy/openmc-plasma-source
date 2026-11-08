@@ -13,6 +13,8 @@ from openmc_plasma_source import (
         (2e3, {"T": 1.0}),
         (2e3, {"T": 0.5, "D": 0.5}),
         (2e3, {"T": 0.2, "D": 0.8}),
+        (2e3, {"D": 1.0, "T": 0.0}),
+        (2e3, {"D": 0.0, "T": 1.0}),
     ],
 )
 def test_fuel_with_correct_inputs(temperature, fuel):
@@ -55,6 +57,8 @@ def test_fuel_with_incorrect_isotopese(temperature, fuel):
     [
         ({"D": 1.0}, ["DD"]),
         ({"T": 1.0}, ["TT"]),
+        ({"D": 1.0, "T": 0.0}, ["DD"]),
+        ({"D": 0.0, "T": 1.0}, ["TT"]),
         ({"T": 0.5, "D": 0.5}, ["DT", "DD", "TT"]),
         ({"D": 0.2, "T": 0.8}, ["DT", "DD", "TT"]),
         ({"coucou": 0.2}, None),
