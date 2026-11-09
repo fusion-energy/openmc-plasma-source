@@ -17,7 +17,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: ci-env
-          miniforge-version: latest
+          miniforge-version: 26.9.4-2
           channels: conda-forge
 
       - name: install dependencies
