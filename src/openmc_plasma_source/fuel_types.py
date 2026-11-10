@@ -98,12 +98,12 @@ def neutron_energy_std_dev(ion_temperature: float, reaction: str) -> float:
 
 
 def get_reactions_from_fuel(fuel: Dict[str, float]) -> List[str]:
-    unique_keys = sorted(set(fuel.keys()))
-    if ["D", "T"] == unique_keys:
+    active_keys = sorted(k for k, v in fuel.items() if v > 0)
+    if ["D", "T"] == active_keys:
         return ["DT", "DD", "TT"]
-    elif ["D"] == unique_keys:
+    elif ["D"] == active_keys:
         return ["DD"]
-    elif ["T"] == unique_keys:
+    elif ["T"] == active_keys:
         return ["TT"]
     else:
         msg = f'reactions of fuel {fuel} could not be found. Supported fuel keys are "T" and "D"'
